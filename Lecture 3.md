@@ -97,11 +97,11 @@ In reality however, even if we have this knowledge, it might still not be possib
 Recap: There are three different ways in which events can be in the `->` "happens before" relation
 
 1. Events `A` and `B` occur in the same process, with `B` happeining after `A`
-1. If `A` is a message send event and `B` is the corresponding receive event, then `B` ***must*** happen after `A` because a receive ***cannot*** happen before its corresponding send event
+1. If `A` is a message send event and `B` is the corresponding receive event, then `B` ***must*** happen after `A` because a receive event ***cannot*** happen before its corresponding send event
 1. If `A -> C` and `C -> B`, then we can be certain that `A -> B` (Transitive closure)
 
 
-So if `A -> B`, then events `A` and `B` form a pairs of events ordered by the **"happens before"** relation.
+So if `A -> B`, then events `A` and `B` form a pair of events ordered by the **"happens before"** relation.
 
 ![Reasoning about State](./img/L3%20Reasoning%20About%20State.png)
 
@@ -115,7 +115,7 @@ What can we say about the ordering of these events?
 ***A:***&nbsp;&nbsp; Nothing!
 
 
-So the state of the machine is represented as the smallest set of relations, that is:
+So the state of the machine is represented by the smallest set of ordered pairs, that is:
 
 ```
  { (A,B)
@@ -125,7 +125,7 @@ So the state of the machine is represented as the smallest set of relations, tha
   }
 ```
 
-This list includes only those statements that can be made given the above rules for the ***happens before*** relation.
+This list includes only those event pairs that obey the ***happens before*** relation.
 
 What then can we say about the events shown in the following diagram?
 
@@ -135,36 +135,36 @@ Does `P` happen before `S`?
 Yes, `P` is a send event and `S` is the corresponding receive event, therefore `P -> S`
 
 What about `X` and `Z`?  
-Yes, events `X` and `Z` are in the smae process and `Z` happens after `X`, therefore `X -> Z`
+Yes, events `X` and `Z` occur within the same process and `Z` happens after `X`, therefore `X -> Z`
 
-What about P and Z?  
+What about `P` and `Z`?  
 Yes, `P -> S`, and `S` and `Z` are in the same process with `Z` happening after `S`, therefore `P -> Z`
 
 What about `Q` and `R`?  
-No, `Q` and `P` are not in the same process, neither is there any connection due to intermediate events and message passing, so `Q` and `R` are ***not*** related by the "happens before" relation.
+We do know that `Q` was caused by `T` and that `T -> Z` and `Z -> U` and `U -> R`, but since we are not allowed to determine causality by travelling backwards in time, we must conclude that `Q` and `R` are ***not*** related by the "happens before" relation.  In spite of the visual position of the dots in the diagram, we are unable to say which event happened first.
 
-Another way of saying this is that the ***"happens before"*** relation cannot be used to form an ordered pair from `Q` and `R`.  Consequently, we are unable to say which happened first.
+Another way of saying this is that the ***"happens before"*** relation cannot be used to form an ordered pair from `Q` and `R`.  All we can say about `Q` and `R` is that these events are **"concurrent"** or **"independent"**.  This is written as `Q || R`.
 
-All we say that `Q` and `R` is that they are **"concurrent"** or **"independent"**.  This is written as `Q || R`.
-
-In the above diagram, events `X` and `P` and `Z` and `Q` are also concurrent.
+In the above diagram, events `X` and `P`, and `Z`, `U`, `V` and `Q` are also concurrent.
 
 
 ## Partial Orders
 
 A partial order is where, for a given set `S`, a binary relation holds that exhibits the following properties.  This binary relation is usually, but not always written as `≤` (less than or equals) and allows you to compare the members of `S` using the following properties:
 
-| Property | Description |
-|---|---|
-| Reflexivity   | For all `A` in `S`<br>`A` is always `≤` to itself
-| Anti-symmetry | For all `A` and `B` in `S`<br>if `A ≤ B` and `B ≤ A`, then `A = B`
-| Transitivity  | For all `A`, `B` and `C` in `S`<br>then if `A ≤ B` and `B ≤ C`, then `A ≤ C`
+| Property | English Description | Mathematical Description |
+|---|---|---|
+| Reflexivity   | For all `a` in `S`<br>`a` is always `≤` to itself | `∀ a ∈ S: a ≤ a`
+| Anti-symmetry | For all `a` and `b` in `S`<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
+| Transitivity  | For all `a`, `b` and `c` in `S`<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
 
-If we're talking about events however, it makes no sense to say that event `A` "happens before" itself (I.E. the first rule of reflexivity is nonsensical and therefore not applicable).
+However, it makes no sense to say that event `A` ***"happens before"*** itself, so when speaking of a set of events, the reflexivity property is nonsensical and therefore not applicable.
 
-Also, we will never encounter the situation in a distributed system where `A` happens before `B` ***and*** `B` happens before `A` (making `A` and `B` the same event).  Although the anti-symmetry rule is never adhered to in real life, it is still theoretically possible.  Therefore, this rule is said to be ***"vacuously true"***.  That is, when dealing with a set of real-life events, we will never find an example that breaks this rule; however, we will also never find an example that satisfies this rule either...
+Also, we will never encounter the situation in a distributed system where event `A` happens before event `B` ***and*** event `B` happens before event `A` (making `A` and `B` the same event).
 
-So the "happens before" relation is a weird kind of partial order because only two of the three rules of a partial order apply, and then one of the two is only vacuously true.
+The anti-symmetry property is never adhered to in real life, but strictly speaking, it is still never violated; therefore, this rule is said to be ***"vacuously true"***.  That is, when dealing with a set of real-life events, we will never find an example that exhibits this property; however, we will also never find an example that violates this property either...
+
+So the "happens before" relation is a weird kind of partial order because only two of the three rules of a partial order apply, and even then, one of the two is only vacuously true.
 
 Therefore, the ***happens before*** relation is said to be *"an irreflexive partial order"*
 
