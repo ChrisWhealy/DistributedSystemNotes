@@ -16,7 +16,7 @@ Draw a vertical line to represent the events that happen within a process.  (Tim
 
 Events are then represented as dots on that line.
 
-![Process events](./img/L3%20Process%20Events.png)
+![Process events](./img/L3%20Process%20events.png)
 
 This diagram tells us that three events have taken place within this process and that they happend in the order `X` followed by `Y` followed by `Z`.
 
