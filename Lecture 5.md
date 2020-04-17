@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 5
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 6th, 2020 via [YouTube](https://www.youtube.com/watch?v=zuxA6f-XIAc)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 8th, 2020 via [YouTube](https://www.youtube.com/watch?v=zuxA6f-XIAc)
 
 ## Recap of Lamport Clocks
 
