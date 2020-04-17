@@ -139,11 +139,11 @@ Also, by following the messages that led up to event `A`, we can see another seq
 
 What is common here is that: 
 
-1. Event `A` ***graph reachability in spacetime*** from all the events in its causal history.  
+1. Event `A` has ***graph reachability in spacetime*** from all the events in its causal history.  
     That is, without lifting the pen from the paper or going backwards in time, we can connect any event in `A`'s past with `A`.
-1. Working backwards from `A`, we can see that all the vector clock values satisfy the ***happens before*** relation: that is, all preceding vector clock values are less than `A`'s vector clock value.
+1. Working backwards from `A`, we can see that all the vector clock values in its causal history satisfy the ***happens before*** relation: that is, all preceding vector clock values are less than `A`'s vector clock value.
 
-In addition to this, by looking at events that come after `A` (in other words, `A` is in the causal history of some future event), we can see that they all have vector clock values larger than `A`'s.
+In addition to this, by looking at events that come after `A` (in other words, `A` is in the causal history of some future event), we can see that all such vector clock values are larger than `A`'s.
 
 ### Are the Vector Clocks of All Events Comparable?
 
@@ -233,12 +233,12 @@ Ok, but it sounds like there is some highly specific meaning attached to the wor
 Well, ***sending*** and ***receiving*** can be understood quite intuitively, but ***delivery*** does indeed have a specific meaning in this context:
 
 * ***Sending***  
-    An action you explicitly performed on a message.  It is entirely under your control to decide when and if a message is sent.
+    An action you explicitly perform on a message.  You have complete control over when, or even if, that message is sent.
 * ***Receiving***   
     An action that happens to you when a message arrives.  You have no control over when or if messages arrive &mdash; they just show up... or not.
 * ***Delivery***  
     An action you perform upon a received message.  
-    For instance, you will receive messages at random intervals, but you can then place those messages into a queue and only process them at some time in the future you deem to be correct.  This is an example of ***delivering*** a received message.
+    For instance, even though you have no control over when you will receive messages, you can choose to place those messages into a queue and only process them at some time in the future you deem to be correct.  This is an example of ***delivering*** a received message.
 
 We can represent a protocol violation such as ***FIFO anomaly*** using the following diagram. 
 
