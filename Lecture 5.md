@@ -36,7 +36,7 @@ So each process will create its own vector clock with an initial value of `[0,0,
 
 The Vector Clock is then managed by applying the following rules:
 
-1. Every process maintains a vector of integers initialised to `0` - one for each process we wish to communicate with.
+1. Every process maintains a vector of integers initialised to `0` - one for each process with which we wish to communicate
     
 1. On every event, a process increments its own position in the vector clock: this also includes internal events that do not cause messages to be sent or received
 
@@ -63,7 +63,7 @@ What does `<` mean in the context of two vectors?
 
 This is calculated by performing a pointwise comparison ***and*** rejecting the special case where `VC(A) = VC(B)`
 
-<code>for all elements the VCs, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub> && VC(A) ≠ VC(B)</code>
+<code>for all elements in the VCs, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub> && VC(A) ≠ VC(B)</code>
 
 Meaning that for all elements in Vector Clocks `A` and `B`, the element at `VC(A)[i]` must be less than or equal to the element at `VC(B)[i]` and `VC(A) ≠ VC(B)`
 
@@ -101,14 +101,14 @@ So, taking a pointwise comparison of each element gives:
 
 The overall result is still `false` because `true && true && false = false`
 
-Since `VC(B)` is ***not*** less than `VC(A)` and `VC(A)` is ***not*** less than `VC(B)`, we are left in an indeterminate state.  All we can say about the events represented by these two vector clocks is that they are concurrent (or independent)
+Since `VC(B)` is ***not*** less than `VC(A)` and `VC(A)` is ***not*** less than `VC(B)`, we are left in an indeterminate state.  All we can say about the events represented by these two vector clocks is that they are concurrent, independent or causally unrelated (these three terms are synonyms).
 
 I.E. `A || B`
 
 
 ## Worked Example
 
-Let's see how the vector clock of three processes (`Alice`, `Bob` and `Carol`)
+Let's see how the vector clocks in three processes (`Alice`, `Bob` and `Carol`) are processed as events are sent and received:
 
 ![Vector Clocks example 1](./img/L5%20VC%20Clocks%201.png)
 ![Vector Clocks example 2](./img/L5%20VC%20Clocks%202.png)
@@ -118,7 +118,7 @@ Let's see how the vector clock of three processes (`Alice`, `Bob` and `Carol`)
 ![Vector Clocks example 6](./img/L5%20VC%20Clocks%206.png)
 ![Vector Clocks example 7](./img/L5%20VC%20Clocks%207.png)
 
-After these messages have been sent, we can see the history of how the vector clocks of each process changed over time.
+After these messages have been sent, we can see the history of how the vector clocks in each process changed over time.
 
 ![Vector Clocks example 8](./img/L5%20VC%20Clocks%208.png)
 
@@ -139,11 +139,11 @@ Also, by following the messages that led up to event `A`, we can see another seq
 
 What is common here is that: 
 
-1. All these events have ***graph reachability in spacetime***.  
-    That is, we can connect these events with a continuous line.
+1. Event `A` ***graph reachability in spacetime*** from all the events in its causal history.  
+    That is, without lifting the pen from the paper or going backwards in time, we can connect any event in `A`'s past with `A`.
 1. Working backwards from `A`, we can see that all the vector clock values satisfy the ***happens before*** relation: that is, all preceding vector clock values are less than `A`'s vector clock value.
 
-in addition to this, by looking at events that come after `A`, we can see that they all have vector clock values that are larger than `A`'s.
+In addition to this, by looking at events that come after `A` (in other words, `A` is in the causal history of some future event), we can see that they all have vector clock values larger than `A`'s.
 
 ### Are the Vector Clocks of All Events Comparable?
 
@@ -161,22 +161,24 @@ VC(B) = [0,3,2]
 [0,3,2] < [2,4,1] = false
 ```
 
-Therefore, all we can say about these two events is that they are independent, concurrent or causally unrelated, or `A || B`.
+Neither vector clock is larger or smaller than the other; therefore, all we can say about these two events is that they are independent, concurrent or causally unrelated, or `A || B`.
 
-So this means we can easily tell a computer how to determine if two events are causally related.  All we have to do is compare the vector clock values of these two events.  If we can determine that one is less than the other, then we know for certain that the event with the smaller vector clock value occurred in the causal history of the event with the larger vector clock.
+This does however mean that we can easily tell a computer how to determine if two events are causally related.  All we have to do is compare the vector clock values of these two events.  If we can determine that one is less than the other, then we know for certain that the event with the smaller vector clock value occurred in the causal history of the event with the larger vector clock value.
 
 If, on the other hand, the ***less than*** relation cannot be satisfied, then we can be certain that the two events are causally unrelated.
 
 
 ## Protocols
 
-A protocol is simply an agreed set of rules that computers use for communicating with each other.
+The non-rigourous definition of a protocol is that it is an agreed upon set of rules that computers use for communicating with each other.
 
 Let's take a simple example:
 
-One process sends the message `Hi, how are you?` to another process.  According to our protocol, when a process receives this message, it is required to send the response `Good, thanks`
+One process sends the message `Hi, how are you?` to another process.  According to our simple protocol, when a process receives this specific message, it is required to send the response `Good, thanks`
 
-There is nothing in our protocol however that states which process is to send the first message, so the following two diagrams are both valid runs of our protocol 
+There is nothing in our protocol however that states which process is to send the first message, or what should happen after the `Good, thanks` message has been received.
+
+The following two diagrams are both valid runs of our protocol:
 
 ![Protocol 1](./img/L5%20Protocol%201.png)
 
@@ -196,7 +198,7 @@ What about this - is this a protocol violation?
 
 Hmmm, it's hard to tell.  Maybe the protocol is running correctly and we're simply looking at a particular point in time that does not give us the full story.
 
-The point here is that a Lamport Diagram can only represent logical time - that is, it communicates the order in which a sequence of events occurred, but it cannot give us any idea about how much time elapsed between events.
+The point here is that a Lamport Diagram can only represent logical time - that is, it describes the order in which a sequence of events occurred, but it cannot give us any idea about how much time elapsed between events.
 
 But considering that a Logical Clock is only concerned with the ordering of events, it is not surprising that the following two event sequences appear to be identical:
 
@@ -218,27 +220,27 @@ Lamport Diagrams are also good for representing protocol violations - for instan
 
 In this course, we're often going to talk about the violation of some sort of correctness property, and a diagram is a good way to represent such a violation.
 
-When discussing properties of a system that we want to be true, one way to talk about the correctness of such properties is to draw a diagram that represents their violation.
+When discussing properties of a system that we want to be true, one way to talk about the correctness of such properties is to draw a diagram that represents its violation.
 
 For instance, consider the order in which messages are sent and received
 
 ### FIFO (or Ordered) Delivery
 
-If a process sends message `M2` after message `M1`, and process delivery both must deliver `M1` first, followed by `M2`
+If a process sends message `M2` after message `M1`, the receiving process must deliver `M1` first, followed by `M2`
 
 Ok, but it sounds like there is some highly specific meaning attached to the word ***deliver***...
 
-Well, ***sending*** and ***receiving*** can be understood quite intuitively:
+Well, ***sending*** and ***receiving*** can be understood quite intuitively, but ***delivery*** does indeed have a specific meaning in this context:
 
 * ***Sending***  
     An action you explicitly performed on a message.  It is entirely under your control to decide when and if a message is sent.
 * ***Receiving***   
-    An action that happens to you when a message arrives.  You have no control over when or if messages will arrive &mdash; they just show up, or not.
+    An action that happens to you when a message arrives.  You have no control over when or if messages arrive &mdash; they just show up... or not.
 * ***Delivery***  
     An action you perform upon a received message.  
-    For instance, you will receive messages at random intervals, but you can then place those messages into a queue and only process them at some predetermined time in the future.  This is an example of ***delivering*** a received message.
+    For instance, you will receive messages at random intervals, but you can then place those messages into a queue and only process them at some time in the future you deem to be correct.  This is an example of ***delivering*** a received message.
 
-We can represent a violation FIFO anomaly using the following diagram. 
+We can represent a protocol violation such as ***FIFO anomaly*** using the following diagram. 
 
 ![FIFO Anomaly](./img/L5%20FIFO%20Anomaly.png)
 
