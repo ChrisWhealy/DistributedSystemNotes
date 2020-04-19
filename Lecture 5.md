@@ -61,7 +61,7 @@ For example, if my VC is `[1, 12,4]` and I receive the VC `[7,0,2]`, the pointwi
 
 What does `<` mean in the context of two vectors?
 
-This is calculated by performing a pointwise comparison ***and*** rejecting the special case where `VC(A) = VC(B)`
+This is calculated by performing a pointwise comparison of each element in the vector ***and*** rejecting the special case where `VC(A) = VC(B)`
 
 <code>for all elements in the VCs, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub> && VC(A) ≠ VC(B)</code>
 
@@ -108,7 +108,7 @@ I.E. `A || B`
 
 ## Worked Example
 
-Let's see how the vector clocks in three processes (`Alice`, `Bob` and `Carol`) are processed as events are sent and received:
+Let's see how the vector clocks in three processes (`Alice`, `Bob` and `Carol`) are processed as messages are sent and received:
 
 ![Vector Clocks example 1](./img/L5%20VC%20Clocks%201.png)
 ![Vector Clocks example 2](./img/L5%20VC%20Clocks%202.png)
