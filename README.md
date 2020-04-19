@@ -10,3 +10,4 @@ There are no notes for lecture 1 as this was concerned with course administratio
 * [Lecture 3](./Lecture%203.md)
 * [Lecture 4](./Lecture%204.md)
 * [Lecture 5](./Lecture%205.md)
+* [Lecture 6](./Lecture%206.md)
