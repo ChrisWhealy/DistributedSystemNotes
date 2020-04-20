@@ -65,7 +65,7 @@ However, this scenario is still a causal anomaly.  In general, at least three co
 
 ### Can a Message be Sent to Multiple Destinations?
 
-Yes, this is what's known as a broadcast message - I.E. a message that is sent to every participant in the system.  The idea of broadcast messages is something that will be dealt with later.
+Yes, this is what's known as a broadcast message - I.E. a single send event that broadcasts a message to multiple (possibly all) participants in a system.  The idea of broadcast messages is something that will be dealt with later.
 
 ## Totally Ordered Delivery
 
@@ -83,7 +83,7 @@ This is known as a ***Total Order Anomaly*** and is created when process `R1` de
 
 ### Delivery Guarantees
 
-Since we know that causal delivery also ensures FIFO delivery, then we can start to arrange these delivery strategies in a hierarchy, with the weakest at the bottom.  Here, we will use the term `YOLO` to indicate the delivery guarantee that makes no guarantees!
+Since we know that causal delivery also ensures FIFO delivery, we can start to arrange these delivery strategies in a hierarchy, with the weakest at the bottom.  Here, we will use the term `YOLO` to indicate the delivery guarantee that makes no guarantees!
 
 ![Delivery Hierarchy 1](./img/L6%20Delivery%20Hierarchy%201.png)
 
@@ -169,7 +169,7 @@ Lets look again at the ***Causal Anomaly*** situation:
 
 The problem here is that `Carol` delivers the message she receives from `Bob` out of causal order, thus resulting in confusion...
 
-Here, we can use a vector clocks to solve causal anomalies.
+Here, we can use vector clocks to solve causal anomalies.
 
 In the [previous lecture](./Lecture%205.md), we looked at using vector clocks to count both message send and receive events; but in order to ensure Causal Delivery, it turns out that we only need to count message send events.
 
@@ -185,9 +185,9 @@ Yes, he has no reason not to.
 
 `Bob` delivers the message and discovers that it is not to his liking.  But, since `Bob` has the emotional maturity of an eight-year-old, he fails to realise that soap and water will work far better than trading insults; so, he resorts to sending his own broadcast message back to `Alice` and `Carol`
 
-In delivering this message, `Bob` examines the vector clock of the incoming message and discovers that its is less than his only by the counter in `Alice`'s position.  This is to be expecetd, since the message came from `Alice`.  He therefore uses the received vector clock to update updates his own vector clock, and then increments his position in the new vector clock value.
+In delivering this message, `Bob` examines the vector clock of the incoming message and discovers that its less than his, but only by the counter in `Alice`'s position.  This is to be expected, since the message came from `Alice`.  He therefore uses the received vector clock to update updates his own vector clock, and then increments his position in the vector clock.
 
-Since this is a broadcast message, it is treated as a single send event, so the same vector clock value of `[1,1,0]` is sent to both `Alice` and `Carol`.
+Since a broadcast message is treated as a single send event to multiple recipients, the same vector clock value of `[1,1,0]` is sent as part of the messages to both `Alice` and `Carol`.
 
 ![Ensure Casual Delivery 2](./img/L6%20Ensure%20Casual%20Delivery%202.png)
 
@@ -197,11 +197,11 @@ The message now arrives at `Alice`.  Should she deliver it?
 
 Yes, she has no reason not to.
 
-`Alice`'s vector clock is `[1,0,0]` and the incoming vector clock on the message differs only by `1` in `Bob`'s position.  So we can conclude that only one event has taken place since our last message send event, and that event happened in process `Bob`
+`Alice`'s vector clock is `[1,0,0]` and the incoming vector clock on the message differs only by `1` in `Bob`'s position.  So we can conclude that only one event has taken place since our last message send event, and that event happened in process `Bob` from whom we received this message.
 
 ### But What Should Carol Do?
 
-`Bob`'s message also arrives at Carol with vector clock `[1,1,0]`.  Should she deliver it?
+`Bob`'s message also arrives at Carol with vector clock `[1,1,0]`, but earlier than `Alice`'s original message.  Should she deliver it?
 
 Actually, no!
 
@@ -211,7 +211,7 @@ In other words, as far as `Carol` is concerned, this is a message from the futur
 
 Finally, `Alice`'s original `"Bob smells"` message arrives at `Carol`.  `Carol` now examines this message's vector clock and discovers that it has the expected value of `[1,0,0]`; therefore it is fine to deliver it.
 
-Once this second message has been delivered, the buffered message can be delivered because `Carol` has now caught up with the event that took place in `Alice`.
+Once this out-of-sequence message has been delivered, the buffered message can be delivered because `Carol` has now caught up with the event that took place in `Alice`.
 
 `Carol` is no longer confused...
 
