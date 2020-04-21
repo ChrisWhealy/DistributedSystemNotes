@@ -10,7 +10,7 @@ Here's the classic causal anomaly again.
 
 The problem here is that the message `Carol` receives first is also delivered first.   The anomaly occurs because of out of order ***delivery***, not out of order ***receipt***.
 
-The use of vector clocks helps eliminate the problem of causal anomalies because by comparing the vector clock value on the incoming message, with its own vector clock, the receiver can decide whether or not the message should be delivered.
+The use of vector clocks helps eliminate the problem of causal anomalies because by comparing the vector clock value on the incoming message with its own vector clock, the receiver can decide whether or not the message should be delivered.
 
 ![Causal Broadcast 1](./img/L7%20Causal%20Broadcast%201.png)
 
@@ -26,14 +26,14 @@ Ok, so far so good.
 
 However, the message vector clock also has a `1` in `Alice`'s position &mdash; and this is not expected.
 
-Remember that in this scenario, our vector clocks only count message send events; so when `Carol` sees a `1` in `Alice`'s position, this means that some message send event has taken place in `Alice` that `Carol` does not yet know about (probably because the message have been received out of order).  Hence, `Carol` can correctly infer that this is a ***message from the future*** and should therefore be queued.
+Remember that in this scenario, our vector clocks only count message-send events; so when `Carol` sees a `1` in `Alice`'s position, this means that some message send event has taken place in `Alice` that `Carol` does not yet know about (probably because the messages have been received out of order).  Hence, `Carol` can correctly infer that this is a ***message from the future*** and should therefore be queued.
 
 
 When `Alice`'s delayed message finally arrives at `Carol`, this message carries a vector clock value of `[1,0,0]` which is what `Carol` expects, so this message can be correctly delivered.
 
 ![Causal Broadcast 3](./img/L7%20Causal%20Broadcast%203.png)
 
-Now `Carol` examines her message queue and discovers that the message with vector clock `[1,1,0]` can now be delivered, because all the preceding message in its causal history have been delivered in the correct order.
+Now `Carol` examines her message queue and discovers that the message with vector clock `[1,1,0]` can now be delivered, because all the preceding messages in her causal history have been delivered in the correct order.
 
 ![Causal Broadcast 4](./img/L7%20Causal%20Broadcast%204.png)
 
@@ -58,7 +58,7 @@ Now `Carol` examines her message queue and discovers that the message with vecto
 
 There are two important things to remember here:
 
-1. We are only incrementing vector clock values on message ***send*** events, not message receive events.  
+1. We are only incrementing vector clock values on message-***send*** events, not message-receive events.  
     The value in each vector clock position is simply a count of the number of messages that process has sent so far.
 1. These rules only apply to ***broadcast*** messages.  
     This means that every process in the system will (eventually) receive every message sent by every other process.  These rules do not apply for point-to-point messages!
@@ -69,11 +69,11 @@ Knowing this, we can understand the above rule to mean that in order to avoid cr
 
 ***Rule 2:***&nbsp;&nbsp;<code>VC<sub>m</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
 
-The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver has a complete record of all messages sent in the system; no messages are missing.
+The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver has a complete record of all broadcast messages sent in the system; no messages are missing.
 
-This is the rule that would be violated if `Carol` tried to deliver `Bob`'s ***message from the future*** at the time it was received.
+This is the rule that would be violated if `Carol` tried to deliver `Bob`'s rude "Up yours!" ***message from the future*** at the time it was received.
 
-The vector clock on the message sent from `Bob` to `Carol` is `[1,1,0]`, but `Carol`'s vector clock is `[0,0,0]`.  The `1` in `Bob`'s position is correct because he is sending the message, and it is one greater than `Carol`'s local value, but the `1` in `Alice`'s position is a problem.  According to this, `Alice` has sent out a broadcast message, but `Carol` has no record of it &mdash; this is a problem.
+The vector clock on the message sent from `Bob` to `Carol` is `[1,1,0]`, but `Carol`'s vector clock is `[0,0,0]`.  The `1` in `Bob`'s position is correct because he is sending the message, and it is one greater than `Carol`'s local value, but the `1` in `Alice`'s position is a problem.  According to this, `Alice` has sent out a broadcast message, but `Carol` has no record of it &mdash; yet.
 
 Since `1` is not ≤ `0`, `Carol` concludes that this newly arrived message has been received out of order and therefore must be queued until such time as we receive the delayed message from `Alice`.
 
@@ -85,7 +85,7 @@ Here. `Alice` sends a broadcast message to `Bob` and `Carol` saying ***"I lost m
 
 In the absence of any other messages, its fine for both `Bob` and `Carol` to deliver this message.
 
-A little later, `Alice` finds her wallet and tells `Bob` and `Carol` about this happy event.  However, `Alice`'s message to `Carol` gets delayed 
+A little later, `Alice` finds her wallet and tells `Bob` and `Carol` about this happy event.  However, `Alice`'s message to `Carol` gets delayed.
 
 ![Causal Broadcast 6](./img/L7%20Causal%20Broadcast%206.png)
 
@@ -107,17 +107,17 @@ Remember what a total order anomaly looks like:
 
 ![Total Order Anomaly](./img/L6%20Total%20Order%20Anomaly.png)
 
-If we assign vector clocks to these send events and then apply the rules of causal broadcast, we will discover that causal delivery cannot rule out total order anomalies.
+If we assign vector clocks to these send-events and then apply the rules of causal broadcast, we will discover that causal delivery cannot rule out total order anomalies.
 
 ![Casual Delivery Cannot Prevent Total Order Anomaly](./img/L7%20TO%20Anomaly.png)
 
-This is because, if look back at the hierarchy of delivery guarantees, we can see that Total Order exists on its own branch from Casual and FIFO.
+This is because, if we look back at the hierarchy of delivery guarantees, we can see that Total Order exists on its own branch from Casual and FIFO.
 
 ![Delivery Hierarchy](./img/L6%20Delivery%20Hierarchy%202.png)
 
-So how can we rule out causal anomalies and at the same time, ensure total order?
+So how can we rule out causal anomalies and, at the same time, ensure total order?
 
-Well, we would need something more than vector clocks, or at least if we want causal order and keep total order, then we will need something more that this causal broadcast algorithm that we have just described.
+Well, we would need something more than vector clocks, or at least if we want causal order and also maintain total order, then we will need something more than this causal broadcast algorithm we have just described.
 
 In general, it’s pretty annoying to have to enforce total order, so it’s much easier not to enforce it unless you really have to.
 
@@ -132,7 +132,7 @@ We have already spoken of two of them:
 
 These techniques provide ordering guarantees that prevent causal anomalies.
 
-Another thing we have not mentioned yet is something called ***Consistent Global Snapshot***.  This is related to the first point above and is a way to obtain a picture of the global state of a distributed system.  However, this is far from trivial to implement because every process in a system has its own state, and its own idea of the state of every other process.
+Another thing we have not mentioned yet is something called ***Consistent Global Snapshot***.  This is related to the first point above and is a way to obtain a picture of the global state of a distributed system.  However, this is far from trivial to implement because not only does every process in a system has its own state, every process also has its own idea of the state of every other process.
 
 One thing we can say is that:
 
@@ -148,23 +148,25 @@ So, we could lasso all the events and internal variables of a process and call t
 
 ![Process State](./img/L7%20Process%20State.png)
 
-But what about the state of all the other processes in the system.
+But what about the state of all the other processes in the system?
 
-One approach might be to use a global clock and inform every process that at a certain time of day (say 09:20), every process must dump a snapshot of itself to disk.  However, even this approach won't work because system clocks between computers are notoriously difficult to synchronize to any degree of accuracy.
+One approach might be to use a global clock and inform every process that at a certain time of day (say `09:20`), every process must take a snapshot of itself.  However, even this approach won't work reliably because synchronising system clocks between computers is a notoriously difficult task.
 
 ![Snapshot Anomaly Caused by Using a Wall clock](./img/L7%20Wallclock%20Snapshot%20Anomaly.png)
 
-We now get two inconsistent snapshots.  `P1` takes its snapshot when its clock reaches `09:20`.  It then sends a message to `P2` informing it that a snapshot has been taken.  However, `P2`'s clock is running slightly slower than `P1`'s, so the `{p1:snapshot}` message receive event happens just before `P2`\'s clock ticks over to `09:20` and is therefore included in `P2`'s snapshot.
+We now have two inconsistent snapshots.
 
-In spite of the fact that both snapshots were supposedly taken at `09:20`, they are in fact inconsistent with each other.  This is because `P1`'s message send event `E5` is missing from `P1`'s snapshot but contained within `P2`'s snapshot.  In other words, `P2`'s snapshot contains a message receive event, but no corresponding send event can be found in `P1`'s snapshot.
+`P1` takes a snapshot of itself when its clock reaches `09:20`.  It then sends a message to `P2` informing it that a snapshot has been taken.  However, `P2`'s clock is running slightly slower than `P1`'s, so the `{p1:snapshot}` message receive event happens just before `P2`\'s clock ticks over to `09:20` and is therefore included in `P2`'s snapshot.
 
-So, using the time-of-day is an error-prone approach to taking snapshots.
+In spite of the fact that both snapshots were supposedly taken at `09:20`, they are in fact inconsistent with each other.  This is because `P1`'s message-send event `E5` is missing from `P1`'s snapshot but contained within `P2`'s snapshot.  Looking at the the other way around, `P2`'s snapshot contains a message-receive event, for which there is no corresponding send-event in `P1`'s snapshot.
+
+As we can see, using the time-of-day clock is an error-prone approach to taking snapshots.
 
 So, we need an algorithm that allows us to take a consistent global snapshot.
 
 ## The Chandy-Lamport Algorithm
 
-We now need a new piece of terminology:  we now need to talk in terms of ***channels***.
+We now introduce some new terminology:  ***Channels***.
 
 A channel is simply a unidirectional connection between two processes.
 
@@ -172,19 +174,19 @@ A channel is simply a unidirectional connection between two processes.
 
 The channel from `P1` to `P2` is called <code>C<sub>12</sub></code>
 
-The channel from `P2` to `P1` is called <code>C<sub>21</sub></code>
+The channel from `P2` back to `P1` is called <code>C<sub>21</sub></code>
 
 ![Channels 1](./img/L7%20Channels%201.png)
 
-The message between `P1` and `P2` was sent at event `A` in `P1` and received in event `B` in `P2`.
+`P1` sends a message at event `A` over channel <code>C<sub>12</sub></code>.  This is received by `P2` at event `B`.
 
-`P2` then sends a message back to `P1` at event `C`, but since this message has not yet arrived at `P1`, it is said to be ***in the channel***.
+`P2` then sends a message back to `P1` at event `C` over channel <code>C<sub>21</sub></code>, but since this message has not yet arrived at `P1`, it is said to be ***in the channel***.
 
-In the diagram above, channel <code>C<sub>12</sub></code> is said to be empty because there are no messages in flight, and channel <code>C<sub>21</sub></code> contains one message.
+In the diagram above, channel <code>C<sub>12</sub></code> is said to be empty because there are no messages currently in flight, and channel <code>C<sub>21</sub></code> contains one message.
 
 Here, we will assume that message channels act like FIFO queues (thus preventing FIFO violations).
 
-### Applying the Chandy-Lamport Algorithm
+### Applying the Chandy-Lamport Algorithm for Taking a Snapshot
 
 In this case, process `P1` sends the first message, and therefore we will call it the ***initiator process***.
 
@@ -192,8 +194,8 @@ In this case, process `P1` sends the first message, and therefore we will call i
 
 In the above diagram
 
-1. Process `P1` sends a message out as event `A` on its only channel <code>C<sub>12</sub></code>
-1. `P1` then takes a snapshot of itself (`S1`) and immediately sends out a special message called a ***marker*** on all its channels
+1. Process `P1` sends a message out at event `A` on its only channel <code>C<sub>12</sub></code>
+1. `P1` then takes a snapshot of itself (`S1`) and immediately sends out a special message called a ***marker*** on all its channels.
      Sending a marker message is actually part of the snapshot algorithm itself and must be the first thing done after a process records its own state. The marker messages themselves do not form part of the snapshot.
 1. Process `P1` then starts to record all the messages it receives on all of its incoming channels
 
@@ -202,9 +204,9 @@ So, what happens when a process receives a marker message?
 There are two cases:
 
 1. If this is the first marker this process has seen:
-    * It records its state
+    * It takes a snapshot of itself
     * It marks the channel on which it received the marker message as empty
-    * It sends a marker out on all of its outgoing channels
+    * It sends a marker message out on all of its outgoing channels
 
 1. If this process has already seen a marker message before:
     * It stops recording all incoming messages on that channel
@@ -218,9 +220,11 @@ What does `P1` do when it sees `P2`'s marker message?
 
 Well, has `P1` seen a marker message before?
 
-Yes, it has.  By sending out the first marker message, `P1` is said to have seen a marker message.  So now `P1` stops recording on its incoming channel that the maker message arrived on.
+Yes, it has.  By sending out the first marker message, `P1` is said to have seen a marker message.  So now `P1` stops recording on the incoming channel on which the marker message arrived.
 
-Did `P1` record anything on this channel?  Let's say that it did.  Let's say that the message sent from `P2` at event `C` actually arrived at `P1` as event `D`.
+Did `P1` record anything on this channel?
+
+Let's say that it did.  Let's say that the message sent from `P2` at event `C` actually arrived at `P1` as event `D`.
 
 ![Channels 4](./img/L7%20Channels%204.png)
 
@@ -230,7 +234,7 @@ So, event `D` is now a recorded event and the snapshot is complete:
 * We have recorded the state of `P2` in `S2`
 * We have recorded the incoming message event `D` in `P1`
 
-So, the above snapshot makes sense; but the following two snapshots don't make sense:
+So, the above snapshot forms a complete history of the events that occurred in these two processes; but what abou the following two snapshots - do they make sense?
 
 ![Bad Snapshots](./img/L7%20Bad%20Snapshot.png)
 
@@ -240,7 +244,9 @@ But what about this?  Is this a legal snapshot?
 
 Yes, this is perfectly valid - it was just taken prior to event `C` in `P2` happening.
 
-The snapshot of the entire system is then taken by a separate process the goes around collecting all the individual process snapshots and stitches them together to form of overall global snapshot.
+### Is This a Snapshot of the Entire System?
+
+A snapshot of the entire system is derived by a separate process the goes around collecting all the individual process snapshots and stitching them together to form of overall global snapshot.
 
 The Chandy-Lamport algorithm actually predates the invention of vector clocks.  It has been designed to ensure that the entire event history of each process in the system is recorded without any violation of the ***happens before*** relation.
 
