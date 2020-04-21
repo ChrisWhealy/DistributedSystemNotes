@@ -246,7 +246,7 @@ Yes, this is perfectly valid - it was just taken prior to event `C` in `P2` happ
 
 ### Is This a Snapshot of the Entire System?
 
-A snapshot of the entire system is derived by a separate process the goes around collecting all the individual process snapshots and stitching them together to form of overall global snapshot.
+A snapshot of the entire system is derived by a separate process that goes around collecting all the individual process snapshots and stitching them together to form of overall global snapshot.
 
 The Chandy-Lamport algorithm actually predates the invention of vector clocks.  It has been designed to ensure that the entire event history of each process in the system is recorded without any violation of the ***happens before*** relation.
 
