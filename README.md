@@ -14,4 +14,5 @@ There are no notes for lecture 1 as this was concerned with course administratio
 | [Lecture 5](./Lecture%205.md) | April 8th, 2020 | Vector clocks<br>Protocol runs and anomalies<br>Delivery vs. Receiving<br>FIFO delivery | Lamport Clocks
 | [Lecture 6](./Lecture%206.md) | April 10th, 2020 | Causal delivery<br>Totally-ordered delivery<br>Implementing FIFO delivery<br>Preview of implementing causal broadcast | Delivery vs. receiving<br>FIFO delivery
 | [Lecture 7](./Lecture%207.md) | April 13th, 2020 | Implementing causal broadcast<br>Uses of causality in distributed systems<br>Consistent snapshots<br>Preview of Chandy-Lamport snapshot algorithm | Causal anomalies and vector clocks
+| [Lecture 8](./Lecture%208.md) | April 15th, 2020 | Chandy-Lamport Snapshot Algorithm | 
 

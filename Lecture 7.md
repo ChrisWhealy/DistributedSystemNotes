@@ -170,6 +170,14 @@ We now introduce some new terminology:  ***Channels***.
 
 A channel is simply a unidirectional connection between two processes.
 
+### Assumptions
+
+As an aside, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
+
+1. Eventual message delivery is ***guaranteed***, thus making delivery failure impossible
+1. All channels act as FIFO queues, thus making it impossible for messages to be delivered out of order (I.E. it guarantees that there will never be any FIFO anomalies)
+1. Processes don't crash! (The topic of process failure is dealt with in detail in a later lecture)
+
 ### Channel Naming Convention
 
 The channel from `P1` to `P2` is called <code>C<sub>12</sub></code>
@@ -184,13 +192,11 @@ The channel from `P2` back to `P1` is called <code>C<sub>21</sub></code>
 
 In the diagram above, channel <code>C<sub>12</sub></code> is said to be empty because there are no messages currently in flight, and channel <code>C<sub>21</sub></code> contains one message.
 
-Here, we will assume that message channels act like FIFO queues (thus preventing FIFO violations).
-
 ### Applying the Chandy-Lamport Algorithm for Taking a Snapshot
 
 In this case, process `P1` sends the first message, and therefore we will call it the ***initiator process***.
 
-![Channels 2](./img/L7%20Channels%202.png)
+1. ![Channels 2](./img/L7%20Channels%202.png)
 
 In the above diagram
 
