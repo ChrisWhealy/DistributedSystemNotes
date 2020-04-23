@@ -6,7 +6,7 @@
 
 This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system.
 
-Any process can start the snapshot without either needing to be given a special designation or need to announce that this action is about to take place.  Any process can initiate a snapshot and in doing so, causes a cascade of message throughout the entire system that result in all other processes taking a snapshot of themselves.
+Any process can start the snapshot without either needing to be given a special designation or the need to announce that this action is about to take place.  Any process can initiate a snapshot and in doing so, causes a cascade of marker messages throughout the entire system that cause all other processes to take a snapshot of themselves.
 
 
 ### The Initiator Process
@@ -21,9 +21,9 @@ In this case, the initiator process is `P1`.
 
 `P1` records its own state as `S1`, immediately sends a marker message out on all its outgoing channels (only one in this case) and then starts recording any messages that might arrive on its incoming channels (again, only one in this case).
 
-Notice that at the time `P1`'s snapshot happens, a message is currently in flight (or ***in the channel***) from `P2` to `P1`.
+Notice that at the time `P1`'s snapshot happens, message `m` is currently in flight (or ***in the channel***) from `P2` to `P1`.
 
-### Receiver of a Marker Message
+### Processes Receiving a Marker Message
 
 > ***IMPORTANT***
 >
@@ -33,13 +33,13 @@ Notice that at the time `P1`'s snapshot happens, a message is currently in fligh
 >
 > All of what follows would not work if we had not first eliminated the possibility of FIFO anomalies!
 
-There are two cases depending on whether the process has seen a marker message before during this run of the global snapshot.
+There are two situations here that depend on whether the process has already seen a marker message during this run of the global snapshot.
 
 If this is the first time this process has seen a marker message, the receiver:
 
 * Records its own state
 * Flags the channel on which the marker message was received as ***empty***
-* Sends out a marker message on all its outgoing channels
+* Sends out a marker message on eacj of its outgoing channels
 * Starts recording incoming messages on all channels except the one on which it received the original marker message (now flagged as empty)
 
 > ***Question***  
@@ -86,22 +86,25 @@ So, we now have a complete snapshot of our entire system, which in this simple c
 
 ## The Chandy-Lamport Algorithm in a More Detailed Scenario
 
-Snapshot takes place, in general every process ends up sending out a marker message to every other process.  So, for a system containing `N` participating processes `N * (N - 1)` marker messages will be sent.
+When a snapshot takes place, every process ends up sending out a marker message to every other process.  So, for a system containing `N` participating processes, `N * (N - 1)` marker messages will be sent.
+
+This might seem inefficient as the number of messages rises quadratically with the number of particpating processes, but unfortunately, there is no better approach.
 
 As stated in the previous lecture notes, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
 
-1. Eventual message delivery is ***guaranteed***, thus making delivery failure impossible
-1. All channels act as FIFO queues, thus making it impossible for messages to be delivered out of order (I.E. it guarantees that there will never be any FIFO anomalies)
+1. Eventual message delivery is guaranteed, thus making delivery failure impossible
+1. All channels act as FIFO queues, thus eliminating the possibility of messages being delivered out of order
 1. Processes don't crash! (The topic of process failure is dealt with in detail in the next lecture)
 
 ### A Worked Example
 
-In this example, we have three communicating processes `P1`, `P2` and `P3` in our system, and we need a snapshot.
+In this example, we have three communicating processes `P1`, `P2` and `P3` in our system, and we want to take a snapshot.
 
 Process `P1` acts as the initiator; so, it follows the above steps:
 
 * It records its own state as <code>S<sub>1</sub></code>
-* It sends out two marker messages to `P2` and `P3` - but notice that the arrival of this marker message at `P2` is delayed.  This turns out not to be a problem.
+* It sends out two marker messages; one to `P2` and one to `P3` - but notice that the arrival of the marker message at `P2` is delayed.  
+    This turns out not to be a problem.
 * `P1` starts recording on both its incoming channels <code>C<sub>21</sub></code> and <code>C<sub>31</sub></code>
 
 ![Chandy-Lamport Example Step 1](./img/L8%20Snapshot%20Ex%201.png)
@@ -115,7 +118,7 @@ Next, `P3` receives the marker message from `P1`.  Since this is the first marke
 
 ![Chandy-Lamport Example Step 2](./img/L8%20Snapshot%20Ex%202.png)
 
-Looking at the marker message that now arrives at `P1`, since `P1` initiated the snapshot process, this not the first marker to arrive, so `P1`:
+Looking at `P3`'s marker message that now arrives at `P1`, since `P1` initiated the snapshot process, this not the first marker it has seen, so `P1`:
 
 * Stops recording incoming messages on that channel (<code>C<sub>31</sub></code>)
 * Sets that channel's final state to be the sequence of all messages received whilst recording was active - which is none - so the channel state of <code>C<sub>31</sub></code> is `{}`.
@@ -131,7 +134,7 @@ Now looking at the other marker message from `P3` to `P2`. This is the first mar
 
 ![Chandy-Lamport Example Step 4](./img/L8%20Snapshot%20Ex%204.png)
 
-Eventually, the marker initial message from `P1` arrives at `P2`.  This is the second marker `P2` has seen, so it:
+Eventually, the initial marker message from `P1` arrives at `P2`.  This is the second marker `P2` has seen, so it:
 
 * Stops recording incoming messages on that channel (<code>C<sub>12</sub></code>)
 * Sets that channel's final state to be the sequence of all messages received whilst recording was active - which is none - so the channel state of <code>C<sub>12</sub></code> is `{}`.
@@ -141,7 +144,7 @@ Eventually, the marker initial message from `P1` arrives at `P2`.  This is the s
 `P2`'s marker message now arrives at `P1`.  This is not the first marker `P1` has seen, so it:
 
 * Stops recording incoming messages on that channel (<code>C<sub>21</sub></code>)
-* Sets that channel's final state to be the sequence of all messages received whilst recording was active - which in this case is the message `m3` the was sent at event `H` in `P2` to event `D` in `P1` - so the channel state of <code>C<sub>12</sub></code> is `{m3}`.
+* Sets that channel's final state to be the sequence of all messages received whilst recording was active - which in this case is the message `m3` sent at event `H` in `P2` to event `D` in `P1` - so the channel state of <code>C<sub>12</sub></code> is `{m3}`.
 
 ![Chandy-Lamport Example Step 6](./img/L8%20Snapshot%20Ex%206.png)
 
@@ -185,9 +188,11 @@ An individual process knows its local snapshot is complete when:
 
 If it can be shown that the snapshot process terminates for an individual process, then it follows that it will terminate for all participating processes in the system.
 
-Now we can appreciate the importance of the validity of the assumptions listed above: that of eventual message delivery, and all channels act as FIFO queues (this preventing message arriving out of order).
+Now we can appreciate how important the assumptions listed at the start are.  The success of this entire algorithm rests on the fact that:
 
-So, the success of this entire algorithm rests on the fact that all messages will eventually be delivered in the order they were sent.
+* Eventual message delivery is guaranteed, and
+* Messages never arrive out of order (all channels are FIFO queues), and
+* Processes do not crash (yeah, right! - See the next lecture)
 
 In Chandy & Lamport's original paper they provide a proof that the snapshot process does in fact terminate.
 
@@ -200,4 +205,4 @@ Determining the snapshot for the entire system however lies outside the rules of
 
 
 <hr>
-<b id="f1">1</b> In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens.[↩](#a1)
+<b id="f1">1</b> In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens. [↩](#a1)
