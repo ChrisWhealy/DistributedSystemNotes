@@ -4,7 +4,7 @@
 
 ## Rules of the Chandy-Lamport Algorithm
 
-This is an example of a decentralised<sup name="ref-1">[1](#user-content-endnote-1)</sup> algorithm that allows you to take a global snapshot of a running distributed system.
+This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system.
 
 Any process can start the snapshot without either needing to be given a special designation or the need to announce that this action is about to take place.  Any process can initiate a snapshot and in doing so, causes a cascade of marker messages throughout the entire system that cause all other processes to take a snapshot of themselves.
 
@@ -205,4 +205,4 @@ Determining the snapshot for the entire system however lies outside the rules of
 
 
 <hr>
-<b name="endnote-1">1</b> In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens. [↩](#user-content-ref-1)
+<b id="f1">1</b> In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens. [↩](#a1)
