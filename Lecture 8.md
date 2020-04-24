@@ -181,10 +181,10 @@ These events will all be recorded the next time a snapshot is taken.
 
 ## How Does the Entire System Know When the Snapshot Is Complete?
 
-An individual process knows its local snapshot is complete when:
+An individual process knows its local snapshot is complete when it has recorded:
 
-* It has recorded its own internal state
-* It has recorded the state of ***all*** its incoming channels
+* Its own internal state, and
+* The state of ***all*** its incoming channels
 
 If it can be shown that the snapshot process terminates for an individual process, then it follows that it will terminate for all participating processes in the system.
 
@@ -194,7 +194,7 @@ Now we can appreciate how important the assumptions listed at the start are.  Th
 * Messages never arrive out of order (all channels are FIFO queues), and
 * Processes do not crash (yeah, right! - See the next lecture)
 
-In Chandy & Lamport's original paper they provide a proof that the snapshot process does in fact terminate.
+In Chandy & Lamport's [original paper](https://lamport.azurewebsites.net/pubs/chandy.pdf) they provide a proof that the snapshot process does in fact terminate.
 
 Determining the snapshot for the entire system however lies outside the rules of the Chandy-Lamport algorithm and needs to be handled by some external process that stitches all the individual process snapshots together.
 
