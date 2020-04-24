@@ -17,7 +17,7 @@ Any process can start the snapshot without either needing to be given a special 
 
 In this case, the initiator process is `P1`.
 
-![Chandy Lamport Snapshot 1](./img/L8%20CL%20Snapshot%201.png)
+![Chandy-Lamport Snapshot 1](./img/L8%20CL%20Snapshot%201.png)
 
 `P1` records its own state as `S1`, immediately sends a marker message out on all its outgoing channels (only one in this case) and then starts recording any messages that might arrive on its incoming channels (again, only one in this case).
 
@@ -56,7 +56,7 @@ In the diagram below, since this is the first marker message `P2` has seen, it d
 * Sends out a marker message on all its outgoing channels (in this case, only channel <code>C<sub>21</sub></code>)
 * Normally, it would now start recording any messages that arrive on its other, incoming channels, but in this case, since its only incoming channel (<code>C<sub>12</sub></code>) has already been marked as empty, there is nothing to record
 
-![Chandy Lamport Snapshot 2](./img/L8%20CL%20Snapshot%202.png)
+![Chandy-Lamport Snapshot 2](./img/L8%20CL%20Snapshot%202.png)
 
 However, if a process ***has*** already seen a marker message during this run of the global snapshot (sending out a marker message counts as "seeing" a marker), then for the channel on which the marker message arrived, the receiver:
 
@@ -72,7 +72,7 @@ Upon receiving this marker message, `P1` does the following:
 * It stops recording on the marker message's channel (<code>C<sub>21</sub></code>)
 * The state of channel <code>C<sub>21</sub></code> is set to the sequence of messages that arrived whilst recording was active
 
-![Chandy Lamport Snapshot 3](./img/L8%20CL%20Snapshot%203.png)
+![Chandy-Lamport Snapshot 3](./img/L8%20CL%20Snapshot%203.png)
 
 So, we now have a complete snapshot of our entire system, which in this simple case, consists of four things:
 
@@ -94,7 +94,7 @@ As stated in the previous lecture notes, the success of the Chandy-Lamport algor
 
 1. Eventual message delivery is guaranteed, thus making delivery failure impossible
 1. All channels act as FIFO queues, thus eliminating the possibility of messages being delivered out of order
-1. Processes don't crash! (The topic of process failure is dealt with in detail in the next lecture)
+1. Processes don't crash! (The topic of process failure is dealt with in lecture 10)
 
 ### A Worked Example
 
@@ -192,7 +192,7 @@ Now we can appreciate how important the assumptions listed at the start are.  Th
 
 * Eventual message delivery is guaranteed, and
 * Messages never arrive out of order (all channels are FIFO queues), and
-* Processes do not crash (yeah, right! - See the next lecture)
+* Processes do not crash (yeah, right! - See lecture 10)
 
 In Chandy & Lamport's [original paper](https://lamport.azurewebsites.net/pubs/chandy.pdf) they provide a proof that the snapshot process does in fact terminate.
 
