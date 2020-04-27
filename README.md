@@ -16,4 +16,5 @@ There are no notes for lecture 1 as this was concerned with course administratio
 | [Lecture 7](./Lecture%207.md) | April 13th, 2020 | Implementing causal broadcast<br>Uses of causality in distributed systems<br>Consistent snapshots<br>Preview of Chandy-Lamport snapshot algorithm | Causal anomalies and vector clocks
 | [Lecture 8](./Lecture%208.md) | April 15th, 2020 | Chandy-Lamport Snapshot Algorithm | 
 | [Lecture 9](./Lecture%209.md) | April 17th, 2020 | Chandy-Lamport wrap-up: limitations, assumptions and properties<br>Uses of snapshots<br>Centralized vs. decentralized algorithms<br>Safety and liveness | Delivery guarantees and protocols
+| [Lecture 10](./Lecture%2010.md) | April 20th, 2020 | Reliable delivery<br>Fault classification and fault models<br>Two Generals Problem | Safety and liveness
 
