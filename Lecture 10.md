@@ -177,7 +177,7 @@ No.  We could subdivide these fault categories.  For instance, some Byzantine fa
 
 For instance, a Byzantine Fault that is relatively easy to deal with is message alteration or duplication.
 
-So, if you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.  What's much harder to detect is message corruption where the corruption is so subtle that your authentication techniques fails to detect it.<sup id="a2>[2](#f2)</sup>
+So, if you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.  What's much harder to detect is message corruption where the corruption is so subtle that your authentication techniques fails to detect it.<sup id="a2">[2](#f2)</sup>
 
 So, we can redraw the above diagram as follows:
 
