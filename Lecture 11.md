@@ -26,28 +26,26 @@ Remember also from the previous lecture that if we implement the Omission Model,
 
 ### But Can't We Have a Consistent Definition of "Reliable Delivery" 
 
-Wouldn't it be better to have a consistent definition of "Reliable Delivery" that doesn't need to accumulate extra caveats depending upon the fault model?
+Wouldn't it be better to have a consistent definition of "Reliable Delivery" that doesn't accumulate extra caveats depending upon the fault model?
 
 Certainly - that would be something like this:
 
 > If a correct process `P1` sends a message `m` to a correct process `P2` and not all messages are lost, then `P2` eventually delivers message `m`.
 
-Ok, but what is means by the term ***correct process***?
+Ok, but haven't you just hidden the variablility of the earlier definition behind the abstract term ***correct process***?  Yes, that's true &mdash; but you did ask for a consistent definition!
 
-Well, this varies depending upon the fault model we choose to work with.
+The term ***correct process*** means different things in different fault models.  If we need to implement the Byzantine Fault Model, then a ***correct*** process is a non-malicious or non-arbitrary process; however, if we are implementing the Crash Model, then a ***correct*** process is simply one that doesn't crash.
 
-If we need to implement the Byzantine Fault Model, then a ***correct*** process is a non-malicious or non-arbitrary process; however, if we are implementing the Crash Model, then a ***correct*** process is simply one that doesn't crash.
-
-As soon as you see, if the word ***correct*** appears in a definition like the one above, we should immediately determine which fault model being used, because this will then tell us what ***correct*** means in this particular context.
+So, as soon as you see the word ***correct*** in a definition like the one above, we should immediately determine which fault model being used, because this will then tell us what ***correct*** means in that particular context.
 
 
 ### How Do We Go About Implementing Reliable Delivery?
 
-Going back to The Two Generals Problem discussed in the last lecture, one approach for `Alice` and `Bob` to launch a coordinated attack would be for `Alice` to keep sending the message `Attack at dawn` to `Bob` until she received an `ack`.
+Going back to The Two Generals Problem discussed in the last lecture, one approach to help `Alice` and `Bob` launch a coordinated attack would be for `Alice` to keep sending the message `"Attack at dawn"` until she receives an `ack` from `Bob`.
 
 This could be implemented using the following algorithm:
 
-* `Alice` sends the message `Attack at dawn` to `Bob`, then places it into a send buffer that has a predetermined timeout
+* `Alice` sends the message `"Attack at dawn"` to `Bob`, then places it into a send buffer that has a predetermined timeout period
 * If an `ack` is received from `Bob` during the timeout period, communication was successful and `Alice` can delete the message from her send buffer
 * If the timeout expires without receiving an `ack` from `Bob`, `Alice` resends the message
 
@@ -78,13 +76,13 @@ The word ***idempotent*** comes from the Latin *idem* meaning "the same" and *po
 
 In this context, the instruction contained in the message is said to be ***idempotent*** if (in mathematical terms):
 
-`f(x) = f(f(x)) = f(f(x)) etc...`
+`f(x) = f(f(x)) = f(f(f(x))) etc...`
 
 In other words, an idempotent function only has an effect the first time it is applied to the data.  Thereafter, subsequent applications of that function to the same data have no further effect.
 
 So, assigning a value to a variable is idempotent, but incrementing a variable is not.
 
-Generally speaking, if we can work with idempotent operations, then our implementation of reliable delivery will be easier because know nothing bad will happen to our data if, for some reason, the operation is applied more than once.
+Generally speaking, if we can work with idempotent operations, then our implementation of reliable delivery will be easier because we can be certain that nothing bad will happen to our data if, for some reason, the operation is applied more than once.
 
 ### How Many Times Should a Message be Delivered?
 
@@ -114,30 +112,30 @@ In [lecture 7](Lecture%207.md) we looked at an implementation of causal broadcas
 
 ![Causal Broadcast](./img/L7%20Causal%20Broadcast%208.png)
 
-Then there is the case that one participant sends a message ***many***, but not all of the other participants in the system.  An example of this the Total Order anomaly we saw in lecture 7.
+Then there is the case that one participant sends a message to ***many***, but not all of the other participants in the system.  An example of this the Total Order anomaly we also saw in lecture 7.
 
 ![Total Order Anomaly](./img/L7%20TO%20Anomaly.png)
 
 In this case `C1` sends messages to `R1` and `R2`, but not `C2`; likewise, `C2` sends messages to `R1` and `R2`, but not `C1`.
 
-So, we have three different message sending strategies:
+So, assuming reliable delivery, we have three different message sending strategies:
 
-| Message Sending Strategy | Participants
+| Message Sending Strategy | Number of Recipients
 |---|---
-| Unicast | One-to-One
-| Multicast | One-to-Many
-| Broadcast | One-to-All
+| Unicast | One
+| Multicast | Many
+| Broadcast | All
 
 
-In this course we will not speak to much about implementing unicast messages; instead, we will simply assume that a unicast primitive exists that allows one participant to send a message to one other participant.
+In this course we will not speak to much about implementing unicast messages; instead, we will simply assume that a unicast command exists as a primitive within each process.
 
 In this manner, we could send broadcast or multicast messages simply by invoking the unicast primitive multiple times.
 
 ![Broadcast Implemented Using Unicast](./img/L11%20Broadcast%201.png)
 
-Up until now, we have been drawing our Lamport diagrams with multiple messages coming from a single event in the sending process - and this is how it should be.  Conceptually, we need to treat of all these messages as having exactly the same origin.
+Up until now, we have been drawing our Lamport diagrams with multiple messages coming from a single event in the sending process - and this is how it should be.  Conceptually, we need to treat broadcast messages as having exactly one point of origin.
 
-However, under the hood, the mechanism for sending the actual messages could be multiple invocations of the unicast send primitive.  But this will only get us so far.  The problem is that even if we batch together all the message send commands in some transactional way, if we get halfway through sending this batch of messages and something goes wrong, how do you cancel or revoke the messages sent so far?
+However, under the hood, the mechanism for sending the actual messages could be multiple invocations of the unicast send primitive.  But this will only get us so far.  The problem is that even if we batch together all the message send commands in some transactional way, if we get halfway through sending this batch of messages and something goes wrong, what should you do about the messages sent so far - attempt to cancel or revoke them?
 
 So, the reality is that we need a way to define reliable broadcast.
 
@@ -161,13 +159,13 @@ Has this violated the rules of reliable broadcast?
 
 Actually, no it hasn't.  This is because since `Carol` crashed, she does not qualify as a ***correct*** process; therefore, its ok that she didn't deliver the message.
 
-Now consider this next scenario: as we've mentioned earlier, under the hood, a broadcast message can be implemented as a batched sequence of unicast messages.  So, with this in mind, let's say that `Alice` wants to send a broadcast message to `Bob` and `Carol`; but as we now know, this will be implemented at two unicast messages batched together into the same  send event.
+Now consider this next scenario: as we've mentioned earlier, under the hood, a broadcast message can be implemented as a sequence of unicast messages.  So, with this in mind, let's say that `Alice` wants to send a broadcast message to `Bob` and `Carol`; but as we now know, this will be implemented at two unicast messages that conceptually form a single send event.
 
 So `Alice` sends the first unicast message to `Bob` who delivers it correctly.  But before `Alice` can send the second unicast message to `Carol`, she crashes.  This leaves both `Bob` and `Carol` running normally; however, `Bob` received the "broadcast" message but `Carol` did not.
 
 ![Reliable Broadcast 2](./img/L11%20Reliable%20Broadcast%202.png)
 
-We could argue here that since `Alice` did successfully send the message to all the participants, so therefore, its nots a true "broadcast" message. But this sounds like we're trying to squeeze through a loophole in the definition of the word broadcast.
+We could argue here that since `Alice` did not successfully send the message to ***all*** the participants, it is therefore not a true "broadcast" message. But this is unsatisfactory really because it sounds like we're trying to squeeze through a loophole in the definition of the word "broadcast".
 
 In reality, `Alice` fully intended to send a message to ***all*** participants in the system; therefore, irrespective of the success or failure of this action, the intention was to send a ***broadcast*** message.  Therefore, this situation is in violation of the specification for a ***reliable broadcast***.
 
@@ -184,18 +182,18 @@ Here's one outline of an algorithm for reliable broadcast:
     * It must unicast that message to all other processes (except itself)
     * `P` adds `m` to its set of delivered messages
 * When `P1` receives a message `m` from `P2`:
-    * If `m`` is already in your set of delivered messages, then do nothing
-    * Otherwise, unicast `m` to everyone except yourself and the process from whom you received it, and add `m` to your set of delivered messages
+    * If `m` is already in `P1`'s set of delivered messages, `P1` does nothing
+    * Otherwise, `P1` unicasts `m` to everyone except itself and `P2`, and adds `m` to its set of delivered messages
 
 Let's see this algorithm at work:
 
 `Alice` sends a message to `Bob`, but then `Alice` immediately crashes.
 
-However, since `Bob` has not seen that message before, he sends it to his set of delivered messages and unicasts it to `Alice` and `Carol` &mdash; but then immediately crashes!
+However, since `Bob` has not seen that message before, he adds it to his set of delivered messages and unicasts it to `Alice` and `Carol` &mdash; but then `Bob` immediately crashes!
 
 ![Reliable Broadcast 3](./img/L11%20Reliable%20Broadcast%203.png)
 
-This leaves `Carol` to deliver the message since she is the only ***correct*** process left running.  Since `Alice` and `Bob` have both crashed, they are excluded from our definition of a ***correct*** process, and so the rules of reliable broadcast remain satisfied.
+Since `Carol` is the only ***correct*** process left running, she delivers the message.  However, since `Alice` and `Bob` have both crashed, they are excluded from our definition of a ***correct*** process, and so the rules of reliable broadcast remain satisfied.
 
 Even with the optimization of not sending a known message back to the sender, this protocol still results in processes receiving duplicate messages.
 
@@ -207,18 +205,18 @@ So, a further optimization can be that if a process has already delivered the re
 
 ## Fault Tolerance Often Involves Making Copies of Things
 
-This is a fundamental concept that will be used a lot as we proceed in this course.
+This is a fundamental concept that will be used a lot as we proceed through this course.
 
 We can mitigate message loss by making copies of messages; but what else might we lose?
 
-In addition to message sends and receives, there are also internal events within a process that record the changes of state within a process (I.E. the changes that occur to a process' data).  How to we mitigate against data loss?  Again, by taking copies.
+In addition to message sends and receives, there are also internal events within a process that record its changes of state (I.E. the changes that occur to a process' internal data).  How to we mitigate against data loss?  Again, by taking copies.
 
 ### Why Have Multiple Copies of Data?
 
 There are several reasons
 
 ***Protection Against Data Loss***  
-The state of a process is determined by the set of events that have occurred up until that point in time.  Therefore, by knowing a process' event history we can reconstruct the state that process.  This then allows us to keep replicas of processes in different locations.  If one data centre goes down, then we still have all the data preserved in one or more other data centres.
+The state of a process at time `t` is determined by the complete set of events that have occurred up until that time.  Therefore, by knowing a process' event history we can reconstruct the state that process.  This then allows us to keep replicas of processes in different locations.  If one data centre goes down, then we still have all the data preserved in one or more other data centres.
 
 ***Response Time***  
 Having your data in multiple data centres not only solves the issue of data loss, but it can also help with reducing response times since the data centre that is physically closest to you is the one most likely to give you the fastest response.
