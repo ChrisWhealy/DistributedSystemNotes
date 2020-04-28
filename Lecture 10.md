@@ -30,7 +30,7 @@ The definition of *"reliable delivery"* tends to vary depending on who you ask, 
 
 Other people will give the above definition with a further criterion added
 
-> Let `P1` be a process that sends a message `m` to process `P2`.  If neither `P1` nor `P2` crashes ***and message `m` is not lost***, then `P2` eventually delivers message `m`
+> Let `P1` be a process that sends a message `m` to process `P2`.  If neither `P1` nor `P2` crashes ***and not all messages are lost***, then `P2` eventually delivers message `m`
 
 Why would people have two different definitions?  This question leads us into the topic of fault models that we will come to shortly.
 
@@ -257,7 +257,9 @@ The second approach cannot remove the uncertainty, but it can lower it to levels
 
 
 
-<hr>
+---
+***Endnotes***
+
 <b id="f1">1</b>&nbsp;&nbsp; Why is this fault called a <b><i>"Byzantine"</i></b> fault?<br>The name comes from an example in a paper by Leslie Lamport, Robert Shostak and Marshall Pease.  Here, they describe a situation in which, in order to avoid being defeated by their enemy, the different Generals in the Byzantine Army must all agree on a coordinated strategy for capturing a city; however, it is suspected that some of these Generals might be traitors and will thus attempt to disrupt the plans of the loyal generals.<br>
 The point here is that the behaviour of a small number of malicious participants will not jeopardise the overall success of the system.<br>
 The original paper can be found [here](https://people.eecs.berkeley.edu/~luca/cs174/byzantine.pdf)
