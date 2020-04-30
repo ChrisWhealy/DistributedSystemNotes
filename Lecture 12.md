@@ -208,11 +208,7 @@ Which leads us to...
 
 ### Chain Replication
 
-In chain replication, the last backup to receive the write request sends its `ack` not back to the primary, but directly to the client.  This then means that should the client wish to make a subsequent read, it can direct that request to the backup from which it received the `ack`.
-
-![Chain Replication](./img/L12%20Chain%20Replication.png)
-
-This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain replication for Supporting High Throughput And Availability"](https://www.cs.cornell.edu/home/rvr/papers/OSDI04.pdf)
+In chain replication, the last backup to receive the write request sends its `ack` not back to the primary, but directly to the client.  
 
 In Chain Replication, the process that we previously called the "Primary" is now called the "Head", and the process that acted as the last backup is now called the "Tail".  In between, there can be any number of processes that we here call simply "Backup".
 
@@ -221,7 +217,14 @@ The division of labour is now modified slightly:
 * All write requests from clients are handled by the "Head" process
 * The "Head" then replicates the write instruction down the chain of replicas terminating at the "Tail"
 * When the "Tail" process completes the write, we know that since it is the last link in the chain, it can send its `ack` directly back to the client
-* The "Tail" process always handles read requests
+
+![Chain Replication - Write](./img/L12%20Chain%20Replication%201.png)
+
+This then means that should the client wish to make a subsequent read, it can direct that request to the backup from which it received the `ack`.
+
+![Chain Replication - Read](./img/L12%20Chain%20Replication%202.png)
+
+This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain Replication for Supporting High Throughput And Availability"](https://www.cs.cornell.edu/home/rvr/papers/OSDI04.pdf)
 
 ***Q:***&nbsp;&nbsp; But the response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the write and propagate the request through to the next link in the chain.  How can this then be described as *High Throughput*?
 
@@ -242,8 +245,4 @@ This then increases the system's ***write latency***.
 What about read latency though?  Read latency for a Chain Replication system does not vary with chain length because all reads are directed to the tail.
 
 Both of these strategies are commonly used; however, the decision as to which one will work best for you is governed primarily by the balance you expect between reads and writes.
-
-Generally speaking, a write takes approximately four times as long as a read; therefore, before Primary Backup Replication become a good choice, you should expect your system to receive at least a 4:1 ratio of reads to writes.
-
-Alternatively, if you expect an equal number of reads and writes, then in Chain Replication, the Head process is still going to be heavily loaded compared to the Tail process.
 
