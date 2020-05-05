@@ -188,7 +188,7 @@ Knowing how many acceptors constitute a majority, the proposer `P` sends out a b
 
 ![Paxos 1](./img/L14%20Paxos%201.png)
 
-In this case, the proposal number is `5`.  Remember that this is ***not*** the value upon which consensus is being reached.  It is simply an agreed logical clock value that will be used to identify the value upon which consensus is being sought.
+In this case, the proposal number is `5`.  Remember that this is ***not*** the value upon which consensus is being sought.  It is simply a logical clock value that will be later used to identify the value upon which consensus is being sought.
 
 The acceptor processes then look at the proposal number and ask the following question:
 
@@ -196,13 +196,13 @@ The acceptor processes then look at the proposal number and ask the following qu
 
 If the answer is yes, then this message is simply ignored.  However, if the message is no, then the acceptors reply with a `promise` message containing the value of the proposal number to which they now promise to respond.
 
-This rule contains some subtleties that we're glossing over for now, but for the time being, we'll leave it at this.
+(This rule contains some subtleties that we're glossing over for now, but for the time being, we'll leave it at this)
 
 ![Paxos 2](./img/L14%20Paxos%202.png)
 
-At this point, we've reached something of a milestone because we now have a majority of acceptors who have all agreed that they will respond to an as yet unsent value, that we will identify with this particular proposal number.  In addition to this, there can now never be a majority of acceptors who have promised to pay attention to any proposal number less than `5`. (A minority might still agree on some lower proposal number, that is now of no consequence.)
+At this point, we've reached something of a milestone because we now have a majority of acceptors who have all agreed that they will consider accepting the as yet unsent value that will be identified with this specific proposal number.  In addition to this, there can now never be a majority of acceptors who have promised to pay attention to any proposal number less than `5`. (A minority might still agree on some lower proposal number, but that is now of no consequence.)
 
-In other words, we've got enough people paying attention in order to make a decision!  
+In other words, we've now got enough people paying attention in order to make a decision!  
 
 Now the proposer sends an `accept` message to a majority of acceptors.  For the sake of initial simplicity, we'll choose the same set of acceptors as before.  The `accept` message carries with it both the agreed upon proposal number (`5`) and for the first time, the value upon which consensus is being sought - in this case, let's say it’s simply binary `0`.
 
@@ -216,7 +216,7 @@ As soon as the acceptors receive the `accept` message, they will ask themselves 
 
 If yes, then the message is simply ignored.  If not however, the acceptor does two things:
 
-1. It sends an `accepted` message back to the proposer containing both the proposal number and the accepted value.
+1. It sends an `accepted` message back to the proposer containing both the proposal number ***and*** the accepted value.
 1. It broadcasts the `accepted` message to all the learners
 
 So, acceptor <code>A<sub>1</sub></code> responds both to the proposer and broadcasts its acceptance to all the learners.
