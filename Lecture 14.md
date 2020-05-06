@@ -157,7 +157,7 @@ Here, we are just going to look at the "vanilla" Paxos algorithm.  In this case,
     Contributes towards choosing from one of the proposed values
 
 * ***Learner***  
-    Does not directly participate in negotiating the final value.  Instead, a learner simply learns the value agreed upon by the other participants.  A learner is the only particpant who actually knows the value on which consensus has been reached.
+    Does not directly participate in negotiating the final value.  Instead, a learner simply learns the value agreed upon by the other participants.
 
 It is entirely possible for Paxos participants to take on two, or even three roles; but to start with, it is simplest to assign one role to one participant.
 
@@ -257,7 +257,7 @@ There are various subtleties that take place in these algorithms that, at the mo
 ## Questions
 
 ***Q:***&nbsp;&nbsp; How do the acceptors learn that consensus has been reached?  
-***A:***&nbsp;&nbsp; Unless the acceptor is also playing the part of a learner, then it actually won't know that consensus has been reached.  In fact, learner processes are the only ones that can know what the agreed upon value is (hence the need for processes to play multiple roles)
+***A:***&nbsp;&nbsp; Unless the acceptor is also playing the part of a learner, then it actually won't know that consensus has been reached.
 
 ***Q:***&nbsp;&nbsp; Why is this algorithm so complicated?  
 ***A:***&nbsp;&nbsp; The algorithm's complexity is a necessary feature of it needing to be able to withstand process failure.
