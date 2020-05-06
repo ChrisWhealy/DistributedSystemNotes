@@ -21,3 +21,4 @@ There are no notes for lecture 1 as this was concerned with course administratio
 | [Lecture 12](./Lecture%2012.md)<br>April 24<sup>th</sup>, 2020 | Replication<br>Total order vs. determinism<br>Consistency models: FIFO, causal and strong<br>Primary-backup replication<br> Chain replication<br>Latency and throughput 
 | [Lecture 13](./Lecture%2013.md)<br>April 27<sup>th</sup>, 2020 | **Pause for breath!**<br>Wrapping up replication techniques
 | [Lecture 14](./Lecture%2014.md)<br>May 1<sup>st</sup>, 2020 | Handling node failure in replication protocols<br>Introduction to consensus<br>Problems equivalent to consensus<br>The FLP result<br>Introduction to Paxos | Strongly consistent replication protocols
+| [Lecture 15](./Lecture%2015.md)<br>May 4<sup>th</sup>, 2020 | Paxos: the interesting parts
