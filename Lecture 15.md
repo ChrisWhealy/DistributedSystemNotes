@@ -31,7 +31,7 @@ As a result, `P1` event `D` is recorded in `P1`'s snapshot, but the event that c
 
 Remember that for a cut to be consistent, it must contain ***all*** events that led up to a certain point in time.  So, the inclusion of event `D` in `P1`'s snapshot is the problem because this is effectively a ***message from the future***.
 
-Here's a situation in which a FIFO anomaly (out of order message delivery) leads to a causal anomaly (an inconsistent cut).
+This is an example of a situation in which a FIFO anomaly (out of order message delivery) leads to a causal anomaly (an inconsistent cut).
 
 ## Paxos: The Easy Parts
 
@@ -51,9 +51,9 @@ The same idea applies when the proposer listens for `promise` messages coming ba
 
 So, when we speak of a ***majority***, we are speaking of at least the ***minimum*** majority. For instance, if there are five acceptors, then the minimum majority is three: but if we hear back from four or all five, then this is not a problem.  The issue is that we must hear back from at least the minimum number of acceptors required to form a majority.
 
-There are other subtleties involved in this algorithm that we will now go through, including what happens when there is more than one proposer.  This in turn, will lead us to an understanding of why the Paxos algorithm is not guaranteed to terminate.
+There are other subtleties involved in this algorithm that we will now go through, including what happens when there is more than one proposer.
 
-### Milestones in the Paxos Algorithm
+## Milestones in the Paxos Algorithm
 
 One thing that was mentioned in the previous lecture was that three specific milestones are reached during a run of the Paxos algorithm.  These are:
 
@@ -61,7 +61,8 @@ One thing that was mentioned in the previous lecture was that three specific mil
 
     ![Paxos Milestone 1](./img/L15%20Paxos%20Milestone%201.png)
 
-    The acceptors have now committed to responding to the agreed proposal number `n`; and by implication, they have also committed to ignoring any request with a proposal number lower than `n`.
+    A majority of acceptors have all promised to respond to the agreed proposal number `n`; and by implication, they have also promised to ignore any request with a proposal number lower than `n`.
+
 1. When a majority of acceptors all issue `accepted(n,val)` messages for proposal number `n` and some value `val`.  
 
     ![Paxos Milestone 2](./img/L15%20Paxos%20Milestone%202.png)
@@ -76,7 +77,7 @@ One thing that was mentioned in the previous lecture was that three specific mil
 
 ## Paxos: The Full Algorithm (Mostly)
 
-A run of the Paxos algorithm involves the following steps.  The algorithm follows this sequence of messages exchange primarily between the proposer and acceptors:
+A run of the Paxos algorithm involves the following sequence of message exchanges - primarily between the proposer and acceptors:
 
 1. ***The Proposer***  
     Sends out `propose(n)` messages to at least the minimum number of acceptors needed to form a majority.  The proposal number `n` must be:
@@ -86,7 +87,9 @@ A run of the Paxos algorithm involves the following steps.  The algorithm follow
     It’s important to understand that the proposal number rules are applied to proposers ***individually***.  Consequently, if there are multiple proposers in the system, there does not need to be any agreement between proposers about what the next proposal number should be.
     
 1. ***The Acceptor***  
-    When the acceptor receives a `prepare(n)` message, it asks itself *"Have I already agreed to ignore proposals with this proposal number?"*.  If the answer is yes, then the message is simply ignored; but if not, it replies to the proposer with a `promise(n)` message.  This message means that the acceptor is now promising to ignore all messages with a proposal number smaller than `n`.  
+    When the acceptor receives a `prepare(n)` message, it asks itself *"Have I already agreed to ignore proposals with this proposal number?"*.  If the answer is yes, then the message is simply ignored; but if not, it replies to the proposer with a `promise(n)` message.
+    
+    By returning a `promise(n)` message, the acceptor has now committed to ignore all messages with a proposal number smaller than `n`.  
     
 1. ***The Proposer***  
     When the proposer has received `promise` messages from a majority of messages for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
@@ -98,16 +101,16 @@ A run of the Paxos algorithm involves the following steps.  The algorithm follow
     
 ### What Happens If There Is More Than One Proposer?
 
-In this scenario, we will run the Paxos algorithm with two proposers and since learners do not actually take part in the steps needed to reach consensus, for visual clarity, we will omit them from the from diagram.
+In this scenario, we will make two changes.  We will run the Paxos algorithm with two proposers, and for visual clarity, since learners do not actually take part in the steps needed to reach consensus, we will omit them from the from diagram.
 
-Let's say we have ***two*** proposers <code>P<sub>1</sub></code> and <code>P<sub>2</sub></code> and as before, three acceptors (and we're pretending that there are also two learners)
+Let's say we have ***two*** proposers <code>P<sub>1</sub></code> and <code>P<sub>2</sub></code> and as before, three acceptors (and we'll pretend we also have two learners)
 
-Remember we previously stated that in situations where there are multiple proposers, these proposers must agree as to how they will ensure the uniqueness of their own proposal numbers.  So, in this case, we will as that:
+Remember we previously stated that in situations where there are multiple proposers, these proposers must agree as to how they will ensure the uniqueness of their own proposal numbers.  So, in this case, we will assume that:
 
 * Proposer <code>P<sub>1</sub></code> will use odd proposal numbers, and
 * Proposer <code>P<sub>2</sub></code> will use even proposal numbers
 
-So, proposer <code>P<sub>1</sub></code> sends out a `prepare(5)` message to a majority of the acceptors.  This is the first proposal number they have seen, so they are all happy to accept it and respond with `promise(5)` messages.
+So, proposer <code>P<sub>1</sub></code> sends out a `prepare(5)` message to a majority of the acceptors.  This is the first proposal number these acceptors have seen during this run of the protocol, so they are all happy to accept it and respond with `promise(5)` messages.
 
 Proposer <code>P<sub>1</sub></code> is seeking consensus for value `1`, so it now sends out `accept(5,1)` messages and the majority of acceptors respond with `accepted(5,1)`
 
@@ -115,11 +118,11 @@ Proposer <code>P<sub>1</sub></code> is seeking consensus for value `1`, so it no
 
 Ok, that's fine; we seem to have agreed on value `1`.
 
-But now, not knowing any of this has happened, proposer <code>P<sub>2</sub></code> decides to send out a `prepare(4)` message to all the acceptors?
+But now, not knowing any of this has happened, proposer <code>P<sub>2</sub></code> decides to send out a `prepare(4)` message to all the acceptors...
 
 ![Multiple Proposers 2](./img/L15%20Multiple%20Proposers%202.png)
 
-The `prepare(4)` message arrives at acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> ***after*** they have already agreed on proposal number `5`.  Consequently, they simply ignore this message.
+The `prepare(4)` message arrives at acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> ***after*** they have already agreed on proposal number `5`.  Since they are now ignoring proposal numbers less than `5`, they simply ignore this message.
 
 Acceptor <code>A<sub>3</sub></code> however has not seen proposal number `4` before, so it happily agrees to it and sends back a `promise(4)` message to proposer <code>P<sub>2</sub></code>.
 
@@ -134,38 +137,43 @@ So, all <code>P<sub>2</sub></code> can do is wait for its timeout period, and if
 But wait a minute, consensus (milestone 2) has ***already*** been reached, so the acceptors now have a problem because:
 
 * Acceptors cannot go back on their majority decision
-* Acceptors can only ignore `prepare` messages with a ***lower*** proposal number
+* Acceptors cannot ignore `prepare` messages with a ***higher*** proposal number
 
-So, here's where we must address one of the subtleties that we previously glossed.
+So, here's where we must address one of the subtleties that we previously glossed over.
 
 Previously, we stated only that if an acceptor receives a `prepare` message with a ***lower*** proposal number, it should simply ignore it.  Well, OK, that's fine.
 
-But what about the case where we receive a proposal number that is ***higher*** than the last one?  Here is where we need to further qualify ***how*** that `prepare` message should be handled.  In this case, each acceptor must ponder the following situation:
+But what about the case where we receive a proposal number that is ***higher*** than the last one?  Here is where we need to further qualify ***how*** that `prepare` message should be handled.
 
-*"I've already promised to respond to proposal number `n`, but now I'm being asked to promise to respond to proposal number `n+1`"*
+In this case, each acceptor must consider the following situation:
 
-Should I accept the higher proposal number or not?  The answer here depends on what has happened to the acceptor in between receiving the `prepare(n)` message and the `prepare(n+1)` message.
+*"I've already promised to respond to proposal number `n`, but now I'm being asked to promise to respond to proposal number `n+1`"*  
+*"Should I accept the higher proposal number or not?"*
 
-Either way, the acceptor is going to send out a `promise` message containing the new proposal number; but in addition, the acceptor must consider whether it has already agreed to accept a value based on some earlier, lower proposal number.
+The answer here depends on what has happened to the acceptor in between receiving the `prepare(n)` message and the `prepare(n+1)` message.
 
-* If no, then we accept with a `promise` message as normal
-* If yes, then we accept with a `promise` message, but in addition, we are obligated to tell the new proposer that we've already agreed to a value using an older proposal number.
+Either way, the acceptor is going to send out a `promise` message agreeing to respond to the new, higher proposal number; but in addition, the acceptor must consider whether it has already agreed to accept a value based on some earlier, lower proposal number.
+
+* If no, then we accept with a `promise(n+1)` message as normal
+* If yes, then we accept with a `promise(n+1, ...)` message, but in addition, we are obligated to tell the new proposer that we've already agreed to a value using an older proposal number.
 
 In the latter case, the `promise` message must carry some extra information.
 
-In the above example, acceptor <code>A<sub>1</sub></code> has already agreed with proposer <code>P<sub>1</sub></code> that, using proposal number `5`, the value should be `1`; but now proposer <code>P<sub>2</sub></code> comes along with proposal number `6`.
+In the above example, acceptor <code>A<sub>1</sub></code> has already agreed with proposer <code>P<sub>1</sub></code> that, using proposal number `5`, the value should be `1`; but now proposer <code>P<sub>2</sub></code> comes along and presents proposal number `6` to all the acceptors.
 
 ![Multiple Proposers 4](./img/L15%20Multiple%20Proposers%204.png)
 
-So in this specific situation, acceptor <code>A<sub>3</sub></code> responds simply with `promise(6)` because it has not previously agreed on any previous value, but acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> respond with the message `promise(6,(5,1))`.
+So in this specific situation, acceptor <code>A<sub>3</sub></code> responds simply with `promise(6)` because although it previously agreed to proposal number `4`, nothing came of that, and it has not previously accepted any earlier value.
+
+Acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> however, must respond with the message `promise(6,(5,1))`.
 
 This extra information in the `promise` message effectively means: *"Ok, I'll move with you to proposal number `6` but understand this: using proposal number `5`, I already agreed to value `1`"*.
 
 ### So, What Should A Proposer Do with Such a Message?
 
-Previously, we said that when a proposer receives `promise(n)` message from a majority of acceptor, it will then send out `accept(n,val)` messages.  But here's where our description of the protocol needs to be refined.  What should the proposer do if it receives not a `promise(n)` message, but a <code>promise(n,(n<sub>old</sub>,val<sub>old</sub>))</code> message?
+Previously, we said that when a proposer receives `promise(n)` messages from a majority of acceptors, it will then send out `accept(n,val)` messages.  But here's where our description of the protocol needs to be refined.  What should the proposer do if it receives not a `promise(n)` message, but a <code>promise(n,(n<sub>old</sub>,val<sub>old</sub>))</code> message?
 
-In our example, proposer <code>P<sub>2</sub></code> has received three messages:
+In our example, proposer <code>P<sub>2</sub></code> has received three `promise` messages:
 
 * A straight-forward a `promise(6)` from <code>A<sub>3</sub></code>, and
 * Two `promise(6,(5,1))` messages from <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code>
@@ -178,7 +186,7 @@ So, the rule is this: proposer <code>P<sub>2</sub></code> must look at all the o
 
 This is pretty ironic (and amusing) really because proposer <code>P<sub>2</sub></code> now has no choice over what value to propose.  It is constrained to propose the one value upon which consensus was most recently reached!  So, the fact that it wants to send out its own proposal is somewhat redundant, because the only value it can propose is one upon which consensus has already been reached...
 
-So, now we must revise rule 3 given above.  Previously we stated
+So, now we must revise rule 3 given above.  Previously we stated:
 
 >  When the proposer has received `promise` messages from a majority of messages for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
 
