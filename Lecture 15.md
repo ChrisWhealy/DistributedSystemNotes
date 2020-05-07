@@ -147,17 +147,16 @@ But what about the case where we receive a proposal number that is ***higher*** 
 
 In this case, each acceptor must consider the following situation:
 
-*"I've already promised to respond to proposal number `n`, but now I'm being asked to promise to respond to proposal number `n+1`"*  
-*"Should I accept the higher proposal number or not?"*
+*"I've already promised to respond to proposal number `n`, but now I'm being asked to promise to respond to proposal number `n+1`"*
 
-The answer here depends on what has happened to the acceptor in between receiving the `prepare(n)` message and the `prepare(n+1)` message.
+How the acceptor reacts now depends on what has happened in between it receiving the `prepare(n)` message and the `prepare(n+1)` message.
 
-Either way, the acceptor is going to send out a `promise` message agreeing to respond to the new, higher proposal number; but in addition, the acceptor must consider whether it has already agreed to accept a value based on some earlier, lower proposal number.
+Either way, the acceptor cannot ignore the higher proposal number, so it is going to send out some sort of `promise` message; but this time, the acceptor must consider whether it has already accepted a value based on some earlier, lower proposal number.
 
-* If no, then we accept with a `promise(n+1)` message as normal
-* If yes, then we accept with a `promise(n+1, ...)` message, but in addition, we are obligated to tell the new proposer that we've already agreed to a value using an older proposal number.
+* If no, then we accept the new proposal number with a `promise(n+1)` message as normal
+* If yes, then we accept the new proposal number with a `promise(n+1, ...)` message, but in addition, we are obligated to tell the new proposer that we've already accepted a value using an older proposal number.
 
-In the latter case, the `promise` message must carry some extra information.
+In the latter case, you can see that the `promise` message needs to carry some extra information.
 
 In the above example, acceptor <code>A<sub>1</sub></code> has already agreed with proposer <code>P<sub>1</sub></code> that, using proposal number `5`, the value should be `1`; but now proposer <code>P<sub>2</sub></code> comes along and presents proposal number `6` to all the acceptors.
 
