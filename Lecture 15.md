@@ -166,11 +166,11 @@ So in this specific situation, acceptor <code>A<sub>3</sub></code> responds simp
 
 Acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> however, must respond with the message `promise(6,(5,1))`.
 
-This extra information in the `promise` message effectively means: *"Ok, I'll move with you to proposal number `6` but understand this: using proposal number `5`, I already agreed to value `1`"*.
+This extra information in the `promise` message effectively means: *"Ok, I'll move with you to proposal number `6` but understand this: using proposal number `5`, I've already accepted value `1`"*.
 
 ### So, What Should A Proposer Do with Such a Message?
 
-Previously, we said that when a proposer receives `promise(n)` messages from a majority of acceptors, it will then send out `accept(n,val)` messages.  But here's where our description of the protocol needs to be refined.  What should the proposer do if it receives not a `promise(n)` message, but a <code>promise(n,(n<sub>old</sub>,val<sub>old</sub>))</code> message?
+Previously, we said that when a proposer receives sufficient `promise(n)` messages, it will then send out `accept(n,val)` messages.  But here's where our description of the protocol needs to be refined.  What should the proposer do if, instead of receiving a `promise(n)` message, it receives a <code>promise(n,(n<sub>old</sub>,val<sub>old</sub>))</code> message?
 
 In our example, proposer <code>P<sub>2</sub></code> has received three `promise` messages:
 
