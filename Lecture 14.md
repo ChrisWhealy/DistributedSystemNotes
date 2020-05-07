@@ -132,7 +132,7 @@ The problem is that, in reality, it turns out to be impossible for a consensus a
 > ***FLP Result***  
 > If messages are asynchronous ***and*** crashes can occur, then it is impossible to satisfy all three properties of termination, agreement and validation.
 
-This paper is called the ["Impossibility of Distributed Consensus with One Faulty Process"](./papers/FLP.pdf) and its practical implication is that all consensus algorithms must compromise on at least one of these properties.
+This paper is called the ["Impossibility of Distributed Consensus with One Faulty Process"](./papers/FLP.pdf) and its practical implication is that all consensus algorithms must compromise on at least one of these properties. (A good summary of the FLP Result can be found [here](https://www.the-paper-trail.org/post/2008-08-13-a-brief-tour-of-flp-impossibility/))
 
 The problem is that if we compromise on either the agreement or validity properties, then we will have a system that fulfils the requirements, but possibly only in a vacuous sense and will therefore not be very useful.  Consequently, consensus algorithms must compromise on termination.
 
