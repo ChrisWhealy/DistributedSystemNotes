@@ -206,7 +206,7 @@ In other words, we've now got enough people paying attention in order to make a 
 
 Now the proposer sends an `accept` message to a majority of acceptors.  For the sake of initial simplicity, we'll choose the same set of acceptors as before.  The `accept` message carries with it both the agreed upon proposal number (`5`) and for the first time, the value upon which consensus is being sought - in this case, let's say it’s simply binary `0`.
 
-At this point in time, we're discussing the simple case in which none of the acceptors dispute the proposed value (more of that in the next lecture)
+At this point in time, we're discussing the simple case in which all the acceptors are accepting the first value they've seen in this run of the algorithm (more of that in the next lecture)
 
 ![Paxos 3](./img/L14%20Paxos%203.png)
 
