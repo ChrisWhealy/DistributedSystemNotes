@@ -92,23 +92,23 @@ A run of the Paxos algorithm involves the following sequence of message exchange
     By returning a `promise(n)` message, the acceptor has now committed to ignore all messages with a proposal number smaller than `n`.  
     
 1. ***The Proposer***  
-    When the proposer has received `promise` messages from a majority of messages for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
+    When the proposer has received `promise` messages from a majority of acceptors for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
     
-    Up till now, we have assumed that there is only one proposer &mdash; but next, we must examine what happens if there are multiple proposers.
-
 1. ***The Acceptor***  
     When an acceptor receives an `accept(n,val)` message, it asks the same question as before: *"Have I already agreed to ignore messages with this proposal number?"*.  If yes, it ignores the message; but if no, it replies with an `accepted(n,val)` both back to the proposer ***and*** broadcasts this acceptance to all the learners.
     
+Up till now, we have assumed that there is only one proposer &mdash; but next, we must examine what happens if there are multiple proposers.
+
 ### What Happens If There Is More Than One Proposer?
 
-In this scenario, we will make two changes.  We will run the Paxos algorithm with two proposers, and for visual clarity, since learners do not actually take part in the steps needed to reach consensus, we will omit them from the from diagram.
+In this scenario, we will make two changes.  We will run the Paxos algorithm with two proposers, and for visual clarity, since learners do not actually take part in the steps needed to reach consensus, we will omit them from the diagram.
 
-Let's say we have ***two*** proposers <code>P<sub>1</sub></code> and <code>P<sub>2</sub></code> and as before, three acceptors (and we'll pretend we also have two learners)
+Let's say we have ***two*** proposers <code>P<sub>1</sub></code> and <code>P<sub>2</sub></code> and as before, three acceptors. (We also have two learners, but we'll ignore them for the time being.)
 
 Remember we previously stated that in situations where there are multiple proposers, these proposers must agree as to how they will ensure the uniqueness of their own proposal numbers.  So, in this case, we will assume that:
 
-* Proposer <code>P<sub>1</sub></code> will use odd proposal numbers, and
-* Proposer <code>P<sub>2</sub></code> will use even proposal numbers
+* Proposer <code>P<sub>1</sub></code> uses odd proposal numbers, and
+* Proposer <code>P<sub>2</sub></code> uses even proposal numbers
 
 So, proposer <code>P<sub>1</sub></code> sends out a `prepare(5)` message to a majority of the acceptors.  This is the first proposal number these acceptors have seen during this run of the protocol, so they are all happy to accept it and respond with `promise(5)` messages.
 
@@ -118,7 +118,7 @@ Proposer <code>P<sub>1</sub></code> is seeking consensus for value `1`, so it no
 
 Ok, that's fine; we seem to have agreed on value `1`.
 
-But now, not knowing any of this has happened, proposer <code>P<sub>2</sub></code> decides to send out a `prepare(4)` message to all the acceptors...
+Meanwhile in Gotham City, proposer <code>P<sub>2</sub></code> has no idea what's been going on, and decides to send out a `prepare(4)` message to all the acceptors...
 
 ![Multiple Proposers 2](./img/L15%20Multiple%20Proposers%202.png)
 
@@ -128,9 +128,9 @@ Acceptor <code>A<sub>3</sub></code> however has not seen proposal number `4` bef
 
 Proposer <code>P<sub>2</sub></code> is now left hanging.
 
-It sent out `prepare` messages to all the acceptors but has only heard back from a minority of them.  The rest have simply not answered, and given the way asynchronous communication works, <code>P<sub>2</sub></code> has no idea ***why*** it has not heard back from the other acceptors.  They could have crashed, or they might be running slowly, or, as it turns out, the other acceptors have already agreed to have <code>P<sub>1</sub></code>'s babies...
+It sent out `prepare` messages to all the acceptors but has only heard back from a minority of them.  The rest have simply not answered, and given the way asynchronous communication works, <code>P<sub>2</sub></code> cannot know ***why*** it has not heard back from the other acceptors.  They could have crashed, or they might be running slowly, or, as it turns out, the other acceptors have already agreed to have <code>P<sub>1</sub></code>'s babies...
 
-So, all <code>P<sub>2</sub></code> can do is wait for its timeout period, and if it doesn't hear back within that time, it concludes that proposal number `4` was a bad idea and tries again.  This time, <code>P<sub>2</sub></code> shows up in a faster car (proposal number `6`)
+So, all <code>P<sub>2</sub></code> can do is wait for its timeout period, and if it doesn't hear back within that time, it concludes that proposal number `4` was a bad idea and tries again.  This time, <code>P<sub>2</sub></code> shows up in a faster car (proposal number `6`).
 
 ![Multiple Proposers 3](./img/L15%20Multiple%20Proposers%203.png)
 
@@ -147,7 +147,8 @@ But what about the case where we receive a proposal number that is ***higher*** 
 
 In this case, each acceptor must consider the following situation:
 
-*"I've already promised to respond to proposal number `n`, but now I'm being asked to promise to respond to proposal number `n+1`"*
+*"I've already promised to respond to proposal number `n`,  
+ but now I'm being asked to promise to respond to proposal number `n+1`"*
 
 How the acceptor reacts now depends on what has happened in between it receiving the `prepare(n)` message and the `prepare(n+1)` message.
 
@@ -174,10 +175,10 @@ Previously, we said that when a proposer receives sufficient `promise(n)` messag
 
 In our example, proposer <code>P<sub>2</sub></code> has received three `promise` messages:
 
-* A straight-forward a `promise(6)` from <code>A<sub>3</sub></code>, and
+* A straight-forward `promise(6)` from <code>A<sub>3</sub></code>, and
 * Two `promise(6,(5,1))` messages from <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code>
 
-Proposer <code>P<sub>2</sub></code> must now take into account that using proposal number `5`, the value `1` has already been agreed upon.
+Proposer <code>P<sub>2</sub></code> must now take into account that using proposal number `5`, consensus has already been reached on value `1`.
 
 In this case, both `promise` messages contain the value `1` that was agreed upon using proposal number `5`; however, it is perfectly possible that <code>P<sub>2</sub></code> could receive multiple `promise` messages containing values agreed on by proposal numbers older than `5`.
 
@@ -187,11 +188,11 @@ This is pretty ironic (and amusing) really because proposer <code>P<sub>2</sub><
 
 So, now we must revise rule 3 given above.  Previously we stated:
 
->  When the proposer has received `promise` messages from a majority of messages for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
+>  When the proposer has received `promise` messages from a majority of acceptors for a particular proposal number `n`, it sends an `accept(n,val)` message to a majority of acceptors containing both the agreed proposal number `n`, and the value `val` that it wishes to propose.
 
 But now we understand that the proposer does not have complete liberty to send out the value ***it wishes*** to propose; instead, it must first consider:
 
-* If I have received any `promise` messages containing old agreed values, then I am obligated to propose the value belonging to the highest, old proposal number
+* If I have received any `promise` messages containing old agreed values, then I am obligated to propose the most recentl;y agreed value
 * If I have received only simple `promise(n)` messages, then I am free to propose any value I like
 
 So now, <code>P<sub>2</sub></code> can only send out the message `accept(6,1)`.
@@ -214,5 +215,5 @@ Let's isolate the messages that were exchanged between proposer <code>P<sub>2</s
 * <code>P<sub>2</sub></code> tried again with proposal number `6`
 * <code>A<sub>3</sub></code> went with the highest proposal number (`6`) and subsequently agreed to accept value `1`
 
-As far as <code>A<sub>3</sub></code> is concerned, it thinks that value `1` was <code>P<sub>2</sub></code>'s idea.  It has no clue that <code>P<sub>2</sub></code> was proposing a value agreed upon by others.
+As far as <code>A<sub>3</sub></code> is concerned, it thinks that value `1` was <code>P<sub>2</sub></code>'s idea.  It has no clue that <code>P<sub>2</sub></code> was proposing a value already agreed upon by others.
 
