@@ -22,3 +22,6 @@ There are no notes for lecture 1 as this was concerned with course administratio
 | [Lecture 13](./Lecture%2013.md)<br>April 27<sup>th</sup>, 2020 | **Pause for breath!**<br>Wrapping up replication techniques
 | [Lecture 14](./Lecture%2014.md)<br>May 1<sup>st</sup>, 2020 | Handling node failure in replication protocols<br>Introduction to consensus<br>Problems equivalent to consensus<br>The FLP result<br>Introduction to Paxos | Strongly consistent replication protocols
 | [Lecture 15](./Lecture%2015.md)<br>May 4<sup>th</sup>, 2020 | Paxos: the interesting parts
+| [Lecture 16](./Lecture%2016.md)<br>May 6<sup>th</sup>, 2020 | Paxos wrap-up: Non-termination, Multi-Paxos, Fault tolerance<br>Other consensus protocols: Viewstamped Replication, Zab, Raft<br>Passive vs. Active (state machine) replication
+
+
