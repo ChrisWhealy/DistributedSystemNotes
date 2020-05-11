@@ -22,9 +22,9 @@ We spoke of two types of physical clock:
 
 These two types of physical clock stand in contrast to a logical clock.
 
-| | Time-of-day clock | Monotonic Clock
+| | Time-of-day Clock | Monotonic Clock
 |---|---|---|
-| Marking points in time | ![Neutral emoji](./img/emoji_neutral.png)<br>OK for process running on a system, but not much good in distributed systems because there can be no shared clock. | ![Sad emoji](./img/emoji_sad.png)<br>Completely useless because they are simply counters that increment from some "unspecified point in the past" which is unique to each machine (E.G. Nanoseconds since system start).<br>Monotonic clock values from different machines cannot be meaningfully compared.
+| Marking points in time | ![Neutral emoji](./img/emoji_neutral.png)<br>OK for process running on a single system, but not much good in distributed systems because there can be no shared clock. | ![Sad emoji](./img/emoji_sad.png)<br>Completely useless because they are simply counters that increment from some ["unspecified point in the past"](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_16) which is unique to each machine (E.G. Nanoseconds since system start).<br>Monotonic clock values from different machines cannot be meaningfully compared.
 | Durations/Intervals | ![Sad emoji](./img/emoji_sad.png)<br>The problem here is that time-of-day clocks can jump around due to daylight saving time and leap seconds.| ![Smiley emoji](./img/emoji_smiley.png)<br>On a single machine, these are great because they only go forward from some ["unspecified point in the past"](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_16).
 
 ***Q:***&nbsp;&nbsp; So, what are physical clocks good for in distributed systems?  
@@ -35,13 +35,13 @@ Timeouts (measured using a monotonic clock) are used in a wide variety of places
 ***Q:***&nbsp;&nbsp; So, what are physical clocks ***not*** good for in distributed systems?  
 ***A:***&nbsp;&nbsp; Measuring the order of events
 
-Why?  Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare the value of those points in time.
+Why?  Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare the values of those points in time.
 
-If we use time-of-day clocks, then these will only be roughly comparable because they are prone to jumping around due daylight-saving time and leap seconds.
+If we use time-of-day clocks, then these will only be comparable in a very course sense because they are prone to jumping around due daylight-saving time and leap seconds.
 
 If we try to use monotonic clock values, then things get even worse because they are simply counters from some *"unspecified point in the past"*; thus, it is meaningless to compare values coming from different machines.
 
-So physical clocks are simply not suitable for measuring the order of events occurring across different machines
+So physical clocks are simply not suitable for measuring the order of events that occurred on different machines.
 
 ## Paxos: Nontermination
 
@@ -53,7 +53,7 @@ All consensus algorithms try to satisfy the following three properties:
 
 We have already stated that for a consensus algorithm running in a distributed system where failures are possible, it is impossible to implement all three properties.  This is known as the [FLP Result](./papers/FLP.pdf).
 
-Therefore, all consensus algorithms must compromise on one these properties, and Paxos compromises the termination property.
+Therefore, all consensus algorithms must compromise on one these properties, and Paxos compromises on the termination property &mdash; which risks cases where nontermination could occur.
 
 So, what kind of situation would lead to non-termination?
 
@@ -111,19 +111,21 @@ And we're back to where we started...
 
 So, we cannot insist on there being only one proposer because our consensus algorithm depends on a consensus algorithm.  For instance, if we relied on Paxos to determine a new leader, then we're depending on an algorithm that might never terminate.
 
-Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer; thus, removing the problem we described above in which the algorithm never terminates to a bidding war between multiple proposers.  This doesn't entirely get around the nontermination problem, because leader election requires consensus, which in turn risks nontermination; but it confines nontermination only to the leader election phase and removes it from the value proposal phase.
+Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer.  This does not eliminate the possibility of the *Duelling Proposers Problem* (because it could still occur during leader election phase); however, it confines nontermination to the leader election phase and removes it from the value proposal phase.
+
+This is strategy for reducing risk, not removing it.
 
 ## Would It Ever Make Sense to Compromise on a Different Property?
 
-So far, we have seen that the Paxos algorithm values the properties of agreement and validity over termination; therefore, it sees nontermination as an acceptable risk in the quest to achieve agreement and validation.
+So far, we have seen that the Paxos algorithm values *agreement* and *validity* over termination; therefore, it sees nontermination as an acceptable risk in the quest to achieve agreement and validation.
 
 But is there another way we could work here?
 
 ### What Would Happen if we Compromised on Agreement?
 
-Leader election is one situation in which it is more important for your algorithm to terminate than it is for everyone to agree.
+Leader election is one situation in which it is more important for the algorithm to terminate than it is for everyone to agree.
 
-So now would could elect the proposer in the Paxos algorithm using a different leader election algorithm that risks producing multiple values, but we know will terminate.  If this algorithm elects a single node most of the time, then that's great; however, if it elects multiple proposers, then this is also OK because we know that Paxos can work with multiple proposers.
+So now we could elect the proposer in the Paxos algorithm using a different leader election algorithm that risks producing multiple values, but we know will terminate.  If this algorithm elects a single proposer most of the time, then that's great; however, if it elects multiple proposers, then this is also OK because we know that Paxos can work with multiple proposers.
 
 So, this leads us nicely into the next topic - Multi-Paxos.
 
@@ -131,11 +133,11 @@ So, this leads us nicely into the next topic - Multi-Paxos.
 
 All the runs of the Paxos algorithm that we've looked at so far are concerned with deciding on a single value.  If we want to decide on a sequence of values, then the Paxos algorithm must be rerun.
 
-As it turns out, agreeing on a sequence of values is a widespread problem; for example, in [lecture 14](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2014.md#properties-a-consensus-algorithm-tries-to-implement), we looked at a list of problems that all require consensus and one of these was the problem of Totally-Ordered Broadcast
+As it turns out, agreeing on a sequence of values is a widespread problem; for example, in [lecture 14](./Lecture%2014.md#when-do-you-need-consensus), we looked at a list of problems that all require consensus, and one of these was the problem of Totally-Ordered Broadcast
 
-> Remember that in Totally-Ordered Broadcast, we need to ensure that a set of processes all deliver a set of messages in the ***same order***. 
-
-In the case of Totally-Ordered Broadcast, consensus must be reached on which message should be delivered first, which second and which third etc.  Therefore, the same decision must be repeated over and over for each message in the queue.
+> Remember that in Totally-Ordered Broadcast, we need to ensure that a set of processes all deliver a set of messages in the ***same order***.  Therefore, consensus must be reached on which message should be delivered first, which second and which third etc.
+> 
+> This turns out to require us to make the same decision over and over for each message in the queue.
 
 The problem here is that in the best case, in order for Paxos to decide on a single value, a minimum of two round trips are needed between the proposer and the majority of acceptors.  In the case that we have three acceptors, this will require a total of 8 messages to be exchanged between the proposer and at least two of the acceptors.
 
@@ -186,11 +188,9 @@ Notice that the `accept` and `accepted` messages now contain an additional seque
 
 Ok, but what happens if we do have a second proposer who starts injecting their own proposal numbers?
 
-In this case, we will not be able to repeat the second phase because some of the acceptors will be ignoring <code>P<sub>1</sub></code>'s `accept` messages.  Now, <code>P<sub>1</sub></code> will simply time out and start the prepare/promise phase again.
+In this case, we will not be able to repeat the second phase because some of the acceptors will be ignoring <code>P<sub>1</sub></code>'s `accept` messages.  Now, <code>P<sub>1</sub></code> will simply time out and start the prepare/promise phase again.  In other words, nothing breaks and Multi-Paxos gracefully degenerates back to regular Paxos &mdash; however, we do not expect this situation to happen very often.
 
-In other words, nothing breaks and Multi-Paxos gracefully degenerates back to regular Paxos &mdash; however, we do not expect this situation to happen very often.
-
-Using this approach, a set of processes that need to deliver messages in the same order can use a Paxos consensus algorithm between then to agree on the delivery order.
+Using this approach, Totally-Ordered Delivery can be acheived by a set of processes using the (Multi-)Paxos consensus algorithm between them to agree on message delivery order.
 
 ## But Is This the Whole Story?
 
@@ -218,12 +218,12 @@ Consensus algorithms tend to be designed in a very defensive way in order to mak
 In the examples we've worked with so far, we have always had three acceptors.  So how many of these acceptors could crash without bringing Paxos down?
 
 * If we start with three acceptors, then two is a majority
-* Therefore, if one acceptor crashes, we are still left with a majority of the original total
-* So Paxos still works
+* If one acceptor crashes, we are still left with a majority of the original three
+* Therefore, Paxos still works
 
-Similarly, if we have five acceptors, then by the above reasoning, we can tolerate up to two acceptors crashing as long as we're left with a majority of three.
+Similarly, if we have five acceptors, then by the above reasoning, we can tolerate up to two acceptors crashing.
 
-So, in general, if `f` is the maximum number of failed acceptors we can tolerate, then we must start with a total of `2f + 1` acceptors.
+In general then, if `f` is the maximum number of failed acceptors we can tolerate, then we must start with a total of `2f + 1` acceptors.
 
 #### Proposer Failure
 
@@ -231,7 +231,7 @@ Again, if we start with the idea that `f` is now the number proposer failures we
 
 We know from the above discussion, that Paxos actually works very well if there is only one proposer, so 1 is the minimum we can work with.  If we can tolerate `f` failures, then it is clear that our system should start with at least `f + 1` proposers.
 
-This is the degree to which Paxos tolerates crash faults.
+This is the degree to which Paxos can tolerate crash faults.
 
 ### Tolerating Omission Faults
 
@@ -243,7 +243,7 @@ Well, the proposer only needs to hear back from a majority of acceptors; so, if 
 
 Ok, let's ramp up the severity &mdash; what if the proposer sends a `prepare` message to all three acceptors, and all three messages got lost?
 
-Again, other than slowing things down, nothing bad would happen because after waiting its time out period, the proposer would simply try again with a new proposal number.
+Again, other than slowing things down, nothing bad would happen because after waiting for its time out period, the proposer would simply try again with a new proposal number.  At this point, we might run into a nontermination problem, but that is not an omission fault.
 
 So Paxos does OK in the case of omission faults - it might not terminate, but as we've seen with the *"Duelling Proposers Problem"* shown above, we don't need to experience message loss in order for nontermination to occur.
 
@@ -255,6 +255,8 @@ These consensus algorithms all have a couple of common features:
 
 1. They are designed to achieve consensus on a sequence of values, not just one - which makes them more like Multi-Paxos than basic Paxos
 1. They all include leader-election as a fundamental part of the protocol
+
+These consensus protocols are:
 
 * ***Viewstamped Replication (VSR)***  
     Developed by Brian Oki and Barbara Liscov (1988) and documented in this [paper](./papers/VSR.pdf).  
@@ -307,24 +309,26 @@ The backups simply apply store the new state of the account and send back their 
 
 This is passive replication because the operation is executed only on the primary node, and then state update messages are sent to the backups.
 
+### These Are Both Examples of Primary Backup Replication
 
-But irrespective of whether an active or passive backup strategy is used, this is still primary backup:
+Irrespective of whether an active or passive strategy is used, both approaches are still primary backup replication:
 
 * The clients still communicate only with the primary
 * The primary executes the required operation and communicates (in some way) with the backups
-* The backups all acknowledge that they have completed whatever message was sent to them concerning the data
-* Lastly, the primary commits the work itself and sends an acknowledgement to the client
+* The backups all acknowledge that they have completed whatever message was sent to them
+* Lastly, the primary commits the work itself and sends an acknowledgement back to the client
 
-What sort of message is sent from the primary to the backups is an internal implementation detail &mdash; as far as the external observer is concerned, it’s all primary backup replication
+Exactly what type of message the primary sends to the backups is an internal implementation detail &mdash; as far as the external observer is concerned, it’s all primary backup replication
 
+### Should We Choose Active or Passive?
 
 So, what would cause us to choose one approach over the other?
 
 Well, we need to consider factors such as the size of the resulting updated state, and the cost of the computation needed to derive that updated state.
 
-For instance, what should we do if the primary receives the operation *"Increment everyone's account balance by one cent"* &mdash; and we must apply that to a million bank accounts?  In this case, the size of the state change would be huge, so passive backup would not be a good approach.
+For instance, what should we do if the primary receives the operation *"Increment everyone's account balance by one cent"* &mdash; and we have a million bank accounts?  In this case, the size of the state change would be huge, so passive backup would not be a good approach.
 
-So, in general:
+In general, then:
 
 * If an operation results in a large state change, then active replication is probably going to be better because sending the operation uses up much less bandwidth than sending the changed stated
 * If the cost of an operation is high, then passive replication is probably going to be better because the cost of computation is incurred only once (on the primary)
