@@ -53,7 +53,7 @@ So, informally, we say:
 
 > ***Eventual Consistency***: Replicas eventually agree if clients stop submitting updates
 
-***Q:***&nbsp;&nbsp; So, what sort of property is eventual consistency?  is it a liveness property, or a safety property?  
+***Q:***&nbsp;&nbsp; So, what sort of property is eventual consistency?  Is it a liveness property, or a safety property?  
 ***A:***&nbsp;&nbsp; It’s a liveness property because it cannot be violated in a finite execution.
 
 Even in the case of the total-order anomaly we saw earlier where the two replicas disagreed on the value of `x`, we could still implement some message passing mechanism that would resolve this disagreement and achieve eventual consistency.
@@ -67,7 +67,7 @@ So eventual consistency is a very different consistency model than the other mod
 
 All of these consistency models are ***safety*** properties (because you can violate them in a finite execution), whereas eventual consistency is a ***liveness*** property.
 
-With eventual consistency, the clue is in the name ***eventual***.  This refers to the fact that consistency will be achieved, but only after  some unspecified period of time has elapsed &mdash; so, you could wait for ever without violating this condition.
+With eventual consistency, the clue is in the name ***eventual***.  This refers to the fact that consistency will be achieved, but only after  some unspecified period of time has elapsed &mdash; so, you could wait forever without violating this condition.
 
 The term "*eventual consistency*" has been something of a buzzword in the last 15 years, and has often been mistakenly lumped together with strong, causal and FIFO consistency.  This is not the case because these are two different categories of property.
 
@@ -218,9 +218,7 @@ Let's say that due to the sudden appearance of a network partition, the heartbea
 
 ![Consistency/Availability Trade-off 2](./img/L17%20Tradeoff%202.png)
 
-
 <code>R<sub>2</sub></code> now receives a query for the value of `x`.  How should it respond?
-
 
 ## The Trade-off Between Availability and Consistency
 
@@ -244,7 +242,7 @@ For instance, Amazon does not claim that Dynamo offers *perfect* availability, o
 
 When designing a distributed system, you need to decide which of these qualities is of the greatest importance to you, and then build the system to provide you with the correct balance.  In Amazon's case as an online retailer, fast response times are of higher priority than the occasional lost item, so availability is prioritised over consistency.
 
-So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because this is a nastier type of fault and if much harder to tolerate.
+So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because this is a nastier type of fault and is much harder to tolerate.
 
 ![Consistency/Availability Trade-off 3](./img/L17%20Tradeoff%203.png)
 
