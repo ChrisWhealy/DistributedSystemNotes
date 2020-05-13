@@ -5,13 +5,13 @@
 
 ## Amazon Dynamo
 
-Please read the [Amazon Dynamo Paper](./papers/Dynamo.pdf) in preparation for the next lecture.  In the world of distributed systems, this is one of the most influential papers of the last 20 years, and one of the most highly cited.
+Please read the [Amazon Dynamo Paper](./papers/Dynamo.pdf) in preparation for the next lecture.  In the world of distributed systems, this is one of the most influential papers of the last 20 years, and also one of the most highly cited.
 
 Before we discuss the paper however, we'll first look at some different, preparatory topics.
 
 ## Strong Consistency Between Replicas
 
-So far, we have seen that strong consistency can be achieved using backup strategies such as Primary Backup Replication or Chain Replication.  We also saw that ultimately, strong consistency relies on consensus because in order to achieve fault tolerance, you need to have a coordinator that is really a collection of processes acting as one.
+So far, we have seen that strong consistency can be achieved using backup strategies such as Primary Backup Replication or Chain Replication.  We also saw that ultimately, strong consistency relies on consensus because in order to achieve fault tolerance, you need to have a coordinator, and under the surface, that coordinator is really a collection of processes acting as one.
 
 The fundamental point here is this:
 
@@ -27,7 +27,7 @@ But as we can see here, a total-order anomaly cannot be solved simply by adding 
 
 ![Total-Order Anomaly with Vector Clocks](./img/L17%20TO%20Anomaly.png)
 
-All the vector clocks have been incremented correctly, but if we compare these values between replica `R1` and replica `R2`, we cannot say that one vector clock is greater than the other.
+All the vector clocks have been incremented correctly, but if we compare these vector clock values between replica `R1` and replica `R2`, we cannot say that one is greater than the other.
 
 So, using vector clocks alone, we are left in a situation where these two final events in `R1` and `R2` are causally independent making the total order of these messages is ***undecidable***.
 
@@ -37,23 +37,26 @@ One option is to run a consensus algorithm, but as we have seen, such algorithms
 
 ## Eventual Consistency
 
-So, in what situation does the order of two updates doesn't matter?  One situation is where two, unrelated values are being updated by two different clients.  
+So, in what situation does the order of two updates not matter?  One situation is where two, unrelated values are being updated by two different clients.  
 
 ![Eventual Consistency](./img/L17%20Eventual%20Consistency.png)
 
-Given that the informal definition of strong consistency is that the clients cannot tell that the data has been replicated, is this form of consistency ***strong***?
-
-No, this not strong consistency because in between these writes, the clients can still do reads, and depending on the timing of the reads and writes and which replica they read from, this would allow them to discover differences in the state of `x` and `y`.
+***Q:***&nbsp;&nbsp; Given that the informal definition of strong consistency is that the clients cannot tell that the data has been replicated, is this form of consistency ***strong***?  
+***A:***&nbsp;&nbsp;  No, this is not strong consistency because in between these writes, the clients can still do reads, and depending on the timing of the reads and writes and which replica they read from, this would allow them to discover differences in the state of `x` and `y`.
 
 In spite of the fact that clients can discover differences in the data, these differences are short-lived and eventually consistency is achieved.  Whilst this is not perfect, it is a much better situation than having two replicas disagree with each other.
+
+
+![Eventual Consistency](./img/Eventual%20Consistency.jpg)
 
 So, informally, we say:
 
 > ***Eventual Consistency***: Replicas eventually agree if clients stop submitting updates
 
-So, what sort of property is eventual consistency?  is it a liveness property, or a safety property?
+***Q:***&nbsp;&nbsp; So, what sort of property is eventual consistency?  is it a liveness property, or a safety property?  
+***A:***&nbsp;&nbsp; It’s a liveness property because it cannot be violated in a finite execution.
 
-It’s a liveness property because it cannot be violated in a finite execution.  Even in the case of the total-order anomaly we saw earlier where the two replicas disagreed on the value of `x`, we could still implement some message passing mechanism that would resolve this disagreement and achieve eventual consistency.
+Even in the case of the total-order anomaly we saw earlier where the two replicas disagreed on the value of `x`, we could still implement some message passing mechanism that would resolve this disagreement and achieve eventual consistency.
 
 So eventual consistency is a very different consistency model than the other models we looked at so far such as:
 
@@ -64,15 +67,13 @@ So eventual consistency is a very different consistency model than the other mod
 
 All of these consistency models are ***safety*** properties (because you can violate them in a finite execution), whereas eventual consistency is a ***liveness*** property.
 
-With eventual consistency, the clue is in the name ***eventually***.  This refers to the fact that consistency will be achieved, but only after  some unspecified period of time has elapsed &mdash; so, you could wait for ever without violating this condition.
+With eventual consistency, the clue is in the name ***eventual***.  This refers to the fact that consistency will be achieved, but only after  some unspecified period of time has elapsed &mdash; so, you could wait for ever without violating this condition.
 
 The term "*eventual consistency*" has been something of a buzzword in the last 15 years, and has often been mistakenly lumped together with strong, causal and FIFO consistency.  This is not the case because these are two different categories of property.
 
 ## Strong Convergence
 
-Strong convergence is a safety property that allows us to distinguish between different executions we have seen here.
-
-Strong convergence is defined as:
+Strong convergence is a safety property that defined as:
 
 > Replicas that have delivered the same ***set*** of updates have equivalent state
 
@@ -91,7 +92,7 @@ So how can we allow strong convergence ***and*** allow both clients to update th
 
 Well, we could implement a consensus protocol, but that's a pretty heavyweight solution.  How could we do this without needing to go to these lengths?
 
-So, here's an idea...  What if we kept both updates and instead of the key always being bound to a single value, the key is bound to a set of values:
+So, here's an idea...  What if we kept both updates and instead of binding a single value to the key name, instead we bind a set of values:
 
 ![Strong Convergence 1](./img/L17%20Strong%20Convergence%201.png)
 
@@ -99,7 +100,7 @@ Since sets are unordered, the values held in each replica are considered equival
 
 The only issue now is that any client wanting to read `x` will get back a set of values rather than a single value.  It is now up to the client to perform conflict resolution and decide which value is authoritative.  The manner in which this conflict is resolved is application specific.
 
-Conflict resolution aside, this situation conforms to the requirements of strong convergence because after the same set of updates have been applied by both replicas, they have converged to the same state. (The compromise here is on agreement).
+Conflict resolution aside, this situation conforms to the requirements of strong convergence because after the same set of updates have been applied by both replicas, they have converged to the same state. (The compromise here is on agreement about which value is the right one).
 
 This situation is deeply important to Amazon as it concerns the replication of shopping carts.
 
@@ -123,7 +124,7 @@ Now when a client performs a read of the shopping cart, it gets back both versio
 
 So, what should the client do here to resolve this conflict?
 
-Under the specific conditions of multiple devices adding items to the same shopping cart, it is not accurate to describe this situation as a ***conflict***.  The actual state of the shopping cart is simply the union of the two sets, and this situation is discussed in the Dynamo paper.
+Under the specific conditions of multiple devices adding items to the same shopping cart, it is not accurate to describe this situation as a ***conflict***.  In this specific situation, the actual state of the shopping cart is simply the union of the two sets, and this point is discussed in the Dynamo paper.
 
 ![Amazon Shopping Cart 3](./img/L17%20Amazon%20Cart%203.png)
 
@@ -143,21 +144,23 @@ A network partition is where in a network of communicating computers, two subset
 
 Rarely, it is also possible for one-way communication to happen across the partition boundary.
 
-One significant issue for distributed systems is that networks partitions can occur whilst communication between systems is taking place.
+One significant issue for distributed systems is that network partitions can occur randomly, whilst communication between systems is taking place.
 
-Fortunately, we have a way of talking about network partitions using the fault models we have already discussed.  Here, we can use the omission model and consider any message that crosses the partition boundary as being lost.
+Fortunately, we have a way of talking about network partitions using the fault models we have already discussed.  Here, we can use the omission model and consider any message that attempts to cross the partition boundary as being lost.
 
 > ***Aside***
 > 
 > Don't confuse the concept of network partitioning with data partitioning.
 > 
-> A network partition is when parts of a network cannot communicate with each other &mdash; and this is generally considered to be a bad thing
+> A network partition is a transient fault that disrupts or breaks communication between parts of a network &mdash; and this is generally considered to be a bad thing
 > 
-> Data partitioning (also known as ***sharding***) is where you have more data than will fit into one machine, so you need to split the storage across multiple machines.  This requires you to decide which data will live where.  Data partitioning is not intrinsically bad
+> Data partitioning (also known as ***sharding***) is where you have more data than will fit into one machine, so you need to split the storage across multiple machines.  This requires you to decide which data will live where.
+> 
+> Data partitioning is not intrinsically bad, but network partitions are.
 
 ## Availability
 
-Dynamo claims to be a *"highly available"* system.  This is a relative term that describes the level of availability offered by the system to client requests.  Availability is best understood as a spectrum.
+Dynamo claims to be a *"highly available"* system.  This is a relative term that describes the level of availability offered by the system to client requests.  Availability is best understood not as a binary property that is either present or absent, but as variable quality that sits somewhere on a sliding scale or a spectrum.
 
 Perfect availability (which is not possible in reality) is the situation in which every request receives a response.  Ideally, we would also like to add that every request receives a ***fast*** response, but for the purposes of this discussion, we don't need to worry too much about response times.
 
@@ -167,19 +170,18 @@ Consider what would happen in a Primary Backup Replication scenario where the pr
 
 The primary has now lost contact with its backups, so what should it do?
 
-Should the primary simply acknowledge the write back to the client and queue up the write to be sent to the backups as an when the network partition heals?
+Should the primary simply acknowledge the write back to the client, then queue up the write to be sent to the backups as and when the network partition heals?
 
 Well, yes, but this raises further issues...
 
 1. Even though network partitions are generally short-lived events, you cannot say for certain how quickly they will heal
 1. What if the primary crashes?  Now we have a whole load of issues:
-    * If a backup now has to take over the role of the primary, data will have been lost because the backup that takes over is out of sync
-    * We've already sent an acknowledgement to client saying that their write was successful, yet when the backup takes over, the client's data will be missing.
-    * This just creates lots of trust issues
+    * If a backup now has to take over the role of the primary, data will have been lost because whichever backup takes over will be out of sync
+    * We've already sent an acknowledgement to the client saying that their write was successful, yet when the backup takes over, the client's data will be missing.
+    * The client will be able to detect the missing data, and will go saddened by all the trust issues this creates...
 
-Ok, then why doesn't the primary just wait for the partition to heal?
-
-Because this might take an arbitrarily large amount of time, or never happen.
+***Q:***&nbsp;&nbsp; So why doesn't the primary just wait for the partition to heal?  
+***A:***&nbsp;&nbsp; Because this might take an arbitrarily large amount of time, or never happen.
 
 The downside here is that network partitions are a fact of life, so this forces us to choose between what we hope will be the lesser of two evils:
 
@@ -188,34 +190,34 @@ The downside here is that network partitions are a fact of life, so this forces 
 
 It looks like we're caught between a rock and a hard place here.  Typically though, any system that implements strong consistency will prioritise consistency over availability.  In other words, to have the client experience a large response time is better than having to say to that client *"Sorry, we lost your data"*.
 
-So, this means that the acknowledgement seen in the diagram above would never be sent unless the network partition has been healed and communication with the backups has been restored.
+So, this means that the acknowledgement seen in the diagram above would never be sent unless the network partition has first been healed and communication with the backups restored.
 
-If we now adjust our definition of availability to mean that every client receives a request *within some fixed amount of time*, then even then we would be unable to make such a guarantee because we have no idea how long a network partition might take to heal.
+If we now adjust our definition of availability to mean that every client receives a request *within some fixed amount of time*, even then we would be unable to make such a guarantee because we have no idea how long a network partition might take to heal.
+
 
 There are however, some strategies for honouring a response time constraint.  We could:
 
 * Inform the client that the update has been accepted, but no backup is available
-* Inform that client that for the duration of the existence of the network partition, "Updates are temporarily unavailable"
+* Inform that client that while the network partition exists, *"Updates are temporarily unavailable"*
 
 Unfortunately, the last option here is somewhat vacuous because although we advertise that our system is highly available, what we really mean is that *"It's highly available, except when it isn't"*.  This is not really in the spirit of true high availability.
 
-As we have already stated, any system that implements strong consistency will prioritise consistency over availability.  Which means that in the event of a hopefully short-lived network partition, the system will sit around and wait before responding to the client.  The highest priority here is to avoid data loss, and if required, this must be achieved at the expense of availability.
+As we have already stated, any system that implements strong consistency will prioritise consistency over availability, which means that in the event of a hopefully short-lived network partition, the system will sit around and wait before responding to the client.  The highest priority here is to avoid data loss, and if required, this must be achieved at the expense of availability.
 
 Amazon's Dynamo however prioritises things the other way around.  Dynamo prioritises availability at the expense of consistency.
 
 The dilemma here is that you cannot guarantee both availability ***and*** consistency: the presence of failure in your system forces you to prioritise one over the other.  This is true regardless of the replication strategy you choose to use.
 
-Consider a different situation now; here, a client can talk directly to two replicas, but a network partition exists between the two replicas.
+Consider a different situation now; here, a client can talk directly to two replicas, but a network partition has suddenly appeared between the two replicas.
 
 The client sends an update to replica 1 changing the value of `x` from `4` to `5`.
 
 ![Consistency/Availability Trade-off 1](./img/L17%20Tradeoff%201.png)
 
-The client then wants to read the value of `x` from replica 2.  How should replica 2 respond?
+Let's say that due to the sudden appearance of a network partition, the heartbeat between <code>R<sub>1</sub></code> and <code>R<sub>2</sub></code> fails, so <code>R<sub>2</sub></code> knows that it's lost contact with <code>R<sub>1</sub></code> and its data is now potentially out of sync.
 
 ![Consistency/Availability Trade-off 2](./img/L17%20Tradeoff%202.png)
 
-Let's say that due to the network partition, the heartbeat between <code>R<sub>1</sub></code> and <code>R<sub>2</sub></code> has failed, so <code>R<sub>2</sub></code> knows that it's lost contact with <code>R<sub>1</sub></code> and its data is potentially out of sync.
 
 <code>R<sub>2</sub></code> now receives a query for the value of `x`.  How should it respond?
 
@@ -236,13 +238,13 @@ However, there are some subtleties that are often overlooked here.
 * The consistency being spoken of is specifically strong consistency
 * The availability being spoken of is perfect availability
 
-Even though you can't have all three of these qualities, it doesn't actually mater that much, because you can provide a system that has *"good enough"* availability.
+Even though you can't have all three of these qualities, it doesn't actually matter that much, because you can provide a system that has *"good enough"* availability.
 
 For instance, Amazon does not claim that Dynamo offers *perfect* availability, only *high* availability and are prepared to offer a slightly weaker form of consistency.  Some other companies choose to balance these priorities slightly differently.
 
-When designing a distributed system, you need to decide which of these qualities is of the greatest importance to you, and then balance the system accordingly.  In Amazon's case as an online retailer, fast response times are of higher priority to them than the odd lost item, so availability is prioritised over consistency.
+When designing a distributed system, you need to decide which of these qualities is of the greatest importance to you, and then build the system to provide you with the correct balance.  In Amazon's case as an online retailer, fast response times are of higher priority than the occasional lost item, so availability is prioritised over consistency.
 
-So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because these are nastier and much less easy to tolerate; however, they as unavoidable as death and taxes...
+So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because this is a nastier type of fault and if much harder to tolerate.
 
 ![Consistency/Availability Trade-off 3](./img/L17%20Tradeoff%203.png)
 
@@ -253,9 +255,10 @@ So, systems are designed along a spectrum with availability at one end and consi
 
 However, systems like Dynamo are configurable in terms of the degree to which availability is prioritised over consistency (Dynamo has a configurable feature called "Quorum consistency")
 
-One of the things that made the Dynamo paper so influential when it was first published in 2007 was that it countered the prevailing opinion that strong consistency is always what you wanted.  Up until then, the majority of the research effort had assumed that the priority was to improve strong consistency and Byzantine fault tolerance.
+When it was first published in 2007, one of the things that made the Dynamo paper so influential was that it contradicted the prevailing opinion that strong consistency must be given the highest priority.  Up until then, the majority of the research effort had assumed that the priority was to improve strong consistency and Byzantine fault tolerance.  However, Amazon realised if you emphasise strong consistency, you are then forced to minimise the occurrence of network partitions; but in practice, this turns out to be extremely difficult simply because networks fail &mdash; get over it!
 
-Now Amazon comes along and says *"Not only do we not care about Byzantine Fault tolerance, we don't even care about strong consistency"*, people began to sit up and take notice.  This shift of priority became very influential for systems that came later because up until then, many companies had been over-engineering their approach to achieve high degrees of strong consistency.
+So, basically Amazon said *"Chasing after super high degrees of strong consistency is fool's errand because this also forces us to try to prevent the inevitable (network partitions).  So, let’s just accept that we'll get better results in the long term if we prioritise availability"* (or words to that effect...)
 
-A consequence of emphasising strong consistency is that you are forced to minimise network partitions; but this turns out to be extremely difficult simply because networks fail (get over it!).  So, Amazon realised this and basically said *"Chasing after super high degrees of consistency is fool's errand because this forces us to try to prevent the inevitable (network partitions).  So, let’s just accept that we'll get better results in the long term if we prioritise availability"* (or words to that effect...)
+As soon as a highly successful online retailer said *"Not only do we not care about Byzantine Fault tolerance, we don't even care about strong consistency"*, people began to sit up and take notice.  This shift of priority became very influential for systems that came later because up until then, many companies had been over-engineering their approach to achieve high degrees of strong consistency.
+
 
