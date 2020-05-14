@@ -24,5 +24,4 @@ There are no notes for lecture 1 as this was concerned with course administratio
 | [Lecture 15](./Lecture%2015.md)<br>May 4<sup>th</sup>, 2020 | Paxos: the interesting parts
 | [Lecture 16](./Lecture%2016.md)<br>May 6<sup>th</sup>, 2020 | Paxos wrap-up: Non-termination, Multi-Paxos, Fault tolerance<br>Other consensus protocols: Viewstamped Replication, Zab, Raft<br>Passive vs. Active (state machine) replication
 | [Lecture 17](./Lecture%2017.md)<br>May 8<sup>th</sup>, 2020 | Eventual consistency<br>Strong convergence and strong eventual consistency<br>Introduction to application-specific conflict resolution<br>Network partitions<br>Availability<br>The consistency/availability trade-off
-
-
+| [Lecture 18](./Lecture%2018.md)<br>May 11<sup>th</sup>, 2020 | Dynamo: A review of old ideas<ul><li>Availability</li><li>Network partitions</li><li>Eventual consistency</li><li>Vector clocks</li><li>Application-specific conflict resolution</li></ul>Introduction to:<ul><li>Anti-entropy with Merkle trees</li><li>Gossip</li><li>Quorum consistency</li></ul>
