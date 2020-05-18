@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 19
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 13th, 2020 via [Twitch](https://www.twitch.tv/videos/619837000)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 13th, 2020 via [YouTube](https://www.youtube.com/watch?v=2edhMsGlwng)
 
 ## Continuation of Quorum Consistency
 
