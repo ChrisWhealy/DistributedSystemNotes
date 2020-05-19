@@ -274,7 +274,7 @@ Ok, but now let's add a new node `M5` at position `60`.
 | `48` to `60` | `M5` &lt;&mdash; New node
 | `61` to `08` | `M1`
 
-So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to be moved are the keys currently stored in `M1` that have a hash function values in the range `48` to `60`.
+So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to be moved are the keys currently stored in `M1` whose hash function value is in the range `48` to `60`.
 
 Nothing else needs to change.
 
