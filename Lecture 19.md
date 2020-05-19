@@ -320,7 +320,7 @@ Secondly, replication of virtual nodes is more complicated because you don't wan
 
 ## Finally, A Word from Our Sponsor
 
-Remember, be nice to Aardvarks...
+In preparation for the next lecture, please read Google's [MapReduce](./papers/MapReduce.pdf) paper, and remember &mdash; be nice to Aardvarks...
 
 ![Baby Aardvark](./img/aardvark.jpeg)
 
