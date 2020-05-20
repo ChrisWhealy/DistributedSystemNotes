@@ -20,7 +20,7 @@ Under these circumstances, response times are typically in the range of a few te
 
 ### Offline (Batch Processing) Systems
 
-However, there are other types of system that take in huge amounts of data and by means of functionality distributed across a large number of machines, analyse it in some way.  Typical examples of such anaysis include restructuring the data to make it more useful to a specific user group, or to derive some form of summary.
+However, there are other types of system that take in huge amounts of data in order to analyse it in some way.  Typical examples of such analysis include restructuring user data to make it more useful to a specific user group, or to derive some form of summary.
 
 The goal here is not to achieve low latency, but high throughput - the faster you can crunch your way through one terabyte of data, the better.  Consequently, the time taken to perform this type of distributed analysis is often significant - of the order of hundreds or even thousands of seconds.
 
@@ -32,7 +32,7 @@ So, the goal of an offline system is to achieve a very high degree of parallelis
 > * ***Concurrency***  
 >     Provides a high degree of scalability and fault tolerance by allowing multiple (typically small) tasks to be handled simultaneously  
 > * ***Parallelism***  
->     Provides raw speed by allowing a single (typically very large) task to be broken down into a large number of small, unrelated subtasks that can all be executed simultaneously.
+>     Provides raw speed by allowing a single (typically very large) task to be broken down into a large number of small, independent subtasks that can all be executed simultaneously.
 
 Google's MapReduce system and its successors are examples of offline systems that solve problems by means of high degrees of parallelism.
 
@@ -40,20 +40,21 @@ It should also be noted that Google published their MapReduce paper in 2004 and 
 
 ## Your Sharding Strategy Depends on Your Access Strategy
 
-Up until now, we have only looked at data that is stored as simple key/value pairs and then accessed by key lookup.  However, as soon as you change either your data model or your access strategy, then the question of how to shard your data becomes a lot more subtle.
+Up until now, we have only looked at data that is stored as simple key/value pairs and then accessed by key lookup.  However, as soon as you change either your data model or your access strategy, then the question of how your data should be sharded becomes a lot more subtle.
 
 So, instead of having a simple key/value store, what if you had a relational database with a detailed schema?  Now, the way you shard your data would be based on the type of queries you expect.
 
-For example, if you are Facebook end-user, then you access your data in one way, but if you are a Facebook data scientist analysing social graphs, then you need to access that data in a very different way.  Here is a situation in which two groups of people require very different access patterns to the same data.
+For example, if you are Facebook end-user, then you access your data in one way, but if you are a Facebook data scientist analysing social graphs, then you need to access the same data, but in a very different way.  Here is a situation in which two user groups have very different perspectives on the same data, thus they require very different patterns of access.
 
-As far as performance is concerned, FaceBook's priority is to ensure that their end-users experience the fastest possible response time.  But the priority of minimum end-user response time does not help the FaceBook data scientists trying to analyse how the website is being accessed, or how social graphs develop and change over time.  Therefore, in order for the both the end-users to enjoy a fast response time, and for the data scientists to be able to do their job efficiently, multiple copies of the data are needed.  You could argue that having multiple copies of the data is redundant, but the different structures used by the different datastores make a huge difference to the time taken to perform certain tasks.
+As far as performance is concerned, FaceBook's priority is to ensure that their end-users experience the fastest possible response time.  But the priority of minimum end-user response time does not help the FaceBook data scientists trying to analyse how the website is being accessed, or how social graphs develop and change over time.  Therefore, in order for the both the end-users to enjoy a fast response time, and for the data scientists to be able to do their job efficiently, multiple copies of the data are needed.  You could argue that having multiple copies of the data is redundant, but the different structures used by the different datastores make a huge difference to the time taken for the different user groups to perform their work.
 
 Google's MapReduce paper gives these two types of data different names:
 
 * ***Raw data***  
     The authoritative version of the data
 * ***Derived data***  
-    One of more copies of the raw data that have been processed and restructured in some way (for instance, some metrics have been applied in order to derive a summary of some sort).  Derived data can also be created from other sets of derived data.
+    One of more copies of the raw data that have been processed and restructured in some way (for instance, some metrics have been applied in order to derive a summary of some sort).  
+    Derived data can also be created from other sets of derived data.
 
 Google's MapReduce is a tool for computing derived data.
 
@@ -61,7 +62,7 @@ Google's MapReduce is a tool for computing derived data.
 
 In order to make the Web searchable, you need an index that allows people to search for a Web page by specifying one or more keywords.  But the Web is not organised by keywords, it is organised first into websites, then each website contains multiple pages (or documents).
 
-Google tackles this problem first by using crawlers that go out and gulp down entire websites.  Then, all these documents are initially stored in what is known as a ***forward index***.
+Google tackles this problem first by using crawlers that go out and gulp down entire websites.  Then, all these documents are stored *as-is* in what is known as a ***forward index***.
 
 | Document | Words
 |---|---
@@ -70,9 +71,9 @@ Google tackles this problem first by using crawlers that go out and gulp down en
 
 Here, the data is organised by document.  If you know the name of the document, you can discover all the words within that document.  But this is not how people search the web: people know what words they're searching for, but don't know which documents contain those words.  In other words, we need to create the style of index that is found at the back of a book, where you look up a word in order to discover the pages where that word is used.
 
-There's nothing wrong with storing the data in the form of a forward index, it’s just that in order to be useful to the end users, this cannot be the ***only*** data structure we use.
+There's nothing wrong with storing the data in the form of a forward index, it’s just that in order to be useful to people wanting to search the Web, this cannot be the ***only*** structure used to store the data.
 
-So, if we restructure this data, we can produce a list of all the words from which we can then discover the documents containing those words.
+If we restructure this data, we can produce a list sorted by words, from which we can then discover the documents containing those words.
 
 | Word | Found in Documents
 |---|---
@@ -112,9 +113,9 @@ This is what MapReduce was built to provide.
 
 Due to the enormous size of the datasets involved here, there is no way that either the forward or the inverted index would ever be able to fit on a single machine, so immediately, we have to make some very important data sharding decisions.
 
-Using the example of transforming a list of Web pages into an inverted word index, the fact that data making up the forward index is split up across a large number of machines is not a problem.  Each machine can still contribute towards the overall solution by creating a set of intermediate key/value pairs from whatever subset of documents it has in its possession.  Since each document is processed in exactly the same way, it doesn't in fact matter whether an individual machine possess a large or small number of documents.  Also, since there are no dependencies between documents, the order in which they are processed is not important.
+Using the example of inverting a list of Web pages into a word index, the fact that the data making up the forward index is already split up across a large number of machines is not a problem.  Each machine can still contribute towards the overall solution by creating a set of intermediate key/value pairs from whatever subset of documents it has in its possession.  Since each document is processed in exactly the same way, it doesn't in fact matter whether an individual machine possess a large or small number of documents.  Also, since there are no dependencies between documents, the order in which they are processed is not important.
 
-Here is an example of how a very large task can be split into a large number of independent subtasks, and then each of those subtasks executed in parallel.  This type of parallelism is known as ***embarrassingly parallel***.   In other words, it is so easy to split up the task into parallel subtasks, that it would be embarrassing not to.
+Here is an example of how a very large task can be split into a large number of independent subtasks, and then each of those subtasks executed simultaneously.  This type of parallelism is known as ***embarrassingly parallel***.   In other words, it is so easy to split up the task into parallel subtasks, that it would be embarrassing not to.
 
 Some tasks are very hard to parallelize, but this is not one of them.
 
@@ -128,7 +129,7 @@ Well that's nice, but so far, we're only halfway to a solution.  These intermedi
 
 Let's now say that we have two machines for the second phase of the computation (<code>R<sub>1</sub></code> and <code>R<sub>2</sub></code>).  So how would we decide which machine should handle which key?
 
-We've answered this question before when we looked at consistent hashing.  If we take the hash value of the key in the intermediate key/value pair, and then take that value `mod`'ed by the number of machines used in the second phase of the algorithm, then we can guarantee that the same words will always be collated by the same machine.
+We've answered this question before when we looked at consistent hashing.  If we take the hash value of the key in the intermediate key/value pair and `mod` it by the number of available `R` machines, then we can guarantee that the same words will always be collated by the same machine.
 
 ![Distributed MapReduce 2](./img/L20%20Distributed%20MapReduce%202.png)
 
@@ -140,9 +141,9 @@ Several questions remain however:
 
 ### Doesn't `hash mod N` Introduce Problems if `N` Changes?
 
-In the case of Amazon Dynamo, a naïve implementation of `hash mod N` will certainly lead to problems if `N` changes.  This is because you are working in an online environment in which it is very difficult to predict the expected data volume; therefore, you must be able to scale rapidly (I.E. add new nodes, thus changing `N`) in order to handle spikes in request volume.  Contrast this however with Google's MapReduce environment, and you find you're working in an offline situation where you already know exactly how much data your current batch will be processing.  Therefore, knowing you're that you're working is a stable environment, you can scale the number of `M` and `R` machines accordingly.
+In the case of Amazon Dynamo, a naïve implementation of `hash mod N` will certainly lead to problems if `N` changes.  This is because you are working in an online environment in which it is very difficult (impossible?) to predict the expected data volume; therefore, you must be able to scale rapidly (I.E. add new nodes, thus changing `N`) in order to handle spikes in request volume.  Contrast this however with Google's MapReduce environment, and you find you're working in an offline situation where you already know exactly how much data your current batch will be processing.  Therefore, since you know you're working is a stable environment, you can scale the number of `M` and `R` machines accordingly.
 
-There is, of course, the possibility that a machine could fail.  So, MapReduce uses a check-pointing strategy that allows for a new machine to take over the computation from the failed machine's last check point.  That way, only a minimal amount of reworking is needed continue with forward progress.
+There is, of course, the possibility that a machine could fail.  So, MapReduce uses a check-pointing strategy that allows for a new machine to take over the computation from the failed machine's last check point.  That way, only a minimal amount of reworking is needed in order to continue with forward progress.
 
 ### How is the Data Moved Between the Machines?
 
@@ -176,25 +177,25 @@ for each word W in document D {
 }
 ```
 
-This program is known as a ***Map Function*** because the action passing every element in some set as an argument to a function is known as *"mapping"*.
+This program is known as a ***Map Function*** because the action passing every element in a list as an argument to a function is known as *"mapping"*.  The function is said to have been *mapped* across the elements of the list.
 
-Similarly, the machines involved in the reduce phase perform an equally simple task implemented in the ***Reduce Function***.  The reduce function takes the intermediate key/value pairs and sorts them by key, then collates all the different values for the same key into a single set.
+Similarly, the machines involved in the reduce phase perform an equally simple task implemented in the ***Reduce Function***.  The reduce function takes the intermediate key/value pairs and first sorts them by key, then collates all the different values for the same key into a single list.
 
 
 So Google's MapReduce system is framework into which you insert your map and reduce functions, then the framework handles all the ugliness of distributing your functionality across thousands of machines, handling all the communication, check-pointing and fault tolerance, and finally passing the data between the map, shuffle and reduce phases to generate the required output.
 
 In addition to providing your map and reduce functions, you need to configure the MapReduce framework to tell it:
 
-* How many workers you want allocated to the map phase (say 200,000)
-* How many workers you want allocated to the reduce phase (say 5,000)
-* How many physical machines should all those workers should run on (say 2,000)
+* How many workers you want allocated to the map phase? (E.G. 200,000)
+* How many workers you want allocated to the reduce phase? (E.G. 5,000)
+* On how many physical machines should all of those workers run? (E.G. 2,000)
 
 There is a popular Open Source clone of Google's MapReduce known as [Hadoop](https://en.wikipedia.org/wiki/Apache_Hadoop) which includes its own clone of GFS known as HDFS (Hadoop Distributed Filesystem)
 
 ### Questions
 
 ***Q:***&nbsp;&nbsp; Is generating an inverted index what MapReduce is mainly used for?  
-***A:***&nbsp;&nbsp; The inverted index case is the canonical example used to illustrate the general applicability of this technique to a wide range of problems.  MapReduce allows you to plug in your own map and reduce functions that are typically (but not exclusively) used to process large volumes of text data.
+***A:***&nbsp;&nbsp; The use case of the inverted index is the canonical example used to illustrate the general applicability of this technique to a wide range of problems.  MapReduce allows you to plug in your own map and reduce functions that are typically (but not exclusively) used to process large volumes of text data.
 
 ## Examples of Problems Solved Using MapReduce
 
@@ -208,14 +209,12 @@ Google's paper gives a variety of different problems that can all be solved usin
 
 As long as you can find a way to express the solution to your problem in terms of a map function and reduce function, then the MapReduce framework will be able to help you.  The key points here are:
 
-* You must be able to split your input data into non-dependent units (E.G. the individual documents retrieved by a crawler from a set of web sites)
-* You must be able to write a common map function that can be applied in any order to these individual units of data
-* When passed through the shuffle phase, the intermediate key/value pairs generated by your map functions act as the input to one or more instances of the reduce function.
+* You must be able to split your input data into units that have no dependencies between them (E.G. the individual documents retrieved by a crawler from a set of web sites)
+* You must be able to write a map function that can be applied ***in any order*** to these individual units of data
+* The identity of the relevant reduce worker is determined when the intermediate key/value pairs are passed through the hash algorithm during the shuffle phase.
 * The output of the reduce function(s) is/are the final analysed data from this run of the MapReduce framework
 
-Additionally, you might need to provide certain configuration parameters for the number of map and reduce workers you expect to need, but in the end, the MapReduce framework implements the plumbing code, and leaves a couple of gaps that you need to fill in by supplying your own code.
-
-
+Additionally, you might need to provide certain configuration parameters for the number of map and reduce workers you expect to need, but in the end, the MapReduce framework implements all the plumbing code, leaving a couple of gaps into which you insert your own code.
 
 
 
