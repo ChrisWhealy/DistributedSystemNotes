@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 20
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 18th, 2020 via [Twitch](https://www.twitch.tv/videos/624791387)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 18th, 2020 via [YouTube](https://www.youtube.com/watch?v=8MOpJ4LoRpc)
 
 ## How is Google's [MapReduce Paper](./papers/MapReduce.pdf) Related to Distributed Systems?
 
