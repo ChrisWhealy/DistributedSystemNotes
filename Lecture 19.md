@@ -6,7 +6,7 @@
 
 We finished the last lecture with this overview of quorum consistency.
 
-In a quorum consistency environment, there are three specific, configurable values that control how this question should be answered.
+In a quorum consistency environment, there are three specific, configurable values that control how a system can be configured.
 
 * `N` - The number of node replicas
 * `W` - **The Write Quorum**  
@@ -22,7 +22,7 @@ Whilst this is a popular configuration setting, the trouble is that if any of th
 
 Instead of using `N=3, W=3, R=1`, the Dynamo paper recommends `N=3, W=2, R=2`
 
-This now creates the potential situation in which a read conflict could occur.
+This now creates the possibility of a read conflict.
 
 ![Dynamo Read Conflict 1](./img/L19%20Dynamo%20Read%20Conflict%201.png)
 
@@ -34,18 +34,18 @@ If the client then immediately reads the value of `x`, it is possible that befor
 
 This will result in the client receiving different values of `x`.
 
-At this point, it is important to understand that there is a discrepancy between different system implementations about what the read quorum value `R` means in practice.  Does is refer to:
+At this point, it is important to understand that there is a discrepancy between different system implementations about what exactly the read quorum value `R` means in practice.  Does is refer to:
 
 * The number of nodes that must respond to a read request, or
 * The number of nodes that must respond to a read request *with the same value*?
 
-In the context of the Dynamo paper where Amazon prioritise availability over consistency, it seems clear that the read quorum value `R` is used to refer to the number of nodes that must respond to a read request.  If they return conflicting values, then so be it.
+In the context of the Dynamo paper where Amazon prioritise availability over consistency, it seems clear that the read quorum value `R` is used to refer simply to the number of nodes that must respond to a read request.  If they return conflicting values, then so be it.
 
 In general, though, if we ensure that `R + W > N`, then we can be certain that every write quorum intersects with every read quorum, thus ensuring that we avoid what's known as a *"stale read"*.  A stale read is where ***all*** of the responses are out of date.  The `R + W > N` approach ensures that a read will always return at least one correct response.
 
 For instance, if we set the write quorum to `2` and the read quorum to `1`, then it’s possible that we could be writing to replicas `R1` and `R2` and reading from replica `R3`.  Thus, until the nodes synchronise their state, read operations could return stale values.
 
-A further caveat is to understand that simply satisfying the inequality `R + W > N` only helps prevent stale reads, it does not ensure fault tolerance because as we saw in the first example, setting `N=3, R=1, W=3` does guarantee strong consistency, but only at the expense of fault tolerance.
+A further caveat is to understand that simply satisfying the inequality `R + W > N` only helps prevent stale reads, it does not ensure fault tolerance because as we saw in the first example, setting `N=3, R=1, W=3` guarantees strong consistency, but only at the expense of fault tolerance.
 
 The Dynamo paper quotes the configuration settings as `N=3, R=2, W=2` because this ensures that ***someone*** will respond to a read operation with the correct value.  In Amazon's situation, if a read request returns a set of conflicting values, then typically, the client application must resolve the conflict.
 
@@ -73,7 +73,7 @@ But how about an approach like this?
 
 ![Sharding 1](./img/L19%20Sharding%201.png)
 
-So now, we don't have the problem of stale reads because each machine only handles a known subset of the data.  The trade-off here is that in this example, we have now lost fault tolerance because there is no replication.  But we could reinstate replication quite easily.
+So now, we don't have the problem of stale reads because each machine only handles a known subset of the data.  The trade-off here is that in this example, we have now lost fault tolerance because there is no replication; but it could be reinstated quite easily.
 
 ![Sharding 2](./img/L19%20Sharding%202.png)
 
@@ -125,15 +125,11 @@ No matter how the sharding is implemented, we have two forms of replication at w
 ![Dataset Replication](./img/L19%20Dataset%20Replication.png)
 
 
-The choice for how you replicate data and how it is sharded are somewhat orthogonal to each other.  In the rest of this discussion, we will focus only on sharding techniques and assume that replication will be implemented somehow.
-
-So, let's now just focus on data partitioning strategies.
+The choice for how you replicate data and how it is sharded are somewhat orthogonal.  In the rest of this discussion, we will focus only on sharding techniques and assume that replication will be implemented somehow.
 
 ## Partition Strategies
 
-How do you decide which key/value pairs go where?  To answer this question, we must first establish what goals our partitioning strategy needs to meet.
-
-We really need to achieve two goals here:
+How do you decide which key/value pairs go where?  To answer this question, we must first establish what goals our partitioning strategy needs to meet.  We really need to achieve two goals here:
 
 * ***Goal 1***&nbsp;&nbsp; Avoid any read or write hotspots
 * ***Goal 2***&nbsp;&nbsp; Make the data easy for clients to find quickly
@@ -147,7 +143,7 @@ So, neither of these are good ideas.
 
 ### Partitioning Data by Key Range
 
-If we know that the key values in our dataset fall into some range, then we can distribute that data by allocating each node a key range.
+If we know that the key values in our dataset fall into some range, then we can distribute that data by allocating each node a range of key values.
 
 So, if you're handling data that is sorted alphabetically, then you could distribute the data across three machines such that keys starting with a particular letter will be handled by a known machine.
 
@@ -218,7 +214,7 @@ So, in this scenario, our reduced-output-space hash function has positioned our 
 * `M3` is at location `32`
 * `M4` is at location `47`
 
-Let's now say we want to add the new key `"apple"`.  When put through the hhas function, this key yields the value `14`.
+Let's now say we want to add the new key `"apple"`.  When put through the hash function, this key yields the value `14`.
 
 ![Dynamo Node Ring 2](./img/L19%20Ring%202.png)
 
@@ -226,11 +222,13 @@ There is no node sitting exactly at location `14` on the ring, so we scan clockw
 
 The rule here is that keys belong to their clockwise successor on the ring.
 
-Now let's say we want to visit our old friend the Aardvark.  In our particular scheme, `"aardvark"` hashes to `62`, so we repeat the same process as before:
+Now let's say our old friend the Aardvark wants to move in.  In our particular scheme, `"aardvark"` hashes to `62`, so we repeat the same process as before:
 
 ![Dynamo Node Ring 3](./img/L19%20Ring%203.png)
 
-There is no node at location `62`, so we continue clockwise around the ring, passing go, collecting $200 until we encounter `M1`.  So, `"aardvark"` will be stored in node `M1`.
+There is no node at location `62`, so we continue clockwise around the ring, passing go, collecting $200 and encountering `M1`.  So, `"aardvark"` will be stored in node `M1`.
+
+### Key Replication
 
 Dynamo also uses this scheme to decide where a key should be replicated.
 
@@ -302,17 +300,15 @@ At this point in time, the administrator will probably want to bring up a new no
 
 Yes.  If your input values fall into a narrow range, then there will not be a particularly good distribution of nodes around the ring, which in turn, could cause a node to become overloaded and potentially crash.
 
-One trick that Amazon use in Dynamo is the idea of virtual nodes.  This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.  This means that one physical node instance could be mapped to 10, or 20 or 50 hash value locations around the ring.  Using this trick, you are much more likely to achieve an even node distribution around the ring.  
+One trick that Amazon use in Dynamo is the idea of virtual nodes.  This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.  This means that one physical node could be mapped to 10, or 20 or 50 hash value locations around the ring.  Using this trick, you are much more likely to achieve an even node distribution around the ring.  
 
-In addition to improving the distribution of nodes around the ring, you could have a different number of physical nodes per virtual node to account for differing storage capacities of the physical hardware running each node.
+In addition to improving the distribution of nodes around the ring, you could have a different number of virtual nodes per physical node to account for differing storage capacities of the physical hardware running each node.
 
 For instance, if the hardware on which one node is running has a 1Tb hard drive, then for instance, you might allocate 20 virtual nodes to this one physical node.  However, if another node in the same ring is running on a machine with a 2Tb hard drive, you might choose to allocate 40 virtual nodes knowing that due to its increased storage capacity, this machine can handle a bigger hash value range.
 
 Unfortunately, the use of virtual nodes has a couple of downsides.
 
-Firstly, if a physical node goes down that has lots of virtual nodes assigned to it, then this has a large impact on the rest of the ring, because it appears that suddenly, lots of "nodes" have gone down.  Now lots of other nodes will need to take over has value ranges that are no longer being looked after by these virtual nodes.
-
-The Dynamo paper, however, declares this to be a feature because if a physical node running on multiple virtual nodes goes down, then that node's workload becomes spread out around the ring, rather than being taken on a single successor.  Although this point does tend to make sense, it’s somewhat harder to reason about objectively.
+Firstly, if a physical node goes down that has lots of virtual nodes assigned to it, then this has a large impact on the rest of the ring, because it appears that suddenly, lots of "nodes" have gone down.  Now lots of other nodes will need to take over has value ranges that are no longer being looked after by these virtual nodes.  The Dynamo paper, however, declares this to be a feature because if a physical node running multiple virtual nodes goes down, then the workload becomes spread out around the ring, rather than being taken on a single successor.  Although this point does tend to make sense, it is somewhat harder to reason about objectively.
 
 Secondly, replication of virtual nodes is more complicated because you don't want to replicate data to two different virtual nodes if those nodes are running on the same physical machine, because then although you've replicated your data, you haven't achieved fault tolerance because the data still lives on the same hardware.
 
