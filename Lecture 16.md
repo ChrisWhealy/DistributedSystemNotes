@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 6th, 2020 via [YouTube](https://www.youtube.com/watch?v=h8wGZVOh43c)
 
+| Previous | Next
+|---|---
+| [Lecture 15](./Lecture%2015.md) | [Lecture 17](./Lecture%2017.md)
+
 
 ## Course Admin
 
@@ -336,3 +340,11 @@ In general, then:
 
 
 Active replication is also known as *"State Machine Replication"*
+
+---
+
+| Previous | Next
+|---|---
+| [Lecture 15](./Lecture%2015.md) | [Lecture 17](./Lecture%2017.md)
+
+

@@ -2,6 +2,9 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 4th, 2020 via [YouTube](https://www.youtube.com/watch?v=UCmAzWvrFmo)
 
+| Previous | Next
+|---|---
+| [Lecture 14](./Lecture%2014.md) | [Lecture 16](./Lecture%2016.md)
 
 ## Course Admin...
 
@@ -217,3 +220,8 @@ Let's isolate the messages that were exchanged between proposer <code>P<sub>2</s
 
 As far as <code>A<sub>3</sub></code> is concerned, it thinks that value `1` was <code>P<sub>2</sub></code>'s idea.  It has no clue that <code>P<sub>2</sub></code> was proposing a value already agreed upon by others.
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 14](./Lecture%2014.md) | [Lecture 16](./Lecture%2016.md)

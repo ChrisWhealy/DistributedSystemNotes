@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 27th, 2020 via [YouTube](https://www.youtube.com/watch?v=5oCUmo9PKaw)
 
+| Previous | Next
+|---|---
+| [Lecture 12](./Lecture%2012.md) | [Lecture 14](./Lecture%2014.md)
+
+
 ## Primary Backup Replication
 
 In this technique, the clients only ever talk to the primary node `P`.  Any time `P` receives a write request, that request is broadcast to all the backup nodes, which independently send their `ack`s back to the primary.
@@ -166,6 +171,11 @@ But consensus is ***hard*** and ***expensive*** to implement.  This difficulty m
 
 However, there are times when consensus really is vitally important.
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 12](./Lecture%2012.md) | [Lecture 14](./Lecture%2014.md)
 
 
 

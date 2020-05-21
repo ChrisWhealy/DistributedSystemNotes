@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 13th, 2020 via [YouTube](https://www.youtube.com/watch?v=2edhMsGlwng)
 
+| Previous | Next
+|---|---
+| [Lecture 18](./Lecture%2018.md) | [Lecture 20](./Lecture%2020.md)
+
 ## Continuation of Quorum Consistency
 
 We finished the last lecture with this overview of quorum consistency.
@@ -320,4 +324,10 @@ In preparation for the next lecture, please read Google's [MapReduce](./papers/M
 
 ![Baby Aardvark](./img/aardvark.jpeg)
 
+
+---
+
+| Previous | Next
+|---|---
+| [Lecture 18](./Lecture%2018.md) | [Lecture 20](./Lecture%2020.md)
 

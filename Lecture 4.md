@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 6th, 2020 via [YouTube](https://www.youtube.com/watch?v=zQk7U6InXZs)
 
+| Previous | Next
+|---|---
+| [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
+
 ## Recap
 
 ### What is a distributed systems?
@@ -222,4 +226,11 @@ The contra-positive states that if the Lamport Clock of `A` is not less than the
 Lamport Clocks are good for certain aspects of determining causality, but they do leave us with indeterminate situations.  This is because a Lamport Clock is consistent with causality, but does not characterise it.
 
 In order to remove this indeterminacy, we need a different type of clock, called a Vector Clock.
+
+
+---
+
+| Previous | Next
+|---|---
+| [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
 

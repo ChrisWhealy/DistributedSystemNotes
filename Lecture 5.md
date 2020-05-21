@@ -2,6 +2,12 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 8th, 2020 via [YouTube](https://www.youtube.com/watch?v=zuxA6f-XIAc)
 
+| Previous | Next
+|---|---
+| [Lecture 4](./Lecture%204.md) | [Lecture 6](./Lecture%206.md)
+
+
+
 ## Recap of Lamport Clocks
 
 Lamport Clocks are consistent with causality, but do not characterise (or establish) it.
@@ -246,3 +252,9 @@ We can represent a protocol violation such as ***FIFO anomaly*** using the follo
 
 This is an example of where a diagram provides a very useful way to represent the violation of some correctness property of a protocol.
 
+
+---
+
+| Previous | Next
+|---|---
+| [Lecture 4](./Lecture%204.md) | [Lecture 6](./Lecture%206.md)

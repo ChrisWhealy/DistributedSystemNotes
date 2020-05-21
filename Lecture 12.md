@@ -2,6 +2,12 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 24th, 2020 via [YouTube](https://www.youtube.com/watch?v=2dGJXEGTbGQ)
 
+
+| Previous | Next
+|---|---
+| [Lecture 11](./Lecture%2011.md) | [Lecture 13](./Lecture%2013.md)
+
+
 ## Replication
 
 Replication is the main strategy for mitigating loss:
@@ -246,3 +252,8 @@ What about read latency though?  Read latency for a Chain Replication system doe
 
 Both of these strategies are commonly used; however, the decision as to which one will work best for you is governed primarily by the balance you expect between reads and writes.
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 11](./Lecture%2011.md) | [Lecture 13](./Lecture%2013.md)

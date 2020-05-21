@@ -3,6 +3,11 @@
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 8th, 2020 via [YouTube](https://www.youtube.com/watch?v=-a1Ua1P9cNg)
 
 
+| Previous | Next
+|---|---
+| [Lecture 16](./Lecture%2016.md) | [Lecture 18](./Lecture%2018.md)
+
+
 ## Amazon Dynamo
 
 Please read the [Amazon Dynamo Paper](./papers/Dynamo.pdf) in preparation for the next lecture.  In the world of distributed systems, this is one of the most influential papers of the last 20 years, and also one of the most highly cited.
@@ -259,4 +264,8 @@ So, basically Amazon said *"Chasing after super high degrees of strong consisten
 
 As soon as a highly successful online retailer said *"Not only do we not care about Byzantine Fault tolerance, we don't even care about strong consistency"*, people began to sit up and take notice.  This shift of priority became very influential for systems that came later because up until then, many companies had been over-engineering their approach to achieve high degrees of strong consistency.
 
+---
 
+| Previous | Next
+|---|---
+| [Lecture 16](./Lecture%2016.md) | [Lecture 18](./Lecture%2018.md)

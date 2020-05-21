@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 10th, 2020 via [YouTube](https://www.youtube.com/watch?v=UoIiwJ2G2fc)
 
+| Previous | Next
+|---|---
+| [Lecture 5](./Lecture%205.md) | [Lecture 7](./Lecture%207.md)
+
 ## Recap
 
 ### Difference Between Receiving and Delivering
@@ -215,4 +219,9 @@ Once this out-of-sequence message has been delivered, the buffered message can b
 
 `Carol` is no longer confused...
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 5](./Lecture%205.md) | [Lecture 7](./Lecture%207.md)
 

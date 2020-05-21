@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 20th, 2020 via [YouTube](https://www.youtube.com/watch?v=5QH37qLyO7A)
 
+| Previous | Next
+|---|---
+| [Lecture 9](./Lecture%209.md) | [Lecture 11](./Lecture%2011.md)
+
+
 ## Recap: Safety & Liveness Properties
 
 | Safety | Liveness
@@ -255,6 +260,11 @@ Some possibilities do exist here:
 The second approach cannot remove the uncertainty, but it can lower it to levels considered acceptable enough to act upon.
 
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 9](./Lecture%209.md) | [Lecture 11](./Lecture%2011.md)
 
 
 ---

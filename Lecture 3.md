@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 3rd, 2020 via [YouTube](https://www.youtube.com/watch?v=83Ha1rX2LSw)
 
+| Previous | Next
+|---|---
+| [Lecture 2](./Lecture%202.md) | [Lecture 4](./Lecture%204.md)
+
 ## Lamport Diagrams, Causality and "happens before"
 
 Recap : the notation `A -> B` means *"A happens before B"*
@@ -174,6 +178,11 @@ In distributed systems, we will be dealing with many different kinds of partial 
 
 Whenever we talk about a relation being a partial order, we must first look at the set of things we're dealing with.  If we're dealing with the "happens before" relation, then we're dealing with a set of events
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 2](./Lecture%202.md) | [Lecture 4](./Lecture%204.md)
 
 
 

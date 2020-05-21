@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 1st, 2020 via [YouTube](https://www.youtube.com/watch?v=G0wpsacaYpE)
 
+| Previous | Next
+|---|---
+| | [Lecture 3](./Lecture%203.md)
+
 ## What is a Distributed System?
 
 Leslie Lamport gives the rather comical definition that:
@@ -157,7 +161,11 @@ If `M1` thinks `X=1`, but `M2` thinks `X=5`, then by knowing when the value of `
 
 This determinism is also useful when designing systems in which users see a sequence of events.  You know that if event `A` happened before event `B`, then you can ensure that your system will ***never*** display event `B` to the users before they have first seen event `A`.
 
+---
 
+| Previous | Next
+|---|---
+| | [Lecture 3](./Lecture%203.md)
 
 
 

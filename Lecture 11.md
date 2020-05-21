@@ -2,6 +2,12 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 22nd, 2020 via [YouTube](https://www.youtube.com/watch?v=Rly9GBg14Zs)
 
+| Previous | Next
+|---|---
+| [Lecture 10](./Lecture%2010.md) | [Lecture 12](./Lecture%2012.md)
+
+
+
 ## Implementing Reliable Delivery
 
 ### What Exactly is Reliable Delivery?
@@ -240,9 +246,11 @@ In the case of reliable broadcast, we can tolerate processes crashing by making 
 
 ***A:*** Remembering that fault models are arranged hierarchically, the algorithm used for reliable broadcast will act as the foundation for the algorithm used in the Omission Model.  Therefore, what we will need to do is extend the reliable broadcast algorithm with an algorithm for reliable delivery.
 
+---
 
-
-
+| Previous | Next
+|---|---
+| [Lecture 10](./Lecture%2010.md) | [Lecture 12](./Lecture%2012.md)
 
 
 

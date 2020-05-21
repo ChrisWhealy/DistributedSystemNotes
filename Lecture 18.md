@@ -2,6 +2,9 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 11th, 2020 via [YouTube](https://www.youtube.com/watch?v=xakpenkbOr0)
 
+| Previous | Next
+|---|---
+| [Lecture 17](./Lecture%2017.md) | [Lecture 19](./Lecture%2019.md)
 
 ## Review of the [Amazon Dynamo Paper](./papers/Dynamo.pdf)
 
@@ -196,3 +199,9 @@ This is a popular Dynamo configuration setting, often known as Read One, Write A
 No, it’s not because if one of the nodes crashes, or a network partition suddenly separates the client from one of the replicas, then it can no longer perform any writes - because we have stipulated that all three nodes must respond to a write operation because we consider it successful.
 
 So, whilst this gives certain advantages, it does so by carrying the risk of reduced fault tolerance.
+
+---
+
+| Previous | Next
+|---|---
+| [Lecture 17](./Lecture%2017.md) | [Lecture 19](./Lecture%2019.md)

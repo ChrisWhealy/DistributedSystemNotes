@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 18th, 2020 via [YouTube](https://www.youtube.com/watch?v=8MOpJ4LoRpc)
 
+| Previous | Next
+|---|---
+| [Lecture 19](./Lecture%2019.md) | [Lecture 21](./Lecture%2021.md)
+
+
 ## How is Google's [MapReduce Paper](./papers/MapReduce.pdf) Related to Distributed Systems?
 
 ### Online Systems
@@ -216,7 +221,11 @@ As long as you can find a way to express the solution to your problem in terms o
 
 Additionally, you might need to provide certain configuration parameters for the number of map and reduce workers you expect to need, but in the end, the MapReduce framework implements all the plumbing code, leaving a couple of gaps into which you insert your own code.
 
+---
 
+| Previous | Next
+|---|---
+| [Lecture 19](./Lecture%2019.md) | [Lecture 21](./Lecture%2021.md)
 
 
 

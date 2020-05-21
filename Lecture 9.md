@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 17th, 2020 via [YouTube](https://www.youtube.com/watch?v=utsDozs1ZMc)
 
+| Previous | Next
+|---|---
+| [Lecture 8](./Lecture%208.md) | [Lecture 10](./Lecture%2010.md)
+
+
 ## Big Picture View of the Chandy-Lamport Algorithm
 
 ### Chandy-Lamport Assumptions
@@ -231,4 +236,9 @@ Let's now briefly introduce the next topic, that of ***safety*** and ***liveness
 | Something bad will ***not*** happen | Something good ***eventually*** happens
 | In a finite execution, we can demonstrate that something bad will happen if this property is not satisfied.<br><br>FIFO anomalies, Causal Anomalies and Totally Ordered Anomalies are all examples of safety properties because we can demonstrate that their failure causes something bad to happen | For example, all client messages are eventually answered.<br><br>However, since the definition of a liveness property tends to be open-ended, it is very difficult to provide a counter example when considering ***finite*** execution, since the possibility of having to wait forever is not excluded.<br><br>This is why liveness properties are much harder to reason about.
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 8](./Lecture%208.md) | [Lecture 10](./Lecture%2010.md)
 

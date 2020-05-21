@@ -2,6 +2,9 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 1st, 2020 via [YouTube](https://www.youtube.com/watch?v=WgYwBLStCbs)
 
+| Previous | Next
+|---|---
+| [Lecture 13](./Lecture%2013.md) | [Lecture 15](./Lecture%2015.md)
 
 ## Recap: Strongly Consistent Replication Protocols
 
@@ -262,4 +265,9 @@ There are various subtleties that take place in these algorithms that, at the mo
 ***Q:***&nbsp;&nbsp; Why is this algorithm so complicated?  
 ***A:***&nbsp;&nbsp; The algorithm's complexity is a necessary feature of it needing to be able to withstand process failure.
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 13](./Lecture%2013.md) | [Lecture 15](./Lecture%2015.md)
 

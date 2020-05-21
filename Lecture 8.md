@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 15th, 2020 via [YouTube](https://www.youtube.com/watch?v=x1BCZ351dJk)
 
+| Previous | Next
+|---|---
+| [Lecture 7](./Lecture%207.md) | [Lecture 9](./Lecture%209.md)
+
+
 ## Rules of the Chandy-Lamport Algorithm
 
 This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system.
@@ -200,11 +205,19 @@ Determining the snapshot for the entire system however lies outside the rules of
 
 
 
+---
+
+| Previous | Next
+|---|---
+| [Lecture 7](./Lecture%207.md) | [Lecture 9](./Lecture%209.md)
 
 
 
 
-<hr>
+---
+
+***Endnotes***
+
 <b id="f1">1</b>&nbsp;&nbsp; In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens.
 
 [↩](#a1)

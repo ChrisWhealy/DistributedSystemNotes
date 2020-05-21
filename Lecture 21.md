@@ -2,6 +2,10 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 20th, 2020 via [Twitch](https://www.twitch.tv/videos/626692883)
 
+| Previous | Next
+|---|---
+| [Lecture 20](./Lecture%2020.md) |
+
 
 ## Recap: MapReduce Phases
 
@@ -329,8 +333,16 @@ So, a simple example of the word count reduce function looks like this:
 reduce add 0 [1,1,2,1,] = 5
 ```
 
+---
 
-<hr>
+| Previous | Next
+|---|---
+| [Lecture 20](./Lecture%2020.md) |
+
+
+---
+
+***Endnotes***
 
 <b id="f1">1</b>&nbsp;&nbsp; `grep` is often thought to be a contraction of ""***G***lobal ***Rep***lace", but the actual meaning is "***G***lobally search for a ***r***egular ***e***xpression and ***p***rint matching lines"
 

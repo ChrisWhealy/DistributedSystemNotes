@@ -2,6 +2,11 @@
 
 ## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 13th, 2020 via [YouTube](https://www.youtube.com/watch?v=uJ62T48ZdBs)
 
+| Previous | Next
+|---|---
+| [Lecture 6](./Lecture%206.md) | [Lecture 8](./Lecture%208.md)
+
+
 ## Causal Broadcast Using Vector Clocks
 
 Here's the classic causal anomaly again.
@@ -256,6 +261,10 @@ A snapshot of the entire system is derived by a separate process that goes aroun
 
 The Chandy-Lamport algorithm actually predates the invention of vector clocks.  It has been designed to ensure that the entire event history of each process in the system is recorded without any violation of the ***happens before*** relation.
 
+---
 
+| Previous | Next
+|---|---
+| [Lecture 6](./Lecture%206.md) | [Lecture 8](./Lecture%208.md)
 
 
