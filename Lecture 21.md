@@ -15,9 +15,9 @@ The functionality of the MapReduce framework is divided into three distinct phas
 
 This is where the developer's map function is applied to all the input data.  The data types going into and coming out of the map function are typically not the data type seen in the final output.
 
-In general, the map function's input type is some identifiable unit of data that needs to be analysed and is supplied in the form of a key/value pair: for instance, the key could be the URL of a particular document, and the value is the document contents.
+In general, the map function's input type is some identifiable unit of data that needs to be analysed and can be supplied in the form of a key/value pair: for instance, to create an inverted index of words in a Web document, the key would be the URL of that document, and the value is the document's contents.
 
-The map function then performs whatever analysis is required on that data and outputs a list of intermediate key/value pairs.  Initially, the output of the map function in written to the local storage of the map worker machine.
+The map function then performs whatever analysis is required on that data and outputs a list of intermediate key/value pairs.  Initially, the output of the map function is written to local storage on each map worker machine.
 
 In the previous lecture, we used the simplified example of creating an inverted index.  Here, the input to our map function was:
 
@@ -91,7 +91,7 @@ But a more sophisticated implementation may include the target word's context:
 <Doc2, <my, dog, spot>>
 ```
 
-or even the context and location offsets
+or to take things a step further, the target word's context and a list of location offsets
 
 ```
 <Doc1, <context, <lazy, dog>, offset, <7>>
@@ -100,21 +100,19 @@ or even the context and location offsets
 
 The point here is that the map function produces data in the form of key/value pairs.
 
-Usually, these key value pairs are known as *intermediate* key/value pairs because they require further processing by the reduce function.  However, in the case of `grep`, the map function has completed the required processing by identifying where in the document the target word occurs; thus, the reduce function might simply be a ***do nothing*** function that returns whatever value it has been passed.<sup id="a2">[2](#f2)</sup>
+Usually, these key/value pairs are qualified as being ***intermediate*** because they represent some halfway point in our calculation, and require further processing by the reduce function.  However, in the case of `grep`, the map function has already completed the required processing, either by identifying where in the document the target pattern occurs, or by returning an empty result; thus, in this case, the reduce function could be implemented as a ***do nothing*** function that simply returns whatever value it has been passed.<sup id="a2">[2](#f2)</sup>
 
 ### The Shuffle Phase
 
-The shuffle phase is where all the intermediate key/value pairs created by the map workers is passed to the appropriate reduce workers for further processing.
-
-But how do we decide which reduce worker is the right one?  This is decided by the partitioning function that implements some sort of hashing rule.
+The shuffle phase is where all the intermediate key/value pairs created by the map workers is passed to the appropriate reduce workers for further processing.  But how do we decide which reduce worker is the right one?  This is decided by the partitioning function that implements some sort of hashing rule.
 
 This partitioning function is supplied by the MapReduce framework and although Google doesn't exactly say ***how*** it has been implemented, they give the example that it could obey a rule such as `hash(key) mod N`, where `N` is the number of reduce workers.
 
-As has already been pointed out, the `hash mod N` approach can introduce problems if the number `N` changes.  In the context of Amazon's Dynamo system, they are providing an online service that must be able to respond to unpredictable events such as sudden spikes in request volume, or hardware or network failure.  Under these circumstances, the likelihood of the number of nodes in a ring changing is high; consequently, Amazon mitigate the problems associated with changing `N` in `hash mod N` by using ***consistent hashing***.
+As has already been pointed out, the `hash mod N` approach can introduce problems if `N` changes.  In the context of Amazon's Dynamo system, they are providing an online service that must be able to respond to unpredictable events such as sudden spikes in request volume, or hardware or network failure.  Under these circumstances, the likelihood of the number of nodes in a ring changing is high; consequently, Amazon mitigate the problems associated with changing `N` in `hash mod N` by using [consistent hashing](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2019.md#consistent-hashing).
 
 However, in the case of Google's MapReduce, they are working in an offline environment in which the size of the input dataset is known up front; therefore, if you are the developer of the map and reduce functions, you already have the necessary information to make an informed decision about how many workers you will need.  You then use these values to configure the MapReduce framework for the expected workload during your particular batch run.
 
-So, altering the number of reduce workers during a batch run would only happen in the event of some Byzantine error such as hardware failure or a network partition.  Under these circumstances, Google uses checkpointing for error recovery.  So, a changing value of `N` is not something you the developer need to be concerned about.
+So, altering the number of reduce workers during a batch run would only happen in the event of some sort of Byzantine error such as hardware failure or a network partition.  Under these circumstances, Google uses checkpointing for error recovery.  So, a changing value of `N` is not something you the developer really need to be concerned about.
 
 
 ### The Reduce Phase
@@ -122,7 +120,7 @@ So, altering the number of reduce workers during a batch run would only happen i
 ***Q:***&nbsp;&nbsp; What data type does the reduce function work with?  
 ***A:***&nbsp;&nbsp; Intermediate key/value pairs
 
-The partitioning function provided by the MapReduce framework ensures that every key/value pair whose key hashes to the same value, is sent to the same reduce worker.  IN practical terms, the reduce function accepts a set of key/value pairs whose hashed key values fall within a certain range.
+The partitioning function provided by the MapReduce framework ensures that every key/value pair whose key hashes to the same value, is sent to the same reduce worker.  In practical terms, the reduce function accepts a set of key/value pairs whose hashed key values fall within a certain range.
 
 Conceptually however, the data type of the reduce function is a key to which has been bound a set of values.  Whether the set of values bound to this key is created by the partitioning function or by explicit functionality within the reduce function is not strictly important here.
 
@@ -150,14 +148,16 @@ The key values go through the `hash mod N` algorithm which then determines which
 
 What about the distributed `grep` example?
 
-Here, each map worker either locates the search text in the document or it does not.  So, by the time we get to the reduce function, all the work has ***already*** been done.  So, the reduce function does not need to do anything other than write its input data directly to the output storage (GFS, for instance).  In fact, it is quite a common pattern for the reduce function to be little more than the identity function (see endnote [2](#f2)).
+In this case, each map worker either locates the search text in the document or it does not.  So, by the time we pass the results to the reduce function, the work has ***already*** been done.  So, the reduce function does not need to do anything other than write its input data directly to the output storage (GFS, for instance).
+
+This turns out to be quite a common pattern: the reduce function is implemented as little more than the identity function (see endnote [2](#f2)).
 
 
 ## Handling Map Worker Failure
 
 One detail we left out of the previous discussion was the use of a ***master*** process.  This process acts as the supervisor or scheduler for the work performed by all the workers.
 
-The master periodically pings the workers and if they do not respond within a given timeout period, the master assumes that process as failed in some way.
+The master periodically pings each of the workers and if they do not respond within a given timeout period, assumes that they have failed in some way.<sup id="a3">[3](#f3)</sup>
 
 ![MapReduce Master 1](./img/L21%20Master%201.png)
 
@@ -165,30 +165,30 @@ So, let's say that map worker `M1` now fails:
 
 ![MapReduce Master 2](./img/L21%20Master%202.png)
 
-***Q:***&nbsp;&nbsp; What's happens to the work `M1` was doing?  Is it lost or can it be retrieved?  
-***A:***&nbsp;&nbsp; All of `M1`'s work is lost and has to be redone
+***Q:***&nbsp;&nbsp; What's happened to all the work `M1` was doing?  Is it lost or can it be salvaged?  
+***A:***&nbsp;&nbsp; All of `M1`'s work is lost and has to be redone... :-(
 
-Since map workers fail from time to time, what's the best way of handling this failure?  Google had to examine the cost of the possible design options:
+Since map workers fail from time to time, what's the best way of handling this failure?  To answer this, Google had to examine the cost of each possible design option:
 
 ***Option 1)***  
-Ensure that every map worker writes its intermediate key/value pairs not to its local disk that would become inaccessible in the event of failure, but to some external location from where it can be recovered
+Ensure that every map worker writes its intermediate key/value pairs not to its local disk (that would become inaccessible in the event of failure), but to some external location from where it can be recovered
 
 ***Option 2)***  
 Risk having to redo all the work assigned to a map worker if that worker fails
 
 The answer here is simply one of time-cost &mdash; on average, which option will be quicker?
 
-Option 1 means that the time penalty of writing data over the network must be paid for every ***successful*** run of a map worker.
+Option 1 means that the time penalty of writing data over the network must be paid on every ***successful*** run of a map worker.
 
-However, since map workers are successful far more often than they fail, the time penalty incurred by occasionally having to redo a map worker's entire workload is offset by the fact that this will not happen too often.
+Option 2 means that occasionally, we will have to pay a time penalty in order to redo a map worker's entire workload; however, since map workers are successful far more often than they fail, this penalty is not paid very often.
 
-This is one of the distinguishing features of MapReduce - it deliberately chooses to redo work in the event of worker failure because this is cheaper than transferring data over the network.
+This is one of the distinguishing features of MapReduce - it deliberately chooses to redo work in the event of worker failure because on average, this is cheaper than transferring data over the network.
 
 In general fault tolerance in distributed systems requires that we duplicate something.  We either duplicate:
 
 * ***Data*** by storing multiple copies
 * ***Communication*** by sending multiple messages
-* **Effort** by redoing work
+* **Effort** by occasionally redoing work
 
 
 ## Combine Functions
@@ -196,7 +196,7 @@ In general fault tolerance in distributed systems requires that we duplicate som
 Let's look at the word count example again.  Say we want to search for the word `dog` in the string:
 
 ```
-My dog spot is the best dog and the fastest dog
+My dog Spot is the best dog and the fastest dog
 ```
 
 A naïve approach would be to scan the text and every time the target word is located, output an individual hit, resulting in:
@@ -207,15 +207,15 @@ A naïve approach would be to scan the text and every time the target word is lo
 <dog, 1>
 ```
 
-But the downside of this is that three, identical intermediate key/value pairs must now be sent over the network to the reduce worker.  It would be far more efficient to derive a subtotal within the map function and then send only one intermediate key/value pair to the reduce worker.
+But the downside of this is that three, identical intermediate key/value pairs must now be sent over the network to the reduce worker.  It would be far more efficient to derive a subtotal within the map function and then send only one intermediate key/value pair over the wire.
 
 ```
 <dog, 3>
 ```
 
-This job is performed by a ***combine function***.  A combine function performs a task very similar to that of the reduce function, but it runs inside the map worker in order to perform local optimisation work in advance.
+This job is performed by a ***combine function***.
 
-This is perfectly valid because the overall task we're performing is associative.  `a + b` is the same as `b + a`.
+A combine function performs a task very similar to that of the reduce function, but it runs inside the map worker in order to perform local optimisation.  This is perfectly valid because the overall task we're performing is associative.  `a + b` is the same as `b + a`, so the order in which additions are performed is immaterial.
 
 So, generally speaking, if your MapReduce task is associative, then perform as much work in the map function as possible.  This has two advantages:
 
@@ -226,7 +226,14 @@ So, generally speaking, if your MapReduce task is associative, then perform as m
 
 ### Map Function
 
-A map function takes a function and a list and applies that function to every element of the list.  So, to describe this in Haskell, the type of the map function would be written as:
+The map function needs two arguments:
+
+1. A function that performs the required transformation, and
+1. A list items to be transformed
+
+Map then works its way down the list, passing every element in turn to the function.
+
+To describe this in Haskell, the type of the map function would be written like this:
 
 ```haskell
 map :: (a -> b) -> [a] -> [b]
@@ -234,8 +241,9 @@ map :: (a -> b) -> [a] -> [b]
 
 Breaking this down:
 
-* `map :: (a -> a)` means that `map` takes a function that takes an input of type `a` and returns an output of type `b`
-* `[a] -> [b]` describes the fact that the `map` function takes in a list of `a`'s and gives back a list of `b`'s
+* `map :: (a -> b)` means that the first argment to `map` is a function.  This function takes an input of type `a` and returns an output of type `b`
+* `-> [a]` means that the second argument to `map` is a list in which all the items are of type `a`
+* `-> [b]` at the end means that the final result is of type `b`
 
 This function would then be implemented as follows:
 
@@ -244,7 +252,7 @@ map _ [] = []
 map f (x:xs) = f x : map f xs
 ```
 
-So here, we have provided how `map` should behave in two situations:
+So here, we have described how `map` should behave in two situations:
 
 ```haskell
 map _ [] = []
@@ -258,9 +266,9 @@ The more interesting situation is where map is passed a non-empty list:
 map f (x:xs) = f x : map f xs
 ```
 
-The function passed to `map` is called `f` and the list is destructured into the variables `x` and `xs`.  `x` then contains whatever value is found at the head of the list, and `xs` contains whatever else is left (the tail - which eventually will become the empty list).
+The function passed to `map` is called `f` and the list of items being mapped over is destructured into the variables `x` and `xs`, where `x` contains whatever value is found at the head of the list, and `xs` contains whatever else is left in the tail (which eventually will become the empty list).
 
-We then call function `f` passing it `x` as an argument and concatenate what we get back to the result of recursively calling `map` again passing in function `f` and whatever is left over in `xs`.
+We then call function `f` passing it `x` as an argument and concatenate what we get back to the result of recursively calling `map`, again passing in function `f` and whatever is left over in `xs`.
 
 So, a simple example would be:
 
@@ -270,7 +278,15 @@ map increment [1,2,3] = [2,3,4]
 
 ### Reduce Function
 
-In many programming languages, the `reduce` is also known as `folder` meaning *"fold the values in the list towards the right"*.
+In some programming languages, the `reduce` is also known as `foldr` meaning *"fold the values in the list towards the right"*.
+
+Whereas a map function needed two arguments, a reduce function needs three:
+
+1. A function that does the reducing,
+1. Some starting (or base) value, and
+1. A list of values that need to be reduced
+
+In Haskell, this type would be declared like this:
 
 ```haskell
 reduce :: (a -> b -> b) -> b -> [a] -> b
@@ -278,8 +294,10 @@ reduce :: (a -> b -> b) -> b -> [a] -> b
 
 Breaking this down:
 
-* `reduce -> (a -> b -> b)` means `reduce` takes is a function that takes a value of type `a` and a value of type `b` and gives back a value of type `b`.
-* `b -> [a] -> b` means that it takes a value of type `b` and a list of values of type `a` and gives back a single value of type `b`
+* `reduce :: (a -> b -> b)` means that the first argument to `reduce` is a function.  This function takes a value of type `a` and a value of type `b` and gives back a value of type `b`.
+* `-> b` means that `reduce` also takes second value of type `b`
+* `-> [a]` means that `reduce` also takes a third value that is a list of values of type `a`
+* `-> b`  at the end means the overall value returned by `reduce` is of type `b`
 
 So how do we run the function passed to `reduce`?  This function needs to two arguments; a value of type `a` that comes from whatever list we're reducing, and a value of type `b`.  But what is this value of type `b`?  This value is known variously as the *"identity value"* or the *"base value"* or simply the *"accumulator"*, and acts as a starting value.
 
@@ -297,7 +315,7 @@ In the case where `reduce` is passed a list:
 reduce f z (x:xs) = f x (reduce f z xs)
 ```
 
-We call function `f` passing in the first value from the list (destructured into variable `x` which is of type `a`), but then we need a value of type `b`.  Well, we know that the `reduce` function gives us back a value of type `b`, so we recursively call `reduce` again on the tail of the list (destructured into variable `xs`) and use whatever value it returns as the required value of type `b`.
+We call function `f` passing in the first value from the list (destructured into variable `x` which is of type `a`), but then we need a value of type `b`.  Well, we know that the `reduce` function gives us back a value of type `b`, so we recursively call `reduce` on the tail of the list (destructured into variable `xs`) and use whatever value it returns as the required value of type `b`.
 
 So, using this in the word count example, we would have:
 
@@ -307,7 +325,6 @@ reduce add 0 [1,1,2,1,] = 5
 
 
 <hr>
-### Endnotes
 
 <b id="f1">1</b>&nbsp;&nbsp; `grep` is often thought to be a contraction of ""***G***lobal ***Rep***lace", but the actual meaning is "***G***lobally search for a ***r***egular ***e***xpression and ***p***rint matching lines"
 
@@ -320,5 +337,9 @@ const id = x => x
 ```
 
 [↩](#a2)
+
+<b id="f3">3</b>&nbsp;&nbsp; Remember, in a network using asynchronous communication, a crashed process is indistinguishable from a running process that has simply stopped responding to messages.
+
+[↩](#a3)
 
 
