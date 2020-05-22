@@ -8,20 +8,20 @@
 
 ## Recap
 
-### What is a distributed systems?
+### What is a Distributed System?
 
-> ***Martin Kleppman's definition***  
+> ***[Martin Kleppman](https://martin.kleppmann.com/)'s definition***  
 > A collection of computing nodes connected by a network and characterised by partial failure
 
-> ***Peter Alvaro's definition***  
+> ***[Peter Alvaro](https://dl.acm.org/profile/81453654530)'s definition***  
 >  A collection of computing nodes connected by a network and characterised by partial failure and unbounded latency
 
 
 ### What is the Definition of the *"Happens Before"* Relation
 
-* If `A` and `B` are events in a single process and `B` happens after `A`, then `A -> B`
-* If `A` is a message send event and `B` is the corresponding message receive event, then `B` ***cannot*** happen before `A`
-* If `A` happens before `C` and `C` happens before `B`, then we can be certain that `A -> B` (Transitive closure)
+* Events `A` and `B` are events in the same process and `B` happens after `A`
+* If `A` is a message send event and `B` is the corresponding receive event, then `B` ***cannot*** have happened before `A`.  
+* If `A -> C` and `C -> B`, the we can be certain that `A -> B` (Transitive closure)
 
 
 ### The *"Happens Before"* Relation is an Irreflexive Partial Order
@@ -32,11 +32,11 @@ A partial order for a set `S` is where the members of `S` can be ordered using a
 
 | Property | English Description | Mathematical Description |
 |---|---|---|
-| Reflexivity   | For all `a` in `S`<br>`a` is always `≤` to itself | `∀ a ∈ S: a ≤ a`
-| Anti-symmetry | For all `a` and `b` in `S`<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
-| Transitivity  | For all `a`, `b` and `c` in `S`<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
+| Reflexivity   | For all `a` in `S`,<br>`a` is always `≤` to itself | `∀ a ∈ S: a ≤ a`
+| Anti-symmetry | For all `a` and `b` in `S`,<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
+| Transitivity  | For all `a`, `b` and `c` in `S`,<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
 
-But for the *"happens before"* relation, the property of reflexivity makes no sense, for an event cannot happen before itself
+But for the *"happens before"* relation, the property of reflexivity simply makes no sense, since an event cannot happen before itself.
 
 ### Accurate Terminology
 
@@ -78,11 +78,8 @@ The `⊆` relation ("is a subset of") is a true partial order because every elem
 
 As an aisde...
 
-- ***Question:***  
-    In the above inclusion set `S`, how is the element `{a}` related to the element `{b,c}`?  
-- ***Answer:***  
-    It's not!   
-    A set defined by a ***partial order*** cannot relate every member of that set to every other member. In fact, that's the point of it being called a ***partial*** order!
+***Q:***&nbsp;&nbsp; In the above inclusion set `S`, how is the element `{a}` related to the element `{b,c}`?  
+***A:***&nbsp;&nbsp; It's not!  A set defined by a ***partial order*** cannot relate every member of that set to every other member. In fact, that's the point of it being called a ***partial*** order!
 
 Some orders however are able to relate every element in a set to every other element in that set.  These are known as ***total orders***.
 
@@ -93,24 +90,24 @@ A good example of this is the natural numbers.  If our set is the natural number
 This is because every natural number is comparable to every other natural number using the `≤` relation.
 
 
-## How Can A Computer Determine the *"Happens Before"* Relation?
+## How Can a Computer Determine the *"Happens Before"* Relation?
 
 This question relates to clocks - specifically ***Logical Clocks***
 
-> A logical clock is a very unusual type of clock because it can neither tell us the time of day, nor how large the interval is between two events.  
+> A logical clock is a very unusual type of clock because it can neither tell us the time of day, nor how large a time interval has elapsed between two events.  
 > All a logical clock can do is tell us the order in which events occurred.
 
 ### Lamport Clocks
 
-The simplest type of logical clock is a ***Lamport Clock***.  In its most basic form, this is simply a counter used to assign a numerical value to an event.  The way we can reason about Lamport Clock values is by knowing that:
+The simplest type of logical clock is a ***Lamport Clock***.  In its most basic form, this is simply a counter assigned to an event.  The way we can reason about Lamport Clock values is by knowing that:
 
 ```
   if A -> B then LC(A) < LC(B)
 ```
 
-In other words, if is true that event `A` happened before event `B`, then we can be certain that the Lamport Clock value of `A` will be smaller than the Lamport Clock value of `B`.
+In other words, if it is true that event `A` happened before event `B`, then we can be certain that the Lamport Clock value of `A` will be smaller than the Lamport Clock value of `B`.
 
-It is not important to know the absolute Lamport Clock value of an event, because outside the context of the *"happens before"* relation this value is meaningless.  And even in the context of the *"happens before"* relation, we must have at least two events in order to compare their Lamport Clock values.
+It is not important to know the absolute Lamport Clock value of an event, because outside the context of the *"happens before"* relation, this value is meaningless.  And even in the context of the *"happens before"* relation, we must have at least two events in order to compare their Lamport Clock values.
 
 In other words, Lamport Clocks mean nothing in themselves, but are consistent with causality.
 
@@ -118,18 +115,19 @@ In other words, Lamport Clocks mean nothing in themselves, but are consistent wi
 
 When assigning a value to a Lamport Clock, we need first to make a defining decision, and then follow a simple set of rules:
 
-1. First decide what constitutes *"an event"*. The outcome of this decision then defines what our particular Lamport Clock will count.  
+1. First, decide what constitutes *"an event"*. The outcome of this decision then defines what our particular Lamport Clock will count.  
     In this particular case, we decide that receiving a message ***is*** counted as an event.  (Some systems choose not to count *"message receives"* as events).
 1. Every process has an integer counter, initially set to 0
 1. On every event, the process increments its counter by 1
-1. When sending a message, a process includes its current Lamport Clock value as metadata sent with the message payload
-1. When receiving a message, the receiving process sets its Lamport Clock using the formula `max(local counter, msg counter) + 1`.
+1. When a process sends a message, the current Lamport Clock value is included as metadata sent with the message payload
+1. When receiving a message, the receiving process sets its Lamport Clock using the formula  
+    `max(local counter, msg counter) + 1`
 
-If we decide that a *"message receive"* is not counted as an event, then the above algorithm does not need to include the `+ 1`.
+If we decide that a *"message receive"* is not counted as an event, then the above formula does not need to include the `+ 1`.
 
 ### Worked Example
 
-We can see how this algorithm is applied in the following sequence of message send/receive events:
+We can see how this formula is applied in the following sequence of message send/receive events:
 
 We have three processes `A`, `B` and `C` and the Lamport Clock values at the top of the process line indicate the state of the clock ***before*** the message send/receive event, and the Lamport Clock values at the bottom of the process line indicate the state of the clock ***after*** the send/receive event has been processed.
 
@@ -139,7 +137,7 @@ We have three processes `A`, `B` and `C` and the Lamport Clock values at the top
 
 ![Lamport Clock Message Send 1](./img/L4%20LC%20Msg%20Send%203.png)
 
-As you can see, the value of each process' Lamport Clock only ever changes monotonically (that is, they only ever stay the same, or get bigger - they can never get smaller)
+As you can see, the value of each process' Lamport Clock only ever changes monotonically (that is, they only ever stay the same, or get bigger &mdash; they can never get smaller)
 
 ## Reasoning About Lamport Clock Values
 
@@ -171,7 +169,7 @@ Absolutely not!
 
 Why?  Because we cannot form a chain of connections between `E1` and `E2`.  These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.
 
-So in this case, the ***happens before*** relation is unable to define any causal relation between events `E1` and `E1`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`
+So in this case, the ***happens before*** relation is unable to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`
 
 So in plain language:
 
@@ -195,20 +193,18 @@ This is because
 
 > Lamport Clocks do not characterise (or establish) causality
 
-The above example is derived from a paper by Reinhard Schwarz and Friedemann Mattern called [Detecting Causal Relationships in Distributed Computations: In Search of the Holy Grail](https://www.vs.inf.ethz.ch/publ/papers/holygrail.pdf)
+The above example is derived from a paper by Reinhard Schwarz and Friedemann Mattern called [Detecting Causal Relationships in Distributed Computations: In Search of the Holy Grail](./papers/holygrail.pdf)
 
 
 ### So What Are Lamport Clocks Good For?
 
-Even though a Lamport Clock cannot characterise causality, they are still useful.
+Even though Lamport Clocks cannot characterise causality, they are still very useful.
 
 We have the logical implication: `if A-> B then LC(A) < LB(B)`
 
-All logical implication are constructed from a premise (`A-> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the question is true.
+All logical implications are constructed from a premise (`A-> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the question is true.
 
-For any logical implication, we can also take its contra-positive
-
-Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
+For any logical implication, we can also take its contra-positive.  Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
 
 So in the case of the "happens before" relation
 
