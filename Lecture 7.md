@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 7
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 13th, 2020 via [YouTube](https://www.youtube.com/watch?v=uJ62T48ZdBs)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 13<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=uJ62T48ZdBs)
 
 | Previous | Next
 |---|---
@@ -74,7 +74,7 @@ Knowing this, we can understand the above rule to mean that in order to avoid cr
 
 ***Rule 2:***&nbsp;&nbsp;<code>VC<sub>m</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
 
-The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver has a complete record of all broadcast messages sent in the system; no messages are missing.
+The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver keeps a complete record of all broadcast messages sent in the system; no message-send events are missing.
 
 This is the rule that would be violated if `Carol` tried to deliver `Bob`'s rude "Up yours!" ***message from the future*** at the time it was received.
 
@@ -112,7 +112,7 @@ Remember what a total order anomaly looks like:
 
 ![Total Order Anomaly](./img/L6%20Total%20Order%20Anomaly.png)
 
-If we assign vector clocks to these send-events and then apply the rules of causal broadcast, we will discover that causal delivery cannot rule out total order anomalies.
+If we assign vector clocks to these send-events and then apply the rules of causal broadcast, we will discover that causal delivery cannot rule out total-order anomalies.
 
 ![Casual Delivery Cannot Prevent Total Order Anomaly](./img/L7%20TO%20Anomaly.png)
 
@@ -137,7 +137,7 @@ We have already spoken of two of them:
 
 These techniques provide ordering guarantees that prevent causal anomalies.
 
-Another thing we have not mentioned yet is something called ***Consistent Global Snapshot***.  This is related to the first point above and is a way to obtain a picture of the global state of a distributed system.  However, this is far from trivial to implement because not only does every process in a system has its own state, every process also has its own idea of the state of every other process.
+Another thing we have not mentioned yet is something called ***Consistent Global Snapshot***.  This is related to the first point above and is a way to obtain a picture of the global state of a distributed system.  However, this is far from trivial to implement because not only does every process in a system have its own state, every process also has its own idea of the state of every other process.
 
 One thing we can say is that:
 
@@ -155,7 +155,7 @@ So, we could lasso all the events and internal variables of a process and call t
 
 But what about the state of all the other processes in the system?
 
-One approach might be to use a global clock and inform every process that at a certain time of day (say `09:20`), every process must take a snapshot of itself.  However, even this approach won't work reliably because synchronising system clocks between computers is a notoriously difficult task.
+One approach might be to use a global clock and inform every process that at a certain time of day (say `09:20`), every process must take a snapshot of itself.  However, as we have already seen in [lecture 2](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%202.md#time-and-how-we-measure-it), this approach won't work reliably because synchronising clocks between computers is a notoriously difficult task.
 
 ![Snapshot Anomaly Caused by Using a Wall clock](./img/L7%20Wallclock%20Snapshot%20Anomaly.png)
 
@@ -163,7 +163,7 @@ We now have two inconsistent snapshots.
 
 `P1` takes a snapshot of itself when its clock reaches `09:20`.  It then sends a message to `P2` informing it that a snapshot has been taken.  However, `P2`'s clock is running slightly slower than `P1`'s, so the `{p1:snapshot}` message receive event happens just before `P2`\'s clock ticks over to `09:20` and is therefore included in `P2`'s snapshot.
 
-In spite of the fact that both snapshots were supposedly taken at `09:20`, they are in fact inconsistent with each other.  This is because `P1`'s message-send event `E5` is missing from `P1`'s snapshot but contained within `P2`'s snapshot.  Looking at the the other way around, `P2`'s snapshot contains a message-receive event, for which there is no corresponding send-event in `P1`'s snapshot.
+In spite of the fact that both snapshots were supposedly taken at `09:20`, they are in fact inconsistent with each other.  This is because `P1`'s message-send event `E5` is missing from `P1`'s snapshot but contained within `P2`'s snapshot.  Looking at this the other way around, `P2`'s snapshot contains a message-receive event, for which there is no corresponding send-event in `P1`'s snapshot.
 
 As we can see, using the time-of-day clock is an error-prone approach to taking snapshots.
 
@@ -173,7 +173,7 @@ So, we need an algorithm that allows us to take a consistent global snapshot.
 
 We now introduce some new terminology:  ***Channels***.
 
-A channel is simply a unidirectional connection between two processes.
+A channel is simply a unidirectional communication path between two processes.
 
 ### Assumptions
 
@@ -181,7 +181,7 @@ As an aside, the success of the Chandy-Lamport algorithm relies entirely on the 
 
 1. Eventual message delivery is ***guaranteed***, thus making delivery failure impossible
 1. All channels act as FIFO queues, thus making it impossible for messages to be delivered out of order (I.E. it guarantees that there will never be any FIFO anomalies)
-1. Processes don't crash! (The topic of process failure is dealt with in detail in a later lecture)
+1. Processes don't crash! (The topic of process failure is dealt with later in [lecture 10](./Lecture%2010.md))
 
 ### Channel Naming Convention
 
@@ -201,7 +201,7 @@ In the diagram above, channel <code>C<sub>12</sub></code> is said to be empty be
 
 In this case, process `P1` sends the first message, and therefore we will call it the ***initiator process***.
 
-1. ![Channels 2](./img/L7%20Channels%202.png)
+![Channels 2](./img/L7%20Channels%202.png)
 
 In the above diagram
 
@@ -245,7 +245,7 @@ So, event `D` is now a recorded event and the snapshot is complete:
 * We have recorded the state of `P2` in `S2`
 * We have recorded the incoming message event `D` in `P1`
 
-So, the above snapshot forms a complete history of the events that occurred in these two processes; but what abou the following two snapshots - do they make sense?
+So, the above snapshot forms a complete history of the events that occurred in these two processes; but what about the following two snapshots - do they make sense?
 
 ![Bad Snapshots](./img/L7%20Bad%20Snapshot.png)
 
