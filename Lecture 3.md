@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 3
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 3rd, 2020 via [YouTube](https://www.youtube.com/watch?v=83Ha1rX2LSw)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 3<sup>rd</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=83Ha1rX2LSw)
 
 | Previous | Next
 |---|---
