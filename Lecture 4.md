@@ -42,7 +42,7 @@ But for the *"happens before"* relation, the property of reflexivity simply make
 
 Don't get hung up on thinking that you must always state that the "happens before" relation is an irreflexive partial order.
 
-Its fine just to call it a "partial order".
+It’s fine just to call it a "partial order".
 
 
 
@@ -50,7 +50,7 @@ Its fine just to call it a "partial order".
 
 Set inclusion (or set containment).  This is defined as the set of all subsets of any given set
 
-So if we have a set `{a, b, c}`, then the containment set `S` contains the following 8 elements; each of which is one of the possible subsets of `{a, b, c}` (Don't forget to include the empty set!):
+So, if we have a set `{a, b, c}`, then the containment set `S` contains the following 8 elements; each of which is one of the possible subsets of `{a, b, c}` (Don't forget to include the empty set!):
 
 ```
 { {}
@@ -76,7 +76,7 @@ The `⊆` relation ("is a subset of") is a true partial order because every elem
 
 ## Total Orders
 
-As an aisde...
+As an aside...
 
 ***Q:***&nbsp;&nbsp; In the above inclusion set `S`, how is the element `{a}` related to the element `{b,c}`?  
 ***A:***&nbsp;&nbsp; It's not!  A set defined by a ***partial order*** cannot relate every member of that set to every other member. In fact, that's the point of it being called a ***partial*** order!
@@ -169,9 +169,9 @@ Absolutely not!
 
 Why?  Because we cannot form a chain of connections between `E1` and `E2`.  These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.
 
-So in this case, the ***happens before*** relation is unable to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`
+So, in this case, the ***happens before*** relation is unable to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`
 
-So in plain language:
+So, in plain language:
 
 > If you cannot draw a continuous line between two events, then we are unable to establish a causal relation between those events
 
@@ -179,7 +179,7 @@ Or to use fancier, academic language:
 
 > Causality requires graph reachability in spacetime
 
-So in summary, when we reason about Lamport Clock values, we understand that for events `A` and `B`:
+So, in summary, when we reason about Lamport Clock values, we understand that for events `A` and `B`:
 
 If we know that `A -> B`, then we can be sure that `LC(A) < LC(B)`
 
@@ -196,7 +196,7 @@ This is because
 The above example is derived from a paper by Reinhard Schwarz and Friedemann Mattern called [Detecting Causal Relationships in Distributed Computations: In Search of the Holy Grail](./papers/holygrail.pdf)
 
 
-### So What Are Lamport Clocks Good For?
+### So, What Are Lamport Clocks Good For?
 
 Even though Lamport Clocks cannot characterise causality, they are still very useful.
 
@@ -206,7 +206,7 @@ All logical implications are constructed from a premise (`A-> B`) stated in the 
 
 For any logical implication, we can also take its contra-positive.  Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
 
-So in the case of the "happens before" relation
+So, in the case of the "happens before" relation
 
 `if A-> B then LC(A) < LB(B)`
 
@@ -219,7 +219,7 @@ The contra-positive states that if the Lamport Clock of `A` is not less than the
 
 ## Summary
 
-Lamport Clocks are good for certain aspects of determining causality, but they do leave us with indeterminate situations.  This is because a Lamport Clock is consistent with causality, but does not characterise it.
+Lamport Clocks are good for certain aspects of determining causality, but they do leave us with indeterminate situations.  This is because a Lamport Clock is consistent with causality but does not characterise it.
 
 In order to remove this indeterminacy, we need a different type of clock, called a Vector Clock.
 
@@ -229,4 +229,5 @@ In order to remove this indeterminacy, we need a different type of clock, called
 | Previous | Next
 |---|---
 | [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
+
 
