@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 8
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 15th, 2020 via [YouTube](https://www.youtube.com/watch?v=x1BCZ351dJk)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 15<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=x1BCZ351dJk)
 
 | Previous | Next
 |---|---
@@ -11,20 +11,24 @@
 
 This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system.
 
-Any process can start the snapshot without either needing to be given a special designation or the need to announce that this action is about to take place.  Any process can initiate a snapshot and in doing so, causes a cascade of marker messages throughout the entire system that cause all other processes to take a snapshot of themselves.
+Any process can start the snapshot without either needing to be given a special designation or the need to announce that this action is about to take place.  The act of initiating a snapshot creates a cascade of marker messages throughout the entire system that cause all the processes to take a snapshot of themselves.
 
 
 ### The Initiator Process
 
 * Records its own state
 * Sends a marker message out on all its outgoing channels
-* Starts recording messages arriving on ***all*** incoming messages
+* Starts recording messages arriving on ***all*** incoming channels
 
 In this case, the initiator process is `P1`.
 
 ![Chandy-Lamport Snapshot 1](./img/L8%20CL%20Snapshot%201.png)
 
-`P1` records its own state as `S1`, immediately sends a marker message out on all its outgoing channels (only one in this case) and then starts recording any messages that might arrive on its incoming channels (again, only one in this case).
+If process `P1` decides to initiate a snapshot, then the following sequence of events takes place:
+
+* `P1` records its own state as `S1`
+* Immediately after recording its own state, `P1` sends out a marker message out on all its outgoing channels (only one in this case)
+* `P1` starts recording any messages that might arrive on its incoming channels (again, only one in this case)
 
 Notice that at the time `P1`'s snapshot happens, message `m` is currently in flight (or ***in the channel***) from `P2` to `P1`.
 
@@ -44,14 +48,11 @@ If this is the first time this process has seen a marker message, the receiver:
 
 * Records its own state
 * Flags the channel on which the marker message was received as ***empty***
-* Sends out a marker message on eacj of its outgoing channels
+* Sends out a marker message on each of its outgoing channels
 * Starts recording incoming messages on all channels except the one on which it received the original marker message (now flagged as empty)
 
-> ***Question***  
-> During a snapshot, once a channel is marked as empty, what happens if you then receive a message on that channel?
-> 
-> ***Answer***  
-> Whilst the snapshot is running, messages received on channels marked as empty are ignored!
+***Q:***&nbsp;&nbsp; During a snapshot, once a channel is marked as empty, what happens if you then receive a message on that channel?  
+***A:***&nbsp;&nbsp; Whilst the snapshot is running, messages received on channels marked as empty are ignored!
 
 
 In the diagram below, since this is the first marker message `P2` has seen, it does the following:
@@ -93,13 +94,13 @@ So, we now have a complete snapshot of our entire system, which in this simple c
 
 When a snapshot takes place, every process ends up sending out a marker message to every other process.  So, for a system containing `N` participating processes, `N * (N - 1)` marker messages will be sent.
 
-This might seem inefficient as the number of messages rises quadratically with the number of particpating processes, but unfortunately, there is no better approach.
+This might seem inefficient as the number of messages rises quadratically with the number of participating processes, but unfortunately, there is no better approach.
 
-As stated in the previous lecture notes, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
+As stated in the previous lecture, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
 
 1. Eventual message delivery is guaranteed, thus making delivery failure impossible
 1. All channels act as FIFO queues, thus eliminating the possibility of messages being delivered out of order
-1. Processes don't crash! (The topic of process failure is dealt with in lecture 10)
+1. Processes don't crash! (See [lecture 10](./Lecture%2010.md))
 
 ### A Worked Example
 
@@ -193,15 +194,15 @@ An individual process knows its local snapshot is complete when it has recorded:
 
 If it can be shown that the snapshot process terminates for an individual process, then it follows that it will terminate for all participating processes in the system.
 
-Now we can appreciate how important the assumptions listed at the start are.  The success of this entire algorithm rests on the fact that:
+Now we can appreciate the importance of the assumptions listed at the start.  The success of this entire algorithm rests on the fact that:
 
 * Eventual message delivery is guaranteed, and
 * Messages never arrive out of order (all channels are FIFO queues), and
-* Processes do not crash (yeah, right! - See lecture 10)
+* Processes do not crash (yeah, right! Again, see [lecture 10](./lecture%2010.md))
 
 In Chandy & Lamport's [original paper](https://lamport.azurewebsites.net/pubs/chandy.pdf) they provide a proof that the snapshot process does in fact terminate.
 
-Determining the snapshot for the entire system however lies outside the rules of the Chandy-Lamport algorithm and needs to be handled by some external process that stitches all the individual process snapshots together.
+Determining the snapshot for the entire system however lies outside the rules of the Chandy-Lamport algorithm and needs to be handled by some external coordinator that stitches all the individual process snapshots together.
 
 
 
@@ -218,6 +219,7 @@ Determining the snapshot for the entire system however lies outside the rules of
 
 ***Endnotes***
 
-<b id="f1">1</b>&nbsp;&nbsp; In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing detrimental happens.
+<b id="f1">1</b>&nbsp;&nbsp; In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing bad happens.
 
 [↩](#a1)
+
