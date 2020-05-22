@@ -12,13 +12,11 @@ The notation `A -> B` means *"A happens before B"*.
 
 This means that event `A` might have been the cause of event `B`, but it is absolutely certain that event `B` ***cannot*** be the cause of event `A`.
 
-This notation helps makes the ordering of events in time explicit.
+This notation helps make the ordering of events in time explicit.
 
 ## Lamport Diagrams (a.k.a. Spacetime Diagrams)
 
-With time moving downwards. draw a vertical line to represent the events that happen within a process.<sup id="a1">[1](#f1)</sup>
-
-Events are then represented as dots on that line.
+With time moving downwards, draw a vertical line to represent the events that happen within a process.<sup id="a1">[1](#f1)</sup>   Events are then represented as dots on that line.
 
 ![Process events](./img/L3%20Process%20events.png)
 
