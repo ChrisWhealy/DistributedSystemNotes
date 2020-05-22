@@ -42,7 +42,7 @@ The only way these machines can communicate with each other is by sending messag
 Generally speaking, given two events, `A` and `B`, we can say that `A` happens before `B` (`A -> B`) if any of the following are true:
 
 - Events `A` and `B` are events in the same process and `B` happens after `A`
-- If `A` is a message send event and `B` is the corresponding receive event, then `B` must have happened after `A`  
+- If `A` is a message send event and `B` is the corresponding receive event, then `B` must have happened after `A`.  
     Sorry kids, time travel is not possible, so it makes no sense to talk of a message being received ***before*** it was sent
 - If `A -> C` and `C -> B`, the we can be certain that `A -> B` (This is known as transitive closure)
 
