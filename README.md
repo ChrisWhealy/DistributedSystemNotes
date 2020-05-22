@@ -1,13 +1,12 @@
 # Distributed Systems
 
-Notes on [YouTube lectures](https://www.youtube.com/user/lindseykuper/videos) given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/), Assistant Professor of Computing as UCSC
+Lecture notes for course [CSE138, Spring 2020](http://composition.al/CSE138-2020-03/index.html) given by [Prof Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/), Assistant Professor of Computing as UCSC
 
-Please excuse cases where I might have given a poor summary of something Lindsey was saying &mdash; I'm a student here...
-
-There are no notes for lecture 1 as this was concerned with course administration and logistics.
+Due to the Covid-19 lockdown being enforced at the time, these lectures had to be delivered online and are avaiable on [YouTube](https://www.youtube.com/user/lindseykuper/videos) and [Twitch](https://www.twitch.tv/lindseykuper/videos)
 
 |  Date | Description | Subjects Recapped |
 |---|---|---|
+| Lecture 1 | There are no notes for this lecture as it was concerned with course administration and logistics  |
 | [Lecture 2](./Lecture%202.md)<br>April 1<sup>st</sup>, 2020 | Distributed Systems: What and why?<br>Time and clocks |
 | [Lecture 3](./Lecture%203.md)<br>April 3<sup>rd</sup>, 2020| Lamport diagrams<br>Causality and happens-before<br>Network models<br>State and events<br>Partial orders
 | [Lecture 4](./Lecture%204.md)<br>April 6<sup>th</sup>, 2020 | Total orders and Lamport clocks | Partial orders<br>Happens-before
