@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 6
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 10th, 2020 via [YouTube](https://www.youtube.com/watch?v=UoIiwJ2G2fc)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 10<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=UoIiwJ2G2fc)
 
 | Previous | Next
 |---|---
@@ -10,9 +10,9 @@
 
 ### Difference Between Receiving and Delivering
 
-* ***Sending*** a message is something you do
-* ***Receiving*** a message is something that happens to you
-* ***Delivering*** a message is something you do after receiving the message
+* ***Sending*** a message is something you do actively
+* ***Receiving*** a message is something that happens to you passively
+* ***Delivering*** a message is something you actively do after receiving a message
 
 ***Delivery*** is the conscious decision to process a received message.
 
@@ -20,9 +20,7 @@ But why would you want to queue a message before processing it?  Typically, beca
 
 ### FIFO Delivery
 
-If a process sends message `M2` after `M1`, then any process delivering ***both*** of these messages must deliver `M1` first then `M2`.
-
-Failure to do this constitutes a protocol violation as described in the previous lecture as a "FIFO anomaly"
+If a process sends message `M2` after `M1`, then any process delivering ***both*** of these messages must deliver `M1` first then `M2`.  Failure to do this constitutes a protocol violation as described in the previous lecture as a "FIFO anomaly"
 
 ![FIFO violation or anomaly](./img/L5%20FIFO%20Anomaly.png)
 
@@ -33,7 +31,7 @@ In the case that `Bob` does not receive one (or either) of these messages, then 
 
 ### FIFO Delivery Implementation
 
-In real-life, it is unusual to have to implement FIFO delivery yourself because most distributed system communicate using TCP which already implements FIFO packet delivery.
+In real-life, it is unusual to have to implement FIFO delivery yourself because most distributed systems communicate using TCP which already implements FIFO packet delivery.
 
 ## Causal Delivery
 
@@ -45,15 +43,14 @@ Here's an example of such a violation
 
 ![Causal violation](./img/L6%20Causal%20Violation.png)
 
-In process <code>P<sub>1</sub></code>,  event `A` happens in the causal history of event `B`; therefore, any messages sent from <code>P<sub>1</sub></code> to <code>P<sub>2</sub></code> should be processed in the same causal order as the events that generated them
+In process <code>P<sub>1</sub></code>,  event `A` happens in the causal history of event `B`; therefore, any messages sent from <code>P<sub>1</sub></code> to <code>P<sub>2</sub></code> should be processed in the same causal order as the events that generated them.
 
 But now, let's go back to the "Bob smells" example used in [lecture 3](./Lecture%203.md)
 
 ![Causal Anomaly](./img/L3%20Causal%20Anomaly.png)
 
-Is this a FIFO violation?
-
-No (but only in a vacuous sense...)
+***Q:***&nbsp;&nbsp; Is this a FIFO violation?  
+***A:***&nbsp;&nbsp; No (but only in a vacuous sense...)
 
 The reason is that a FIFO violation only occurs when two messages ***from the same originating process*** are delivered out of order by the receiving process.
 
@@ -71,7 +68,7 @@ However, this scenario is still a causal anomaly.  In general, at least three co
 
 Yes, this is what's known as a broadcast message - I.E. a single send event that broadcasts a message to multiple (possibly all) participants in a system.  The idea of broadcast messages is something that will be dealt with later.
 
-## Totally Ordered Delivery
+## Totally-Ordered Delivery
 
 This is another correctness property.
 
@@ -79,11 +76,11 @@ This is another correctness property.
 
 Let's say we have two client processes `C1` and `C2` that each broadcast a message to two processes `R1` and `R2`.  In this scenario, processes `R1` and `R2` each maintain their own replica of some key/value store.
 
-If processes `R1` and `R2` do not deliver the messages in the correct order, then we will encounter a violation that results in the replicas disagreeing with each other as to what the value of `x` should be.  In other words, this violation creates a data inconsistency.
+If processes `R1` and `R2` do not deliver the messages in the correct order, then we will encounter a violation that results in the replicas disagreeing with each other as to what the value of `x` should be.  In other words, this violation creates an inconsistency between data replicas.
 
-![Total Order Anomaly](./img/L6%20Total%20Order%20Anomaly.png)
+![Total-Order Anomaly](./img/L6%20Total%20Order%20Anomaly.png)
 
-This is known as a ***Total Order Anomaly*** and is created when process `R1` delivers message `m1` followed by `m2`, but process `R2` delivers message `m2` followed by `m1`
+This is known as a ***Total-Order Anomaly*** and is created when process `R1` delivers message `m1` followed by `m2`, but process `R2` delivers message `m2` followed by `m1`.
 
 ### Delivery Guarantees
 
@@ -93,46 +90,44 @@ Since we know that causal delivery also ensures FIFO delivery, we can start to a
 
 Where would Totally Ordered Delivery fit in to this scheme?
 
-In fact, it would get its own branch because a FIFO anomaly is not necessarily an anomaly as far as Totally Ordered Delivery is concerned
+In fact, it would get its own branch because a FIFO anomaly is not necessarily an anomaly as far as Totally-Ordered Delivery is concerned.
 
 We recall that a FIFO anomaly is the following:
 
 ![FIFO violation or anomaly](./img/L5%20FIFO%20Anomaly.png)
 
-But since the definition of Totally Ordered Delivery says that ***all*** processes delivering both `m1` and `m2` must do so in a consistent order, then the above FIFO anomaly is not an anomaly for  Totally Ordered Delivery because there is only one receiving process, so the order in which that process delivers the messages is immaterial.  Thus, this scenario only vacuously conforms to a Totally Ordered Delivery.
+But since the definition of Totally-Ordered Delivery says that ***all*** processes delivering both `m1` and `m2` must do so in a consistent order, then the above FIFO anomaly is not an anomaly for  Totally-Ordered Delivery because there is only one receiving process, so the order in which that process delivers the messages is immaterial.  Thus, this scenario only vacuously conforms to a Totally-Ordered Delivery.
 
-Conversely, Totally Ordered Delivery violations are not necessarily FIFO violations.
+Conversely, Totally-Ordered Delivery violations are not necessarily FIFO violations.
 
 ![Delivery Hierarchy 2](./img/L6%20Delivery%20Hierarchy%202.png)
 
 ### What Does This Hierarchy Imply?
 
-This hierarchy helps us understand what we can and cannot expect out of a particular delivery guarantee.  For instance, if we implement a system guaranteeing causal delivery, then in doing so, we would also be guaranteeing FIFO delivery, because FIFO sits directly below Causal in the hierarchy.
+This hierarchy helps us understand what we can and cannot expect out of a particular delivery guarantee.  For instance, if we implement a system guaranteeing causal delivery, then in doing so, we would also be guaranteeing FIFO delivery, because FIFO delivery sits directly below Causal delivery in the hierarchy.  However, if we implemented a FIFO delivery system, we could make no guarantees about causal delivery.
 
-However, if we implemented a FIFO delivery system, we could make no guarantees about causal delivery.
+Similarly, if the system implements Totally-Ordered Delivery, then this guarantee, in and of itself, cannot ensure either FIFO or Causal delivery.
 
-Similarly, if the system implements Totally Ordered Delivery, then this guarantee, in and of itself, cannot ensure either FIFO or Causal delivery.
-
-Turning this argument around, we can also gain an understanding of what type of anomalies can occur.  For instance, if we have a FIFO anomaly, then this is also going to be a causal anomaly, but not necessarily a Totally Ordered anomaly.
+Turning this argument around, we can also gain an understanding of what type of anomalies can occur.  For instance, if we have a FIFO anomaly, then this is also going to be a causal anomaly, but not necessarily a Totally-Ordered anomaly.
 
 
 ## Implementing Delivery Guarantees
 
 ### Implementing FIFO Delivery: Sequence Numbers
 
-The rule here is that any process `P2` delivering messages from some other process `P1`, must do so in the order that `P1` sent those messages; which might well be different from order in which those messages arrive at `P2`.
+The rule here is that any process `P2` delivering messages from some other process `P1`, must do so in the order that `P1` sent those messages; which, due to variations in network latency, might well be different from the order in which those messages arrive at `P2`.
 
-How would we go about eliminating FIFO delivery anomalies?
+How then would we go about eliminating FIFO delivery anomalies?
 
 One possibility is to use sequence numbers.  This is where all messages from a given sender are tagged with a sequence number and a sender id.  Each time a message is sent, the sender increments its sequence number.  On the receiver's side, all the messages from a given sender are added to a queue ordered by the sequence number.  When all the messages have arrived, the receiver can then deliver them in the correct order.
 
-In this case, sequence numbers do not need to be unique across all the processes, because each massage is also qualified with a sender id; therefore, it is the combination of the sender id and the sequence number that allows the receiver to discriminate who sent what message and in which order.
+In this case, sequence numbers do not need to be unique across all the processes, because each message is also qualified with a sender id; therefore, it is the combination of the sender id and the sequence number that allows the receiver to discriminate who sent which message and in what order.
 
 ***Problems with Sequence Numbers***
 
 What happens if a message is lost?
  
-`Alice` sends messages `m1` and `m2` to `Bob` who delivers them correctly.  However, without her knowing, `Alice`'s message `m3` gets lost and never arrives at `Bob`.  Then `Alice` sends messages `m4` and `m5` which `Bob` receives; however, because `Bob` is still waiting for the message with sequence number `3` to arrive, `Bob` will add any subsequent messages to his queue which may end up waiting forever to be delivered.
+`Alice` sends messages `m1` and `m2` to `Bob` who delivers them correctly.  However, without her knowing, `Alice`'s message `m3` gets lost and never arrives at `Bob`.  Then `Alice` sends messages `m4` and `m5` which `Bob` receives; however, because `Bob` is still waiting for the message with sequence number `3` to arrive, `Bob` will add any subsequent messages to his queue which may end up waiting forever for the lost message to be delivered.
  
 ![Naïve Sequence numbering](./img/L6%20Naive%20Seq%20Nos.png)
 
@@ -157,7 +152,7 @@ Yes, but only in a vacuous sense.  Due to the fact that `Bob` drops all the mess
 
 In this approach, upon receipt of a message, every receiver must send a *"message received"* acknowledgment (such as `ack`) back to the sender.
 
-So when `Alice` sends a message to `Bob`, neither `Alice` nor `Bob` need concern themselves with sequence numbers.  However, this approach has several distinct drawbacks:
+So, when `Alice` sends a message to `Bob`, neither `Alice` nor `Bob` need concern themselves with sequence numbers.  However, this approach has several distinct drawbacks:
 
 * Communication now becomes sequential.  `Alice` cannot send `m2` to `Bob` until she has received an `ack` from `Bob` that he has received `m1`
 * Increases the volume of network traffic
@@ -167,7 +162,7 @@ One way of making this approach to communication more efficient is to gather mes
 
 ## Using Vector Clocks to Prevent Causal Anomalies
 
-Lets look again at the ***Causal Anomaly*** situation:
+Let’s look again at the ***Causal Anomaly*** situation:
 
 ![Causal Anomaly](./img/L3%20Causal%20Anomaly.png)
 
@@ -175,7 +170,7 @@ The problem here is that `Carol` delivers the message she receives from `Bob` ou
 
 Here, we can use vector clocks to solve causal anomalies.
 
-In the [previous lecture](./Lecture%205.md), we looked at using vector clocks to count both message send and receive events; but in order to ensure Causal Delivery, it turns out that we only need to count message send events.
+In the [previous lecture](./Lecture%205.md), we looked at using vector clocks to count both message-send and -receive events; but in order to ensure Causal Delivery, it turns out that we only need to count message send events.
 
 ![Ensure Casual Delivery 1](./img/L6%20Ensure%20Casual%20Delivery%201.png)
 
@@ -183,13 +178,14 @@ Before sending the message, `Alice` updates her vector clock to `[1,0,0]`
 
 ### What Should Bob Do?
 
-`Bob` receives the message from `Alice`.  Should he deliver it?
+`Bob` receives the message from `Alice`.
 
-Yes, he has no reason not to.
+***Q:***&nbsp;&nbsp; Should he deliver it?  
+***A:***&nbsp;&nbsp; Yes, he has no reason not to.
 
 `Bob` delivers the message and discovers that it is not to his liking.  But, since `Bob` has the emotional maturity of an eight-year-old, he fails to realise that soap and water will work far better than trading insults; so, he resorts to sending his own broadcast message back to `Alice` and `Carol`
 
-In delivering this message, `Bob` examines the vector clock of the incoming message and discovers that its less than his, but only by the counter in `Alice`'s position.  This is to be expected, since the message came from `Alice`.  He therefore uses the received vector clock to update updates his own vector clock, and then increments his position in the vector clock.
+In delivering this message, `Bob` examines the vector clock of the incoming message and discovers that its less than his, but only by the counter in `Alice`'s position.  This is to be expected, since the message came from `Alice`.  He therefore uses the received vector clock to update his own vector clock, and then increments his position in the vector clock.
 
 Since a broadcast message is treated as a single send event to multiple recipients, the same vector clock value of `[1,1,0]` is sent as part of the messages to both `Alice` and `Carol`.
 
@@ -197,23 +193,32 @@ Since a broadcast message is treated as a single send event to multiple recipien
 
 ### What Should Alice Do?
 
-The message now arrives at `Alice`.  Should she deliver it?
+The message now arrives at `Alice`.
 
-Yes, she has no reason not to.
+***Q:***&nbsp;&nbsp; Should she deliver it?  
+***A:***&nbsp;&nbsp; Yes, she has no reason not to.
 
-`Alice`'s vector clock is `[1,0,0]` and the incoming vector clock on the message differs only by `1` in `Bob`'s position.  So we can conclude that only one event has taken place since our last message send event, and that event happened in process `Bob` from whom we received this message.
+`Alice`'s vector clock is `[1,0,0]` and the incoming vector clock on the message differs only by `1` in `Bob`'s position.  So, we can conclude that only one event has taken place since our last message send event, and that event happened in process `Bob` from whom we received this message.
 
 ### But What Should Carol Do?
 
-`Bob`'s message also arrives at Carol with vector clock `[1,1,0]`, but earlier than `Alice`'s original message.  Should she deliver it?
+`Bob`'s message also arrives at Carol with vector clock `[1,1,0]`, but earlier than `Alice`'s original message.
 
-Actually, no!
+***Q:***&nbsp;&nbsp; Should she deliver it?  
+***A:***&nbsp;&nbsp; No &mdash; look at the vector clock values!
 
-The reason is that compared to `Carol`'s vector clock (which is still set to `[0,0,0]`), the vector clock on the incoming message is too big.  Its fine for `Bob`'s position to be set to `1` because this is one bigger than `Carol`'s vector clock and the message came from `Bob`; however, there's a `1` in `Alice`'s position.  This means that this message is the response to some event that took place in `Alice`, but that ***Carol doesn't yet know about***.
+The reason is that compared to `Carol`'s vector clock (which is still set to `[0,0,0]`), the vector clock on the incoming message is too big.
 
-In other words, as far as `Carol` is concerned, this is a message from the future that arrived too early, and therefore must be buffered.
+It’s fine for `Bob`'s position to be set to `1` because this is one bigger than `Carol`'s vector clock position for `Bob` and the message came from `Bob`.
 
-Finally, `Alice`'s original `"Bob smells"` message arrives at `Carol`.  `Carol` now examines this message's vector clock and discovers that it has the expected value of `[1,0,0]`; therefore it is fine to deliver it.
+But there's a `1` in `Alice`'s vector clock position.
+
+***Q:***&nbsp;&nbsp; Hmmmm, that's odd.  Where did that come from?  
+***A:***&nbsp;&nbsp; The value comes from the fact that this message is the response to some event that has taken place in `Alice`, but that ***Carol doesn't yet know about***.
+
+In other words, as far as `Carol` is concerned, this is a ***message from the future*** that has arrived too early and must therefore be buffered.
+
+Finally, `Alice`'s original `"Bob smells"` message arrives at `Carol`.  `Carol` now examines this message's vector clock and discovers that it has the expected value of `[1,0,0]`; therefore, it is fine to deliver this message first.
 
 Once this out-of-sequence message has been delivered, the buffered message can be delivered because `Carol` has now caught up with the event that took place in `Alice`.
 
