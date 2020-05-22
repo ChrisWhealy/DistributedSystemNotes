@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 9
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 17th, 2020 via [YouTube](https://www.youtube.com/watch?v=utsDozs1ZMc)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 17<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=utsDozs1ZMc)
 
 | Previous | Next
 |---|---
@@ -19,13 +19,8 @@ We have assumed that the communication channels used between processes in a dist
 
 So, this requirement then leads to the question:
 
-> ***Question***
-> 
-> If the delivery mechanism in a distributed system ***cannot*** guarantee ordered delivery (I.E. FIFO anomalies are possible), then are other algorithms available for taking a global snapshot?
-> 
-> ***Answer***
-> 
-> Yes, there are, but such algorithms have other drawbacks such as needing to pause application processes while the snapshot is taking place.
+***Q:***&nbsp;&nbsp; If the delivery mechanism in a distributed system ***cannot*** guarantee ordered delivery (I.E. FIFO anomalies are possible), then are other algorithms available for taking a global snapshot?  
+***A:***&nbsp;&nbsp; Yes, there are, but such algorithms have other drawbacks such as needing to pause application processing while the snapshot is taking place.
 
 One particularly nice thing about the Chandy-Lamport algorithm is that you can take a snapshot while the application is running (I.E. it’s not a *stop-the-world* style algorithm).  The fact that a process sends out marker messages during its snapshot does not interfere with the application messages already travelling through the system.
 
@@ -43,18 +38,16 @@ The Chandy-Lamport algorithm is not robust against processes crashing whilst the
 
 ### The Chandy-Lamport Algorithm is Guaranteed to Terminate
 
-Without giving a formal proof, in order to take a snapshot of a distributed system we must record the both state of every process in the system, and the state of all the channels between those processes.
-
-This overall task is accomplished by making each process responsible for recording:
+Without giving a formal proof, in order to take a snapshot of a distributed system we must make each process responsible for recording:
 
 * Its own internal state
 * The state of all messages on its incoming channels
 
-Then, when all the processes in the system have taken their own snapshot, the combined individual snapshots will form a coherent snapshot of the entire system.
+Then, when all the processes in the system have completed their snapshots, the sum of the individual snapshots becomes the consistent snapshot of the entire system.
 
 If it can be demonstrated that these actions will terminate for an individual process, then it follows that they will terminate for the entire distributed system.
 
-In section 3.3 of Chandy & Lamport's [original paper](https://lamport.azurewebsites.net/pubs/chandy.pdf) they say:
+In section 3.3 of Chandy & Lamport's [original paper](./papers/chandy.pdf) they say:
 
 > If the graph is strongly connected and at least one process spontaneously records its state, then all processes will record their states in finite time (assuming reliable delivery)
 
@@ -68,7 +61,7 @@ However, Chandy & Lamport require only that the graph is strongly connected; for
 
 ![Connected Graph](./img/L9%20Connected%20Graph.png)
 
-`P3` can still send messages to `P2`, but must send them via `P1`.
+`P3` can still send messages to `P2` but must send them via `P1`.
 
 ## Simultaneous Snapshot Initiators
 
@@ -98,7 +91,7 @@ As soon as the marker messages arrive:
 
 Again, we now have a coherent snapshot of the whole system in spite of the fact that two processes simultaneously decided to act as initiators.
 
-This is known as a ***consistent cut*** - something we'll talk a little later.
+This is known as a ***consistent cut*** - something we'll talk about a little later.
 
 ### Is It Possible to Get a Bad Snapshot?
 
@@ -108,7 +101,7 @@ Could we end up with a bad snapshot such as the one shown below?
 
 No, this is in fact impossible because as soon as a process records its own state, it must immediately send out marker messages.  This is the rule that makes it impossible for event `B` to send message `m` to `P2` before the snapshot processing has completed.
 
-The rules of the Chandy-Lamport Snapshot algoritm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all out going channels.  So the marker message will always be sent ***before*** `P1` send message `m` to `P2`.  Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
+The rules of the Chandy-Lamport Snapshot algorithm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all outgoing channels.  So, the marker message will always be sent ***before*** `P1` send message `m` to `P2`.  Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
 
 To understand how important this is, let's consider what would happen if simultaneous initiators were ***not*** permitted:
 
@@ -118,13 +111,13 @@ To understand how important this is, let's consider what would happen if simulta
 
 This all gets very chaotic and might possibly lead to some sort of deadlock.
 
-So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.  This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: Here be dragons!)
+So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.  This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: here be dragons!)
 
-Since the Chandy-Lamport algorithm permits multiple initaiators, it very much easier to implement because we do not have to care about solving the hard problem of agreeing on who will act as the initiator &mdash; ***any*** process can snapshot ***any*** time it likes!
+Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing on who will act as the initiator &mdash; ***any*** process can take a snapshot ***any*** time it likes!
 
 Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.  Hence, markers can be very lightweight messages that do not need to carry any identifiers.
 
-The Chandy-Lamport algorith is an example of a decentralised algorithm.  There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (We'll talk more about this type of algorithm later in the course).
+The Chandy-Lamport algorithm is an example of a decentralised algorithm.  There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (We'll talk more about this type of algorithm later in the course).
 
 ## Why Do We Want Snapshots in the First Place?
 
@@ -166,7 +159,7 @@ However, this is an inconsistent cut:
 
 This cut is inconsistent because the causality of events `B` and `D` has been reversed.
 
-As far as the data in this cut is concerned, the relation `B->D` is now broken.  This is because the cut has moved the future event `D` into the past, but done so without recording the event that caused it.  Similarly, the past event `B` has been moved into the future, but without any connection to event `D` it causes.
+As far as the data in this cut is concerned, the relation `B->D` is now broken.  This is because the cut has moved the future event `D` into the past but done so without recording the event that caused it.  Similarly, the past event `B` has been moved into the future, but without any connection to event `D` it causes.
 
 ## The Chandy-Lamport Algorithm Determines a Consistent Cut
 
@@ -212,20 +205,20 @@ In order to enforce causal delivery (at least in the case of broadcast messages)
 
 If a process delivers `m1` then `m2`, all participating processes delivering both messages must deliver `m1` first.
 
-A violation of totally ordered delivery looks like this:
+A violation of totally-ordered delivery looks like this:
 
 ![Total Order Anomaly](./img/L6%20Total%20Order%20Anomaly.png)
 
-### A Protocol to Enforce Totally Ordered Delivery
+### A Protocol to Enforce Totally-Ordered Delivery
 
-We did not actually talk about a protocol for enforcing totally ordered delivery - we just spoke about it being hard!
+We did not actually talk about a protocol for enforcing totally-ordered delivery - we just spoke about it being hard!
 
-But here's an idea.  If a fifth process were added to act as a coordinator, then totally ordered delivery could be ensured by telling every client process that in order to change the state of the data in the replicated databases, it must first check in with the coordinator.  The coordinator then acts as a middleman for ensuring that message delivery happens in the correct order.
+But here's an idea.  If a fifth process were added to act as a coordinator, then totally-ordered delivery could be ensured by telling every client process that in order to change the state of the data in the replicated databases, it must first check in with the coordinator.  The coordinator then acts as a middleman for ensuring that message delivery happens in the correct order.
 
 However, this approach has several downsides:
 
 * The coordinator process can become a bottleneck, potentially making the system slow
-* If the coordinator crashes, then all updates stop until such time as the coordinator can restart
+* If the coordinator crashes, then all updates stop until such time as the coordinator can be restarted
 
 ## Safety and Liveness Properties
 
@@ -234,7 +227,7 @@ Let's now briefly introduce the next topic, that of ***safety*** and ***liveness
 | Safety Property | Liveness Property |
 |---|---|
 | Something bad will ***not*** happen | Something good ***eventually*** happens
-| In a finite execution, we can demonstrate that something bad will happen if this property is not satisfied.<br><br>FIFO anomalies, Causal Anomalies and Totally Ordered Anomalies are all examples of safety properties because we can demonstrate that their failure causes something bad to happen | For example, all client messages are eventually answered.<br><br>However, since the definition of a liveness property tends to be open-ended, it is very difficult to provide a counter example when considering ***finite*** execution, since the possibility of having to wait forever is not excluded.<br><br>This is why liveness properties are much harder to reason about.
+| In a finite execution, we can demonstrate that something bad will happen if this property is not satisfied.<br><br>FIFO anomalies, Causal Anomalies and Totally-Ordered Anomalies are all examples of safety properties because we can demonstrate that their failure causes something bad to happen | For example, all client messages are eventually answered.<br><br>However, since the definition of a liveness property tends to be open-ended, it is very difficult to provide a counter example when considering ***finite*** execution, since the possibility of having to wait forever is not excluded.<br><br>This is why liveness properties are much harder to reason about.
 
 ---
 
