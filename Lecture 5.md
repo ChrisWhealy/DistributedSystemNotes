@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 5
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 8th, 2020 via [YouTube](https://www.youtube.com/watch?v=zuxA6f-XIAc)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 8<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=zuxA6f-XIAc)
 
 | Previous | Next
 |---|---
@@ -12,7 +12,7 @@
 
 Lamport Clocks are consistent with causality, but do not characterise (or establish) it.
 
-If `A->B` then `LC(A) < LC(B)`
+If `A->B` then this implies that `LC(A) < LC(B)`
 
 However, this implication is not reversable:
 
@@ -21,24 +21,24 @@ If `LC(A) < LC(B)` then it does ***not*** imply `A->B`
 
 ## Vector Clocks
 
-Invented independently by Friedemann Mattern and Colin Fidge.  Both men wrote papers about this subject in 1988
+Invented independently by Friedemann Mattern and Colin Fidge.  Both men wrote papers about this subject in 1988.
 
-For Vector Clocks
+For Vector Clocks however, this relation ***is*** reversable:
 
 `A->B <==> LC(A) < LC(B)`
 
-A Lamport Clock is a single integer, but a Vector Clock is a sequence of integers (vector in the programming sense, not a vector in the sense of magnitude and direction)
+A Lamport Clock is just a single integer, but a Vector Clock is a sequence of integers. (The word *"vector"* is being used here in the programming sense, not in the sense of a magnitude and direction)
 
 ### Implementing a Vector Clock
 
 There are two pre-conditions that must be fulfilled before you can implement a Vector Clock:
 
 1. You must know upfront how many processes make up your system
-1. All the processes must agree the order in which the clock values will occur in the vector 
+1. All the processes must agree the order in which the clock values will occur within the vector 
 
-In this case, we know that we have three processes `Alice`, `Bob` and `Carol`, and that the sort order of values in the vector will be alphabetic by process name.
+In this case, we know that we have three processes `Alice`, `Bob` and `Carol`, and that the order of values in the vector will be sorted alphabetically by process name.
 
-So each process will create its own vector clock with an initial value of `[0,0,0]` for `Alice`, `Bob` and `Carol` respectively.
+So, each process will create its own copy of the vector clock with an initial value of `[0,0,0]` for `Alice`, `Bob` and `Carol` respectively.
 
 The Vector Clock is then managed by applying the following rules:
 
@@ -48,7 +48,7 @@ The Vector Clock is then managed by applying the following rules:
 
 1. When sending a message, each process includes the current state of its clock as metadata with the message payload
 
-1. When receiving a message, each process updates its vector clock using the rule `max(VC(self),VC(msg))`
+1. When receiving a message, each process updates its own position in the vector clock using the rule `max(VC(self),VC(msg))`
 
 
 If, at some point in time, the state of the vector clock in process `Alice` becomes `[17,0,0]`, then this means that as far as `Alice` is concerned, it has recorded 17 events, whereas it thinks that processes `Bob` and `Carol` have not recorded any events yet.
@@ -59,7 +59,7 @@ If, at some point in time, the state of the vector clock in process `Alice` beco
 
 But how do we take the `max` of two vectors?
 
-The notion of `max` we're going to use here is a per-element comparison (a.k.a a pointwise maximum)
+The notion of `max` we're going to use here is a per-element comparison (a.k.a. a pointwise maximum)
 
 For example, if my VC is `[1, 12,4]` and I receive the VC `[7,0,2]`, the pointwise maximum would be `[7,12,4]`
 
@@ -67,7 +67,7 @@ For example, if my VC is `[1, 12,4]` and I receive the VC `[7,0,2]`, the pointwi
 
 What does `<` mean in the context of two vectors?
 
-This is calculated by performing a pointwise comparison of each element in the vector ***and*** rejecting the special case where `VC(A) = VC(B)`
+This is calculated by performing a pointwise comparison of each element in the vector ***and*** rejecting the special case where `VC(A) = VC(B)`.  That is:
 
 <code>for all elements in the VCs, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub> && VC(A) ≠ VC(B)</code>
 
@@ -87,17 +87,17 @@ So, taking a pointwise comparison of each element gives:
 | `1` | `2 ≤ 2` | `true`  
 | `2` | `0 ≤ 3` | `true`  
 
-So, the overall result is calculated by `AND`ing all the outcomes together:
+The overall result is then calculated by `AND`ing all the outcomes together:
 
 `false && true && true = false`
 
-So, we can conclude that `VC(A)` is ***not*** less than `VC(B)`
+So, we can conclude that `VC(A)` is ***not*** less than `VC(B)`.
 
 Ok, let’s do this comparison the other way around.
 
 Is `VC(B) < VC(A)`?
 
-So, taking a pointwise comparison of each element gives:
+Again, we perform a pointwise comparison of each element gives:
 
 | Index | <code>VC(B)<sub>i</sub> ≤ VC(A)<sub>i</sub></code> | Outcome
 |---|---|---
@@ -176,7 +176,7 @@ If, on the other hand, the ***less than*** relation cannot be satisfied, then we
 
 ## Protocols
 
-The non-rigourous definition of a protocol is that it is an agreed upon set of rules that computers use for communicating with each other.
+The non-rigorous definition of a protocol is that it is an agreed upon set of rules that computers use for communicating with each other.
 
 Let's take a simple example:
 
@@ -212,39 +212,41 @@ But considering that a Logical Clock is only concerned with the ordering of even
 
 ### Complete Protocol Representation?
 
-Is it possible to use a Lamport Diagram to give us a complete representation of all the possible message exchanges in a given protocol?
-
-No!
+***Q:***&nbsp;&nbsp; Is it possible to use a Lamport Diagram to give us a complete representation of all the possible message exchanges in a given protocol?  
+***A:***&nbsp;&nbsp; No!
 
 It turns out that there are infinitely many different Lamport Diagrams that all represent valid runs of a protocol.
 
-The point here is that a Lamport Diagram is good for representing a particular run of a protocol, but it cannot represent ***all possible*** runs of that protocol, because there will be infinitely many.
+The point here is that a Lamport Diagram is good for representing a ***specific*** run of a protocol, but it cannot represent ***all possible*** runs of that protocol, because there will be infinitely many.
 
 Lamport Diagrams are also good for representing protocol violations - for instance, in the diagram above, `Alice` sent the message `Good, thanks` to `Bob` without `Bob` first sending the message `Hi, how are you?`.
 
 ### Correctness Properties and Their Violation
 
-In this course, we're often going to talk about the violation of some sort of correctness property, and a diagram is a good way to represent such a violation.
-
 When discussing properties of a system that we want to be true, one way to talk about the correctness of such properties is to draw a diagram that represents its violation.
 
-For instance, consider the order in which messages are sent and received
+For instance, consider the order in which messages are sent and received.
+
+### Important Terminology
+
+In distributed systems, messages are not only sent and received, but they are also ***delivered***.
+
+Hmmmm, it sounds like there is some highly specific meaning attached to the word ***deliver***...  Yes, there is.
+
+***Sending*** and ***receiving*** can be understood quite intuitively, but in the context of distributed systems, the concept of ***message delivery*** has a highly specific meaning:
+
+* ***Sending***  
+    The explicit act of causing a message to be transmitted.  The sending process has complete control over when, or even if, that message is sent; therefore, message sending is active.
+* ***Receiving***   
+    An action that happens when a message arrives.  The receiving process has no control over when or even if a message arrives &mdash; they just show up... or not.  Therefore, from the perspective of the receiving process, receiving is passive.
+* ***Delivery***  
+    Any processing performed on a message after it has been received. For the receiving process, it can choose when and if to handle the received message; therefore, message delivery is active.   
+    For instance, even though you have no control over when you will receive messages, you can choose to place those messages into a queue and only process them at some time in the future you deem to be correct.  
+    This is known as ***delivering*** a received message which is distinct from simply receiving a message.
 
 ### FIFO (or Ordered) Delivery
 
-If a process sends message `M2` after message `M1`, the receiving process must deliver `M1` first, followed by `M2`
-
-Ok, but it sounds like there is some highly specific meaning attached to the word ***deliver***...
-
-Well, ***sending*** and ***receiving*** can be understood quite intuitively, but ***delivery*** does indeed have a specific meaning in this context:
-
-* ***Sending***  
-    An action you explicitly perform on a message.  You have complete control over when, or even if, that message is sent.
-* ***Receiving***   
-    An action that happens to you when a message arrives.  You have no control over when or if messages arrive &mdash; they just show up... or not.
-* ***Delivery***  
-    An action you perform upon a received message.  
-    For instance, even though you have no control over when you will receive messages, you can choose to place those messages into a queue and only process them at some time in the future you deem to be correct.  This is an example of ***delivering*** a received message.
+If a process sends message `M2` after message `M1`, the receiving process must deliver `M1` first, followed by `M2`.
 
 We can represent a protocol violation such as ***FIFO anomaly*** using the following diagram. 
 
@@ -258,3 +260,5 @@ This is an example of where a diagram provides a very useful way to represent th
 | Previous | Next
 |---|---
 | [Lecture 4](./Lecture%204.md) | [Lecture 6](./Lecture%206.md)
+
+
