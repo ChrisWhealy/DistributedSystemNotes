@@ -18,7 +18,7 @@ Replication is the main strategy for mitigating loss:
 However, replication is used for more than just mitigating loss.
 
 * ***Scalability/Load Balancing***  
-    Handling sudden peaks in request volume or a sustained high
+    Handling sudden peaks in request volume or sustained high load
 * ***Fault Tolerance***  
     Multiple, redundant instances of hardware/software
 * ***Data Locality***  
