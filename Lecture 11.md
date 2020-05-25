@@ -14,7 +14,8 @@
 
 The definition we gave in the previous lecture for reliable delivery was the following
 
-> Let `P1` be a process that sends a message `m` to process `P2`.  If neither `P1` nor `P2` crashes,<sup><b>*</b></sup> then `P2` eventually delivers message `m`
+> Let `P1` be a process that sends a message `m` to process `P2`.  
+> If neither `P1` nor `P2` crashes,<sup><b>*</b></sup> then `P2` eventually delivers message `m`
 
 We also qualified this definition with the further criterion (indicated by the star) that says:
 
@@ -26,7 +27,7 @@ So, our definition of ***Reliable Delivery*** varies depending on which fault mo
 
 From a practical perspective, the Omission Model is a far more useful approach for handling real-life situations since message loss is a real, everyday occurrence.
 
-Remember also from the previous lecture that if we implement the Omission Model, we have also implemented the Crash Model.
+Remember also from the previous lecture that due to their hierarchical relationship, if we implement the Omission Model, we have also implemented the Crash Model.
 
 ![Fault Hierarchy 1](./img/L10%20Fault%20Hierarchy%201.png)
 
@@ -38,11 +39,11 @@ Certainly - that would be something like this:
 
 > If a correct process `P1` sends a message `m` to a correct process `P2` and not all messages are lost, then `P2` eventually delivers message `m`.
 
-Ok, but haven't you just hidden the variablility of the earlier definition behind the abstract term ***correct process***?  Yes, that's true &mdash; but you did ask for a consistent definition!
+Ok, but haven't you just hidden the variability of the earlier definition behind the abstract term ***correct process***?  Yes, that's true &mdash; but you did ask for a consistent definition!
 
 The term ***correct process*** means different things in different fault models.  If we need to implement the Byzantine Fault Model, then a ***correct*** process is a non-malicious or non-arbitrary process; however, if we are implementing the Crash Model, then a ***correct*** process is simply one that doesn't crash.
 
-So, as soon as you see the word ***correct*** in a definition like the one above, we should immediately determine which fault model being used, because this will then tell us what ***correct*** means in that particular context.
+So, as soon as you see the word ***"correct"*** in a definition like the one above, we should immediately determine which fault model is being used, because this will then tell us what ***correct*** means in that particular context.
 
 
 ### How Do We Go About Implementing Reliable Delivery?
@@ -84,7 +85,7 @@ In this context, the instruction contained in the message is said to be ***idemp
 
 `f(x) = f(f(x)) = f(f(f(x))) etc...`
 
-In other words, an idempotent function only has an effect the first time it is applied to the data.  Thereafter, subsequent applications of that function to the same data have no further effect.
+In other words, an idempotent function `f` only has an effect the first time it is applied to some value `x`.  Thereafter, subsequent applications of function `f` to the value returned by `f(x)` have no further effect.
 
 So, assigning a value to a variable is idempotent, but incrementing a variable is not.
 
@@ -94,13 +95,13 @@ Generally speaking, if we can work with idempotent operations, then our implemen
 
 From the above discussion (and assuming that all communication happens within the asynchronous network model), we can say that reliable delivery therefore means that a message is delivered ***at least once***.
 
-If we say that `del(m)` returns the count of the number of times message `m` has been delivered, then there are three possible options:
+Let's say we have some  function `del` that returns the number of times message `m` has been delivered, then there are three possible options:
 
 | Delivery Strategy | Delivery Count 
 |---|---
 | At least once | `1 ≤ del(m)` 
 | At most once | `0 ≤ del(m) ≤ 1` 
-| Exactly once | `del(m) = 1` 
+| Exactly once | `del(m) == 1` 
 
 
 Looking at the above table, it can be seen that since ***at most once*** delivery allows for a message to be delivered zero times, then this strategy can be implemented (at least vacuously) by not sending the message at all!  Doh!
@@ -118,7 +119,7 @@ In [lecture 7](Lecture%207.md) we looked at an implementation of causal broadcas
 
 ![Causal Broadcast](./img/L7%20Causal%20Broadcast%208.png)
 
-Then there is the case that one participant sends a message to ***many***, but not all of the other participants in the system.  An example of this the Total Order anomaly we also saw in lecture 7.
+Then there is the case that one participant sends a message to ***many***, but not all of the other participants in the system.  An example of this the Total-Order anomaly we also saw in lecture 7.
 
 ![Total Order Anomaly](./img/L7%20TO%20Anomaly.png)
 
@@ -141,9 +142,9 @@ In this manner, we could send broadcast or multicast messages simply by invoking
 
 Up until now, we have been drawing our Lamport diagrams with multiple messages coming from a single event in the sending process - and this is how it should be.  Conceptually, we need to treat broadcast messages as having exactly one point of origin.
 
-However, under the hood, the mechanism for sending the actual messages could be multiple invocations of the unicast send primitive.  But this will only get us so far.  The problem is that even if we batch together all the message send commands in some transactional way, if we get halfway through sending this batch of messages and something goes wrong, what should you do about the messages sent so far - attempt to cancel or revoke them?
+However, under the hood, the mechanism for sending the actual messages could be multiple invocations of the unicast send primitive.  But this will only get us so far.  The problem is that even if we batch together all the message send commands in some transactional way, if we get halfway through sending this batch of messages and something goes wrong, what remedial action can we take about the messages we've already sent - attempt to cancel or revoke them?
 
-So, the reality is that we need a way to define reliable broadcast.
+So, the reality is that we need a reliable way to define reliable broadcast.
 
 
 ## Implementing Reliable Broadcast
@@ -215,11 +216,11 @@ This is a fundamental concept that will be used a lot as we proceed through this
 
 We can mitigate message loss by making copies of messages; but what else might we lose?
 
-In addition to message sends and receives, there are also internal events within a process that record its changes of state (I.E. the changes that occur to a process' internal data).  How to we mitigate against data loss?  Again, by taking copies.
+In addition to message sends and receives, there are also internal events within a process that record its changes of state (I.E. the changes that occur to a process' internal data).  How can we mitigate against data loss?  Again, by taking copies.
 
 ### Why Have Multiple Copies of Data?
 
-There are several reasons
+There are several reasons:
 
 ***Protection Against Data Loss***  
 The state of a process at time `t` is determined by the complete set of events that have occurred up until that time.  Therefore, by knowing a process' event history we can reconstruct the state that process.  This then allows us to keep replicas of processes in different locations.  If one data centre goes down, then we still have all the data preserved in one or more other data centres.
@@ -251,28 +252,4 @@ In the case of reliable broadcast, we can tolerate processes crashing by making 
 | Previous | Next
 |---|---
 | [Lecture 10](./Lecture%2010.md) | [Lecture 12](./Lecture%2012.md)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
