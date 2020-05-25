@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 12
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 24th, 2020 via [YouTube](https://www.youtube.com/watch?v=2dGJXEGTbGQ)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on April 24<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=2dGJXEGTbGQ)
 
 
 | Previous | Next
@@ -18,8 +18,9 @@ Replication is the main strategy for mitigating loss:
 However, replication is used for more than just mitigating loss.
 
 * ***Scalability/Load Balancing***  
-    Handling a high volume of requests or sudden peaks in demand can be solved by replication of the data
-* ***Fault Tolerance***
+    Handling sudden peaks in request volume or a sustained high
+* ***Fault Tolerance***  
+    Multiple, redundant instances of hardware/software
 * ***Data Locality***  
     If you are physically close to your data, then you are likely to get a faster response to your requests.  Hence, geographic distribution of data tends to provide better response times for users spread out around the world
 
@@ -29,13 +30,16 @@ However, what are the downsides of replication?
 
 Maintaining consistency of data across replicas is especially challenging when you consider that processes:
 
-* Can crash
-* Are physically far apart
-* Are all handling requests and thus continually changing state
+* Can crash due to software or hardware failure
+* Are physically distant from each other
+* Are continually changing state asynchronously
+* Are connected by an unreliable communication network
 
 But mitigation of these problems was the reason for wanting to do replication in the first place!  So, all the reasons for needing replication also make it hard to implement.
 
-Another consideration is cost.  If a message is lost during transmission, you can simply resend it; however, if a server crashes, you cannot avoid data loss unless you ***already*** have a replica server up and running.  This means that you must incur the cost of running replica servers ***before*** anything goes wrong.
+Another consideration is cost.
+
+If a message is lost during transmission, you can simply resend it; so, the cost of transmission failure is paid only ***after*** the failure has occurred; however, if a server crashes, you cannot avoid data loss unless you ***already*** have a replica server up and running.  So, to protect against hardware failure, you must incur the cost of running replica servers ***before*** anything has gone wrong.
 
 ## Total Order vs. Determinism
 
@@ -57,13 +61,13 @@ Or, we might end up with `x=1`
 
 So simply reducing the number of replicas to one does not solve our problem.
 
-A further problem is that neither of the situations described above can be considered wrong.  Both runs of the system are valid and correct, and neither violate Total Order delivery.
+A further problem is that neither of the situations described above can be considered wrong.  Both runs of the system are valid and correct, and neither violate Total-Order delivery.
 
-Remember that in order to have totally ordered delivery:
+Remember that if we want totally-ordered delivery:
 
 > If a process delivers message `M1` followed by `M2`, then all processes delivering both `M1` and `M2` must deliver `M1` first followed by `M2`.
 
-Process `R1` above is the only process delivering messages; therefore, it can never be in violation of the Totally Ordered Delivery rule!  This gives process `R1` a lot of control over when to deliver messages.  In fact, process `R1` can decide what is meant by *"Total Order"* by controlling when it delivers  messages.
+Process `R1` above is the only process delivering messages; therefore, it can never be in violation of the Totally-Ordered Delivery rule!  This gives process `R1` a lot of control over when to deliver messages.  In fact, process `R1` can decide for itself what *"Total Order"* actually means by controlling when it delivers messages.
 
 In fact, `R1` could deliver messages in different orders across different runs and still not violate the safety property of Totally Ordered Delivery; however, it would be violating a different property called ***Determinism***
 
@@ -75,7 +79,7 @@ Determinism is a property that relates multiple runs of a system to each other.
 
 If `R` delivers messages in one order on one run, but in a different order on the next run, then this is a violation of determinism.
 
-> ***Totally Ordered Delivery***  
+> ***Totally-Ordered Delivery***  
 > This is a property that relates to a single run of a system
 > 
 > ***Determinism***  
@@ -152,8 +156,7 @@ The follow sequence of events happens:
 
 This problem is created by the fact that `R2` is missing an event in the causal history of the request to withdraw \$50.
 
-***Q:***&nbsp;&nbsp; Why did `C2` makes its request against `R2` instead of `R1`?
-
+***Q:***&nbsp;&nbsp; Why did `C2` makes its request against `R2` instead of `R1`?  
 ***A:***&nbsp;&nbsp; Well, in distributed systems, it is often the case that the client has no control over which replica serves its request.  Having said that, some distributed systems maintain consistency by forcing a client's requests to be served by the same replica - however, decisions like this are taken by the distributed system and lie beyond the control of the client.
 
 ### Hierarchy of Consistency Guarantees
@@ -175,10 +178,10 @@ Remember that we informally defined strong consistency as the case where a clien
 Here the idea is pretty straight-forward and has been around since the 1970's.  We pick a system to act as the primary, and all the other systems act as backups. This arrangement has the following advantages:
 
 * It provides fault tolerance.  If the primary fails, then one of the backups can immediately take over.
-* Since the clients only ever talk to the primary, whatever total order the primary uses is sufficient to maintain consistency.  However, if we got rid of the division between primary and backup system and allowed any system to service client requests, then we would need to solve the harder problem of establishing a consistent total order across all these systems.
+* Since the clients only ever talk to the primary, whatever total order is used by the primary is sufficient to maintain consistency.  However, if we got rid of the division between primary and backup system and allowed any system to service client requests, then we would need to solve the harder problem of establishing a consistent total order across all these systems.
 
 
-In this scenario, clients only ever interact with the primary.  When a client message arrives at the primary, it is replicated to all the backup systems in parallel, each of which must send back an `ack` to the primary.  
+In this scenario, clients only ever interact with the primary.  When a client write message arrives at the primary, it is replicated to all the backup systems in parallel, each of which must send back an `ack` to the primary.  
 
 ![Primary Backup Replication 1](./img/L12%20Primary%20Backup%20Replication%201.png)
 
@@ -192,7 +195,8 @@ When the client wants to read a value, the answer need only come from the primar
 
 There are several drawbacks to primary backup replication:
 
-* It is slow because not only is the primary the bottleneck, but the system's minimum response time can be no faster than the maximum `ack` response time from any one of the backups
+* The fastest response time can be no faster than the time taken for the slowest replica to send back its `ack`, ***plus*** the time taken for the primary to deliver the message to itself
+* Under high load conditions, the primary becomes a bottleneck
 * There is no possibility for horizontal scaling if the primary becomes overloaded
 * It cannot help with data locality since, by definition, there can only be one primary
 
@@ -204,7 +208,7 @@ On the surface, this looks like a good solution, but upon closer examination, we
 
 How so?
 
-If a write is issued to the primary, that write is broadcast to all the backups.  However, the backups never send their `ack`s back to the client - only the primary receives these `acks`.  Only when the primary has received `ack`s from all the backups does it then send an `ack` to the client.
+If a write is issued to the primary, that write is broadcast to all the backups.  However, the backups never send their `ack`s back to the client - only the primary receives these `acks`.  Only after the primary has received `ack`s from all its backups, and has delivered the message to itself, does it then send an `ack` to the client.
 
 This means that if we direct a read request to a backup for data that has just been updated, but before the `ack` has reached the client (via the primary), then potentially, we could be reading data from a state held in one of the backups that is ***ahead*** of the primary.  I.E. we will be reading ***data from the future***
 
@@ -221,16 +225,17 @@ In Chain Replication, the process that we previously called the "Primary" is now
 The division of labour is now modified slightly:
 
 * All write requests from clients are handled by the "Head" process
-* The "Head" then replicates the write instruction down the chain of replicas terminating at the "Tail"
+* The "Head" then passes the write instruction to the first backup in the chain
+* Each backup successively passes the write request down the chain until it terminates at the "Tail"
 * When the "Tail" process completes the write, we know that since it is the last link in the chain, it can send its `ack` directly back to the client
 
 ![Chain Replication - Write](./img/L12%20Chain%20Replication%201.png)
 
-This then means that should the client wish to make a subsequent read, it can direct that request to the backup from which it received the `ack`.
+This then means that should the client wish to make a subsequent read; it can direct that request to the backup from which it received the `ack`.
 
 ![Chain Replication - Read](./img/L12%20Chain%20Replication%202.png)
 
-This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain Replication for Supporting High Throughput And Availability"](https://www.cs.cornell.edu/home/rvr/papers/OSDI04.pdf)
+This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain Replication for Supporting High Throughput And Availability"](./papers/chain_replication.pdf)
 
 ***Q:***&nbsp;&nbsp; But the response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the write and propagate the request through to the next link in the chain.  How can this then be described as *High Throughput*?
 
@@ -242,7 +247,7 @@ The answer to this question also depends on the ratio of reads and writes we exp
 
 ### Chain Replication: Drawbacks
 
-In Primary Backup replication, when the primary performs a write, the replication messages are broadcast (I.E. sent out in parallel) to all the backup processes.  Therefore, the longest wait time will be no longer than the time taken for the slowest process to complete the write and send out its `ack`.  So no matter how many backups you have, the worst-case scenario will never be worse than the slowest backup process.
+In Primary Backup replication, when the primary performs a write, the replication messages are broadcast (I.E. sent out in parallel) to all the backup processes.  Therefore, the longest wait time will be no longer than the time taken for the slowest backup to complete the write and send out its `ack`.  So, no matter how many backups you have, the worst-case scenario will never be worse than the slowest individual backup process.
 
 However, in Chain Replication, the length of the backup chain defines the overall response time for a write to complete.  As the chain length increases, so the overall response time increases because write replication propagates sequentially down the length of the chain.
 
@@ -250,10 +255,11 @@ This then increases the system's ***write latency***.
 
 What about read latency though?  Read latency for a Chain Replication system does not vary with chain length because all reads are directed to the tail.
 
-Both of these strategies are commonly used; however, the decision as to which one will work best for you is governed primarily by the balance you expect between reads and writes.
+Both of these strategies are commonly used; however, the decision as to which one will work best for you is governed primarily by the balance of reads and writes you expect your system to receive.
 
 ---
 
 | Previous | Next
 |---|---
 | [Lecture 11](./Lecture%2011.md) | [Lecture 13](./Lecture%2013.md)
+
