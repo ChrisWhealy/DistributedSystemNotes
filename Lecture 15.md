@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 15
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 4th, 2020 via [YouTube](https://www.youtube.com/watch?v=UCmAzWvrFmo)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 4<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=UCmAzWvrFmo)
 
 | Previous | Next
 |---|---
@@ -14,7 +14,7 @@ Read Amazon's [Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-
 
 ...snip...
 
-### Exam Question: Chandy-Lamport Snapshot Bug
+### Problematic Exam Question: Chandy-Lamport Snapshot Bug
 
 The following diagram shows a buggy implementation of the Chandy-Lamport snapshot algorithm.
 
@@ -108,7 +108,7 @@ In this scenario, we will make two changes.  We will run the Paxos algorithm wit
 
 Let's say we have ***two*** proposers <code>P<sub>1</sub></code> and <code>P<sub>2</sub></code> and as before, three acceptors. (We also have two learners, but we'll ignore them for the time being.)
 
-Remember we previously stated that in situations where there are multiple proposers, these proposers must agree as to how they will ensure the uniqueness of their own proposal numbers.  So, in this case, we will assume that:
+Remember we previously stated that in situations where there are multiple proposers, these proposers must have already agreed on how they will ensure the uniqueness of their own proposal numbers.  So, in this case, we will assume that:
 
 * Proposer <code>P<sub>1</sub></code> uses odd proposal numbers, and
 * Proposer <code>P<sub>2</sub></code> uses even proposal numbers
@@ -131,7 +131,7 @@ Acceptor <code>A<sub>3</sub></code> however has not seen proposal number `4` bef
 
 Proposer <code>P<sub>2</sub></code> is now left hanging.
 
-It sent out `prepare` messages to all the acceptors but has only heard back from a minority of them.  The rest have simply not answered, and given the way asynchronous communication works, <code>P<sub>2</sub></code> cannot know ***why*** it has not heard back from the other acceptors.  They could have crashed, or they might be running slowly, or, as it turns out, the other acceptors have already agreed to have <code>P<sub>1</sub></code>'s babies...
+It sent out `prepare` messages to all the acceptors but has only heard back from a minority of them.  The rest have simply not answered, and given the way asynchronous communication works, <code>P<sub>2</sub></code> cannot know ***why*** it has not heard back from the other acceptors.  They could have crashed, or they might be running slowly, or, as it turns out, the other acceptors have already agreed to <code>P<sub>1</sub></code>'s proposal and are now having his babies...
 
 So, all <code>P<sub>2</sub></code> can do is wait for its timeout period, and if it doesn't hear back within that time, it concludes that proposal number `4` was a bad idea and tries again.  This time, <code>P<sub>2</sub></code> shows up in a faster car (proposal number `6`).
 
@@ -150,10 +150,10 @@ But what about the case where we receive a proposal number that is ***higher*** 
 
 In this case, each acceptor must consider the following situation:
 
-*"I've already promised to respond to proposal number `n`,  
- but now I'm being asked to promise to respond to proposal number `n+1`"*
+> *"I've already promised to respond to proposal number `n`,  
+> but now I'm being asked to promise to respond to proposal number `n+1`"*
 
-How the acceptor reacts now depends on what has happened in between it receiving the `prepare(n)` message and the `prepare(n+1)` message.
+How the acceptor reacts now depends on what has happened in between receiving the `prepare(n)` message and the `prepare(n+1)` message.
 
 Either way, the acceptor cannot ignore the higher proposal number, so it is going to send out some sort of `promise` message; but this time, the acceptor must consider whether it has already accepted a value based on some earlier, lower proposal number.
 
@@ -166,7 +166,7 @@ In the above example, acceptor <code>A<sub>1</sub></code> has already agreed wit
 
 ![Multiple Proposers 4](./img/L15%20Multiple%20Proposers%204.png)
 
-So in this specific situation, acceptor <code>A<sub>3</sub></code> responds simply with `promise(6)` because although it previously agreed to proposal number `4`, nothing came of that, and it has not previously accepted any earlier value.
+So, in this specific situation, acceptor <code>A<sub>3</sub></code> responds simply with `promise(6)` because although it previously agreed to proposal number `4`, nothing came of that, and it has not previously accepted any earlier value.
 
 Acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> however, must respond with the message `promise(6,(5,1))`.
 
@@ -195,7 +195,7 @@ So, now we must revise rule 3 given above.  Previously we stated:
 
 But now we understand that the proposer does not have complete liberty to send out the value ***it wishes*** to propose; instead, it must first consider:
 
-* If I have received any `promise` messages containing old agreed values, then I am obligated to propose the most recentl;y agreed value
+* If I have received any `promise` messages containing old agreed values, then I am obligated to propose the most recently agreed value
 * If I have received only simple `promise(n)` messages, then I am free to propose any value I like
 
 So now, <code>P<sub>2</sub></code> can only send out the message `accept(6,1)`.
@@ -225,3 +225,4 @@ As far as <code>A<sub>3</sub></code> is concerned, it thinks that value `1` was 
 | Previous | Next
 |---|---
 | [Lecture 14](./Lecture%2014.md) | [Lecture 16](./Lecture%2016.md)
+
