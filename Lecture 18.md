@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 18
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 11th, 2020 via [YouTube](https://www.youtube.com/watch?v=xakpenkbOr0)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 11<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=xakpenkbOr0)
 
 | Previous | Next
 |---|---
@@ -24,36 +24,36 @@ A network is said to be ***partitioned*** if machines on that network can no lon
 
 ### Eventual Consistency
 
-This idea is not new, it’s been around since at least the 1990's, but it has experienced a resurgence since the publication of the Dynamo paper to such an extent, that many people think eventual consistency was invented at around this time.  It is common, but incorrect, for people to cite a [2008 article](./papers/Vogels.pdf) by Werner Vogels as the origin of this term.  If you need a citation, it is better to quote from older work by Doug Terry, and explained in articles such as [this one](https://littlemindslargeclouds.wordpress.com/tag/eventual-consistency/).
+This idea is not new, it’s been around since at least the 1990's, but it has experienced a resurgence since the publication of the Dynamo paper to such an extent, that many people think eventual consistency was invented at around this time.  It is common, but incorrect, for people to cite a [2008 article](./papers/Vogels.pdf) by Werner Vogels as the origin of this term.  If you need a citation, it is better to quote from older work by Doug Terry and explained in articles such as [this one](https://littlemindslargeclouds.wordpress.com/tag/eventual-consistency/).
 
 Eventually consistency can be defined as ***"Replicas will eventually agree if clients stop sending updates"***
 
-This consistency model is not however a safety property - it is a liveness property.  This is because a liveness property cannot be violated in a finite execution.
+This consistency model is not however a safety property - it is a liveness property, because it cannot be violated in a finite execution.
 
 For Dynamo however, it is not immediately clear what safety properties it offers.  We have said that for a system to offer strong consistency, then for nodes that deliver the same set of messages, their states will agree - even if those updates arrive in different orders.  This is clearly a safety property, and Amazon has given this a lower priority over the liveness property of availability.
 
 ### Vector Clocks
 
-Dynamo uses a vector clock to give a logical timestamp to events in an attempt to resolve conflicts.  But as we have seen, vector clocks cannot resolve anomalies created by causally independent events.  In such cases, Dynamo offers two different approaches to conflict resolution:
+Dynamo uses vector clocks to logically timestamp events in an attempt to resolve conflicts.  But as we have seen, vector clocks cannot resolve anomalies created by processing causally independent events.  In such cases, Dynamo offers two different approaches to conflict resolution:
 
-* For the vast majority of cases, if causally independent versions of the data are discovered, these are simply sent to the client to be sorted out using application-specific conflict resolution, or
+* For the vast majority of cases, if causally independent versions of the data are discovered, then all available versions are simply sent to the client to be sorted out using application-specific conflict resolution, or
 * Much less frequently, it adopts a simple ***"last-write-wins"*** strategy
 
 ### Application-Specific Conflict Resolution
 
 Since the client application has a far better idea of what actions the user is performing, this is the best context within which to handle conflict resolution.  In the case of the user's shopping cart, if it turns out that the server ends up with two or more causally unrelated versions, then all this data is simply passed to the client-side application for resolution.  In the case of shopping carts, the correct approach is for the client simply to create a new shopping cart from a union of the different cart versions.
 
-But why take set union over set intersection?  To sell more products?  Well, maybe, but by taking the union, it guarantees never to miss an item, whereas the intersection of non-identical sets guarantees that at least one item will be dropped.  This decision to use set union might, occasionally, result in a deleted item popping up again, but in practice, that situation is rare.
+But why take set union over set intersection?  To sell more products?  Well, maybe, but by taking the union, it guarantees never to miss an item, whereas the intersection of non-identical sets guarantees that at least one item will be dropped.  It is true that the decision to use set union might, occasionally, result in a deleted item popping up again, but in practice, that situation is rare.
 
 Dynamo is designed in such a way that you can elect to implement your own, client-side conflict resolution mechanism, or you can simply delegate this to the server, in which case, the ***last-write-wins*** approach is used.
 
 ## Write Commutativity
 
-Addition and multiplication are commutative operations because the order of the operands does not change the result.
+Addition and multiplication are commutative operations because the order of the operands does not change the outcome of the operation.
 
 <code>3 + 4 &equiv; 4 + 3</code>  and <code>3 * 4 &equiv; 4 * 3</code>
 
-It something of an abuse of terminology to describe writes as *"commutative"* because this term describes the outcome of a binary operation on the basis of the order in which the operands are applied; however, in spite of our abuse of the terminology, in the case of adding items to a shopping cart, the order in which the writes happen is immaterial, so in that sense, we can consider writes to be a commutative operation.  This approach works because a shopping cart is simply a set in which there is no causal relationship between the members: the presence of a book in your shopping cart is unrelated to the presence of a pair of jeans.
+It something of an abuse of terminology to describe writes as *"commutative"* because this term describes the outcome of a binary operation on the basis of the order in which the operands are applied; however, in spite of this imprecise usage of terminology, in the case of adding items to a shopping cart, the order in which the writes happen is immaterial; so in that sense, we can consider writes to be a commutative operation.  This approach works because a shopping cart is simply a set in which there is no causal relationship between the members: the presence of a book in your shopping cart is unrelated to the presence of a pair of jeans.
 
 This fact alone is enough to gives us strong convergence; however, the paper also talks about vector clocks.  Why are vector clocks needed when we've just established that there's no causal relationship between the items in a shopping cart?
 
@@ -108,13 +108,13 @@ In terms of discovering differences in group membership, only a small amount of 
 
 ### Using Merkle Trees to Discover State Differences
 
-In order to exchange state data efficiently, Dynamo minimises the amount of network traffic by using Merkle (or Hash) Trees.  A Merkle Tree is a (typically binary) tree in which the value of each parent node is the hash of the values of its children.  Thus, a difference in the state of the entire key/value store can be discovered simply by two nodes comparing the hash value of the root nodes of their Merkle Trees.  If these values differ, then somewhere further down the tree, a difference must exist.  Only then do the nodes start exchanging lower level hash values until the different key/value pair is discovered.
+In order to exchange state data efficiently, Dynamo minimises the amount of network traffic by using Merkle (or Hash) Trees.  A Merkle Tree is a (typically binary) tree in which the value of each parent node is the hash of the values of its children.  Thus, two nodes can discover a difference in the state of their entire key/value stores simply by comparing the hash value of the root nodes of their Merkle Trees.  If these values differ, then somewhere further down the tree, a difference must exist.  Only then do the nodes start exchanging lower level hash values until the different key/value pair is discovered.
 
 This solves the "*cost of data transfer*" problem.
 
 ![Merkle Tree 1](./img/L18%20Merkle%20Tree%201.png)
 
-The above diagram represents the Merkle Tree that would be created for a keystore containing four values.  In order for two nodes to discover if their keystores are identical, all they need to do is compare their root node values of `H7`.  If these are identical, then everything else beneath that point in the tree must also be identical.
+The above diagram represents the Merkle Tree that would be created for a keystore containing four values.  In order for two nodes to discover if their keystores are identical, all they need to do is compare the hash value `H7` of their root nodes.  If these are identical, then everything else beneath that point in the tree must also be identical.
 
 If two data stores do differ in only one item, then the difference can be discovered by traversing the Merkle Tree until the differing leaf node value is discovered.
 
@@ -128,7 +128,7 @@ The root nodes are compared and found to be different, so the child node values 
 
 ![Merkle Conflict 3](./img/L18%20Merkle%20Conflict%203.png)
 
-The `H6` node in each tree is the same, so the difference cannot lie beneath this node and this side of the tree can be entirely ignored.  However, the `H5` node values differ, so the difference must lie somewhere on this side of the tree.
+The `H6` node in each tree is the same, so the difference cannot lie beneath this node and this side of the tree can be entirely ignored.  However, the `H5` node values differ, so the difference must lie somewhere beneath this node.
 
 ![Merkle Conflict 4](./img/L18%20Merkle%20Conflict%204.png)
 
@@ -144,9 +144,9 @@ So, this is where the differing key/value pair is located and we have establishe
 
 So, the Merkle Tree comparison strategy effectively *"binary chops"* its way through the data in the keystore to locate the differing value(s).
 
-We should also note that the values stored in the keystore are not necessarily simple integers as shown here; they are usually entire data objects. So, this strategy identifies the exact differing value, and then only that value needs to be sent over the network.
+We should also note that the values stored in the keystore are not necessarily simple integers as shown here; they are usually entire data objects. So, this strategy identifies the exact differing value, and agreement can be reached by transferring only that value over the network.
 
-If more multiple key values differ, then these can also be discovered using the same strategy.  In the worst case, you would need to compare all the values in the keystore; but this is a highly unlikely situation.  In reality, the differences between large keystores are small, thus making this a various efficient difference detection strategy - especially when these differences need to be discovered over a network.
+If multiple key values differ, then these can also be discovered using the same strategy.  In the worst case, you would need to compare all the values in the keystore; but this is a highly unlikely situation.  In reality, the differences between large keystores are small, thus making this an efficient difference detection strategy - especially when these differences need to be discovered over a network.
 
 Merkle Trees are used in a wide variety of situations, not only for comparing keystore values.  They are often used in the case of authentication.  In the case of Dynamo however, they explicitly state that this strategy is employed within a trusted, non-threatening environment.  So, under these conditions, the primary consideration here is to save on network bandwidth.  Attacks from hostile third parties are explicitly excluded from this discussion; therefore, there is no need for Dynamo to have any concept of user or request authentication.  However, Merkle Trees are useful in both situations.
 
@@ -189,19 +189,40 @@ In a quorum consistency environment, there are three specific, configurable valu
 * `W` - **The Write Quorum**  
     The number of replicas that must respond to a write operation in order to consider that operation a success (typically 2)
 * `R` - **The Read Quorum**  
-    The number of replicas that must respond to a read operation in order to consider result reliable (typically 2)
+    The number of replicas that must respond to a read operation (typically 2)
+
+> ***ASIDE***
+> 
+> There is a detail concerning the definition of the read quorum value that needs to be mentioned.
+> 
+> Opinions differ as to whether the read quorum specifies simply the number of responding replicas, or the number of agreeing replicas.
+> 
+> In this course, we will only concern ourselves with the simple case that the read quorum refers to the number of responding replicas, and not worry about whether those replicas all respond with the same value.
 
 
-If we suppose that `W` is set to 3 and `R` to 1, then we have implemented a system that prioritises read performance.  This is because firstly, we require all three replicas to acknowledge the success of a write (thus providing strong consistency), and secondly, knowing that consequently, all the replicas ***must*** contain the same data, we can be sure that a read from any replica will be authoritative.
+If we suppose the following configuration:
 
-This is a popular Dynamo configuration setting, often known as Read One, Write All (or ROWA) and it does provide reliable writes and fast reads, but is it fault tolerant?
+```
+N = 3
+W = 3
+R = 1
+```
 
-No, it’s not because if one of the nodes crashes, or a network partition suddenly separates the client from one of the replicas, then it can no longer perform any writes - because we have stipulated that all three nodes must respond to a write operation because we consider it successful.
+This configuration implements a system that prioritises read performance because:
 
-So, whilst this gives certain advantages, it does so by carrying the risk of reduced fault tolerance.
+1. We require all three replicas to acknowledge the success of a write (thus providing strong consistency), and
+1. Knowing that all the replicas contain the same data, we can be sure that a read from ***any*** replica will be authoritative
+
+This is a popular Dynamo configuration setting, often known as Read One, Write All (or ROWA) and it does provide reliable writes and fast reads, but consider this:
+
+***Q:***&nbsp;&nbsp; Is it fault tolerant?  
+***A:***&nbsp;&nbsp; No, it’s not because if one of the nodes crashes, or a network partition suddenly separates the client from one of the replicas, then it can no longer perform any writes - because we have stipulated that all three nodes must respond to a write operation before we can consider it successful.
+
+So, whilst this `331` configuration this gives certain advantages, it does so at the risk of reduced fault tolerance.
 
 ---
 
 | Previous | Next
 |---|---
 | [Lecture 17](./Lecture%2017.md) | [Lecture 19](./Lecture%2019.md)
+
