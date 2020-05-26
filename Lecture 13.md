@@ -161,7 +161,7 @@ So, what steps can we take to be more tolerant of coordinator failure&hellip;
 * But then how do you keep the coordinators coordinated?
 * Do you have a coordinator coordinator process?  If so, who coordinates the coordinator coordinator process?
 
-This quickly leads either to an infinite regression of coordinators, or another Monty Python sketch... (Spam! spam! spam! spam!)
+This quickly leads either to an infinite regression of coordinators, or another [Monty Python sketch](./img/very_silly.png)... (Spam! spam! spam! spam!)
 
 This question then leads us very nicely into the next topic of ***Consensus*** &mdash; but we won't start that now.
 
