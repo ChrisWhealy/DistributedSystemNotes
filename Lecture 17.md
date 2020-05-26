@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 17
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 8th, 2020 via [YouTube](https://www.youtube.com/watch?v=-a1Ua1P9cNg)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 8<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=-a1Ua1P9cNg)
 
 
 | Previous | Next
@@ -78,7 +78,7 @@ The term "*eventual consistency*" has been something of a buzzword in the last 1
 
 ## Strong Convergence
 
-Strong convergence is a safety property that defined as:
+Strong convergence is a safety property that is defined as:
 
 > Replicas that have delivered the same ***set*** of updates have equivalent state
 
@@ -183,7 +183,7 @@ Well, yes, but this raises further issues...
 1. What if the primary crashes?  Now we have a whole load of issues:
     * If a backup now has to take over the role of the primary, data will have been lost because whichever backup takes over will be out of sync
     * We've already sent an acknowledgement to the client saying that their write was successful, yet when the backup takes over, the client's data will be missing.
-    * The client will be able to detect the missing data, and will go saddened by all the trust issues this creates...
+    * The client will be able to detect the missing data, and will go away deeply saddened by all the trust issues this has created...
 
 ***Q:***&nbsp;&nbsp; So why doesn't the primary just wait for the partition to heal?  
 ***A:***&nbsp;&nbsp; Because this might take an arbitrarily large amount of time, or never happen.
@@ -197,10 +197,7 @@ It looks like we're caught between a rock and a hard place here.  Typically thou
 
 So, this means that the acknowledgement seen in the diagram above would never be sent unless the network partition has first been healed and communication with the backups restored.
 
-If we now adjust our definition of availability to mean that every client receives a request *within some fixed amount of time*, even then we would be unable to make such a guarantee because we have no idea how long a network partition might take to heal.
-
-
-There are however, some strategies for honouring a response time constraint.  We could:
+If we now adjust our definition of availability to mean that every client receives a request *within some fixed amount of time*, even then we would be unable to make such a guarantee because we have no idea how long a network partition might take to heal.  There are however, some strategies for honouring a response time constraint.  We could:
 
 * Inform the client that the update has been accepted, but no backup is available
 * Inform that client that while the network partition exists, *"Updates are temporarily unavailable"*
@@ -236,7 +233,7 @@ This problem is known as CAP: ***C***onsistency, ***A***vailability, ***P***arti
 
 You cannot achieve all three, so pick the two you need and then learn to deal with the problems created by the other one.
 
-However, there are some subtleties that are often overlooked here.
+By now it should be no surprise to learn that this situation contains some subtleties that are often overlooked:
 
 * The consistency being spoken of is specifically strong consistency
 * The availability being spoken of is perfect availability
@@ -247,7 +244,7 @@ For instance, Amazon does not claim that Dynamo offers *perfect* availability, o
 
 When designing a distributed system, you need to decide which of these qualities is of the greatest importance to you, and then build the system to provide you with the correct balance.  In Amazon's case as an online retailer, fast response times are of higher priority than the occasional lost item, so availability is prioritised over consistency.
 
-So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because this is a nastier type of fault and is much harder to tolerate.
+So, systems are designed along a spectrum with availability at one end and consistency at the other.  Notice however, that partition tolerance is not shown on this spectrum.  This is because it is a nastier type of fault and is much harder to tolerate.
 
 ![Consistency/Availability Trade-off 3](./img/L17%20Tradeoff%203.png)
 
@@ -258,7 +255,7 @@ So, systems are designed along a spectrum with availability at one end and consi
 
 However, systems like Dynamo are configurable in terms of the degree to which availability is prioritised over consistency (Dynamo has a configurable feature called "Quorum consistency")
 
-When it was first published in 2007, one of the things that made the Dynamo paper so influential was that it contradicted the prevailing opinion that strong consistency must be given the highest priority.  Up until then, the majority of the research effort had assumed that the priority was to improve strong consistency and Byzantine fault tolerance.  However, Amazon realised if you emphasise strong consistency, you are then forced to minimise the occurrence of network partitions; but in practice, this turns out to be extremely difficult simply because networks fail &mdash; get over it!
+When it was first published in 2007, one of the things that made the Dynamo paper so influential was that it contradicted the prevailing opinion that strong consistency must be given the highest priority.  Up until then, the majority of the research effort had assumed that the priority was to improve strong consistency and Byzantine fault tolerance.  However, Amazon realised if you emphasise strong consistency, you are then also forced to minimise the occurrence of network partitions; but in practice, this turns out to be extremely difficult simply because networks fail &mdash; get over it!
 
 So, basically Amazon said *"Chasing after super high degrees of strong consistency is fool's errand because this also forces us to try to prevent the inevitable (network partitions).  So, let’s just accept that we'll get better results in the long term if we prioritise availability"* (or words to that effect...)
 
