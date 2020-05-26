@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 21
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 20th, 2020 via [Twitch](https://www.twitch.tv/videos/626692883)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 20<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=sB9uiD-IUI0)
 
 | Previous | Next
 |---|---
@@ -110,7 +110,7 @@ or to take things a step further, the target word's context and a list of locati
 
 The point here is that the map function produces data in the form of key/value pairs.
 
-Usually, these key/value pairs are qualified as being ***intermediate*** because they represent some halfway point in our calculation, and require further processing by the reduce function.  However, in the case of distributed `grep`, the map function has already completed the required processing, either by identifying where in the document the target pattern occurs, or by returning an empty result; thus, in this case, the reduce function could be implemented as a ***do nothing*** function that simply returns whatever value it has been passed.<sup id="a2">[2](#f2)</sup>
+Usually, these key/value pairs are qualified as being ***intermediate*** because they represent some halfway point in our calculation and require further processing by the reduce function.  However, in the case of distributed `grep`, the map function has already completed the required processing, either by identifying where in the document the target pattern occurs, or by returning an empty result; thus, in this case, the reduce function could be implemented as a ***do nothing*** function that simply returns whatever value it has been passed.<sup id="a2">[2](#f2)</sup>
 
 ### The Shuffle Phase
 
@@ -147,7 +147,7 @@ In the case of the word count example, the various map functions might output in
 <dog, 1>
 ```
 
-The key values go through the `hash mod N` algorithm which then determines which reduce function will handle the next phase of the processing.  The output of a single reduce function might then be the sum of all the word count totals received from the various map workers:
+The key values go through the `hash mod N` algorithm which then determines which reduce worker will handle the next phase of the processing.  The output of a single reduce worker might then be the sum of all the word count totals received from the various map workers:
 
 ```
 <the, 12>
@@ -158,7 +158,7 @@ The key values go through the `hash mod N` algorithm which then determines which
 
 What about the distributed `grep` example?
 
-In this case, each map worker either locates the search text in the document or it does not.  So, by the time we pass the results to the reduce function, the work has ***already*** been done.  So, the reduce function does not need to do anything other than write its input data directly to the output storage (GFS, for instance).
+In this case, each map worker either locates the search text in the document or it does not.  So, by the time we pass the results to the reduce function, the required processing has ***already*** been done.  So, the reduce function does not need to do anything other than write its input data directly to the output storage (GFS, for instance).
 
 This turns out to be quite a common pattern: the reduce function is implemented as little more than the identity function (see endnote [2](#f2)).
 
@@ -194,9 +194,9 @@ Option 2 means that occasionally, we will have to pay a time penalty in order to
 
 In general fault tolerance in distributed systems requires us to duplicate something.  So, in practice, we end up duplicating some combination of:
 
-* ***Data*** by storing multiple copies
-* ***Communication*** by sending multiple messages
-* ***Computation (Effort)*** by occasionally having to redo some work
+* ***Data***: by storing multiple copies
+* ***Communication***: by sending multiple messages
+* ***Computation (Effort)***: by occasionally having to redo some work
 
 One of the distinguishing features of MapReduce is that it deliberately chooses to redo work in the event of worker failure because on average, this incurs a smaller time penalty than transferring data over the network.
 
@@ -241,9 +241,9 @@ The map function needs two arguments:
 1. A function that performs the required transformation on a single list item, and
 1. A list of items to be transformed
 
-Map then works its way down the list, passing every element in turn to the function and storing the results in a new list.
+The MapReduce framework then works its way down the list, passing every element in turn to your Map function and storing the results in a new list.
 
-To describe this in Haskell, the type of the map function would be written like this:
+The datatypes used by the map function would be written like this in Haskell:
 
 ```haskell
 map :: (a -> b) -> [a] -> [b]
@@ -251,7 +251,7 @@ map :: (a -> b) -> [a] -> [b]
 
 Breaking this down:
 
-* `map :: (a -> b)` means that the first argment to `map` is a function.  This function takes an input of type `a` and returns an output of type `b`
+* `map :: (a -> b)` means that the first argument to `map` is a function.  This function takes an input of type `a` and returns an output of type `b`
 * `-> [a]` means that the second argument to `map` is a list in which all the items are of type `a`
 * `-> [b]` at the end means that the final result is of type `b`
 
@@ -262,23 +262,25 @@ map _ [] = []
 map f (x:xs) = f x : map f xs
 ```
 
-So here, we have described how `map` should behave in two situations:
+So here, we have described how `map` should behave in two situations.  The first is:
 
 ```haskell
 map _ [] = []
 ```
 
-Here, if map is passed an empty list `[]`, then all we will do is respond with another empty list `[]`.  The underscore after `map` means that in the case of receiving an empty list, we don't care what type of function is supplied, because that function isn't going to be called anyway...
+Here, if map is passed an empty list `[]`, then all we will do is respond with another empty list `[]`.  The underscore after `map` means that in the case of receiving an empty list, we don't care what type of function is supplied, because that function isn't going to be called anyway...  This is known as the ***base case*** and serves the vital role of terminating the recursive calls to the `map` function.
 
-The more interesting situation is where map is passed a non-empty list:
+The second case is more interesting because this is where `map` is passed a non-empty list:
 
 ```haskell
 map f (x:xs) = f x : map f xs
 ```
 
-The function passed to `map` is called `f` and the list of items being mapped over is destructured into the variables `x` and `xs`, where `x` contains whatever value is found at the head of the list, and `xs` contains whatever else is left in the tail (which eventually will become the empty list).
+The first argument passed to `map` is a function called `f`, and second argument is the list of items over which `f` will be mapped.  This list is destructured into the variables `x` and `xs`, where `x` contains whatever value is found at the head of the list, and `xs` contains whatever else is left in the tail.
 
-We then call function `f` passing it `x` as an argument and concatenate what we get back to the result of recursively calling `map`, again passing in function `f` and whatever is left over in `xs`.
+We then call function `f` passing it `x` as an argument and concatenate what we get back to the result of recursively calling `map` passing in function `f` and whatever is left over in `xs`.
+
+This is how we can recursively call function `f` on the elements in the ever-decreasing list `xs`.  For each call to `f`, `xs` becomes one element smaller and eventually becomes the empty list.  At this point we have hit our base case and recursion terminates because the list has been fully processed.
 
 So, a simple example would be:
 
@@ -351,7 +353,7 @@ reduce add 0 [1,1,2,1,] = 5
 <b id="f2">2</b>&nbsp;&nbsp; A function that simply returns its argument unmodified is known as the ***Identity*** function.  In JavaScript, such a function is implemented simply as 
 
 ```javascript
-const id = x => x
+const ident = x => x
 ```
 
 [↩](#a2)
@@ -359,5 +361,4 @@ const id = x => x
 <b id="f3">3</b>&nbsp;&nbsp; Remember, in a network using asynchronous communication, a crashed process is indistinguishable from a running process that has simply stopped responding to messages.
 
 [↩](#a3)
-
 
