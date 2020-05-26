@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 16
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 6th, 2020 via [YouTube](https://www.youtube.com/watch?v=h8wGZVOh43c)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on May 6<sup>th</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=h8wGZVOh43c)
 
 | Previous | Next
 |---|---
@@ -15,7 +15,7 @@
 
 Lots of people struggled with this question in the midterm exam, and since it is a fundamental concept, if you don't understand this, you'll struggle later with other concepts based on it.
 
-So, the question is this *"In a distributed system, what should a physical clock be used for and what should it not be used for?"*
+The question was this: *"In a distributed system, what should a physical clock be used for and what should it not be used for?"*
 
 So, what are physical clocks good for in a distributed system?
 
@@ -28,8 +28,8 @@ These two types of physical clock stand in contrast to a logical clock.
 
 | | Time-of-day Clock | Monotonic Clock
 |---|---|---|
-| Marking points in time | ![Neutral emoji](./img/emoji_neutral.png)<br>OK for process running on a single system, but not much good in distributed systems because there can be no shared clock. | ![Sad emoji](./img/emoji_sad.png)<br>Completely useless because they are simply counters that increment from some ["unspecified point in the past"](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_16) which is unique to each machine (E.G. Nanoseconds since system start).<br>Monotonic clock values from different machines cannot be meaningfully compared.
-| Durations/Intervals | ![Sad emoji](./img/emoji_sad.png)<br>The problem here is that time-of-day clocks can jump around due to daylight saving time and leap seconds.| ![Smiley emoji](./img/emoji_smiley.png)<br>On a single machine, these are great because they only go forward from some ["unspecified point in the past"](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_16).
+| Marking points in time | ![Neutral emoji](./img/emoji_neutral.png)<br>OK for processes running on a single system, but not much good in distributed systems because there can be no shared clock. | ![Sad emoji](./img/emoji_sad.png)<br>Completely useless because they are simply counters that increment from some ["unspecified point in the past"](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_16) which is unique to each machine (E.G. Nanoseconds since system start).<br>Monotonic clock values from different machines cannot be meaningfully compared.
+| Durations/Intervals | ![Sad emoji](./img/emoji_sad.png)<br>The problem here is that time-of-day clocks can jump around due to daylight saving time and leap seconds.| ![Smiley emoji](./img/emoji_smiley.png)<br>On a single machine, these are great because they only go forward from some "unspecified point in the past".
 
 ***Q:***&nbsp;&nbsp; So, what are physical clocks good for in distributed systems?  
 ***A:***&nbsp;&nbsp; Timeouts!
@@ -39,9 +39,9 @@ Timeouts (measured using a monotonic clock) are used in a wide variety of places
 ***Q:***&nbsp;&nbsp; So, what are physical clocks ***not*** good for in distributed systems?  
 ***A:***&nbsp;&nbsp; Measuring the order of events
 
-Why?  Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare the values of those points in time.
+Why?  Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare time values recorded on different machines.
 
-If we use time-of-day clocks, then these will only be comparable in a very course sense because they are prone to jumping around due daylight-saving time and leap seconds.
+If we use time-of-day clocks, then these will only be comparable in a very course sense because they are prone to jumping around due to factors such as daylight-saving time and leap seconds.
 
 If we try to use monotonic clock values, then things get even worse because they are simply counters from some *"unspecified point in the past"*; thus, it is meaningless to compare values coming from different machines.
 
@@ -57,11 +57,11 @@ All consensus algorithms try to satisfy the following three properties:
 
 We have already stated that for a consensus algorithm running in a distributed system where failures are possible, it is impossible to implement all three properties.  This is known as the [FLP Result](./papers/FLP.pdf).
 
-Therefore, all consensus algorithms must compromise on one these properties, and Paxos compromises on the termination property &mdash; which risks cases where nontermination could occur.
+Therefore, all consensus algorithms must compromise on one these properties, and Paxos compromises on the termination property &mdash; which risks cases where non-termination could occur.
 
 So, what kind of situation would lead to non-termination?
 
-Simply put, the Paxos algorithm will not terminate in cases where multiple proposers content with each other for the proposed value.
+Simply put, the Paxos algorithm will not terminate in cases where multiple proposers contend with each other for the proposed value.
 
 Consider this sequence of events:
 
@@ -97,7 +97,7 @@ And on and on we can go here - with each proposer continually trying to outbid t
 
 This is known as the ***"Duelling Proposers Problem"***.
 
-In this case, we have used three acceptors, but actually only two would have been sufficient to demonstrate nontermination.
+In this case, we have used three acceptors, but actually only two would have been sufficient to demonstrate non-termination.
 
 ### So, Why Not Just Have One Proposer?
 
@@ -115,13 +115,13 @@ And we're back to where we started...
 
 So, we cannot insist on there being only one proposer because our consensus algorithm depends on a consensus algorithm.  For instance, if we relied on Paxos to determine a new leader, then we're depending on an algorithm that might never terminate.
 
-Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer.  This does not eliminate the possibility of the *Duelling Proposers Problem* (because it could still occur during leader election phase); however, it confines nontermination to the leader election phase and removes it from the value proposal phase.
+Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer.  This does not eliminate the possibility of the *Duelling Proposers Problem* (because it could still occur during leader election phase); however, it confines non-termination to the leader election phase and removes it from the value proposal phase.
 
 This is strategy for reducing risk, not removing it.
 
 ## Would It Ever Make Sense to Compromise on a Different Property?
 
-So far, we have seen that the Paxos algorithm values *agreement* and *validity* over termination; therefore, it sees nontermination as an acceptable risk in the quest to achieve agreement and validation.
+So far, we have seen that the Paxos algorithm values *agreement* and *validity* over termination; therefore, it sees non-termination as an acceptable risk in the quest to achieve agreement and validation.
 
 But is there another way we could work here?
 
@@ -194,7 +194,7 @@ Ok, but what happens if we do have a second proposer who starts injecting their 
 
 In this case, we will not be able to repeat the second phase because some of the acceptors will be ignoring <code>P<sub>1</sub></code>'s `accept` messages.  Now, <code>P<sub>1</sub></code> will simply time out and start the prepare/promise phase again.  In other words, nothing breaks and Multi-Paxos gracefully degenerates back to regular Paxos &mdash; however, we do not expect this situation to happen very often.
 
-Using this approach, Totally-Ordered Delivery can be acheived by a set of processes using the (Multi-)Paxos consensus algorithm between them to agree on message delivery order.
+Using this approach, Totally-Ordered Delivery can be achieved by a set of processes using the (Multi-)Paxos consensus algorithm between them to agree on message delivery order.
 
 ## But Is This the Whole Story?
 
@@ -247,9 +247,9 @@ Well, the proposer only needs to hear back from a majority of acceptors; so, if 
 
 Ok, let's ramp up the severity &mdash; what if the proposer sends a `prepare` message to all three acceptors, and all three messages got lost?
 
-Again, other than slowing things down, nothing bad would happen because after waiting for its time out period, the proposer would simply try again with a new proposal number.  At this point, we might run into a nontermination problem, but that is not an omission fault.
+Again, other than slowing things down, nothing bad would happen because after waiting for its time out period, the proposer would simply try again with a new proposal number.  At this point, we might run into a non-termination problem, but that is not an omission fault.
 
-So Paxos does OK in the case of omission faults - it might not terminate, but as we've seen with the *"Duelling Proposers Problem"* shown above, we don't need to experience message loss in order for nontermination to occur.
+So Paxos does OK in the case of omission faults - it might not terminate, but as we've seen with the *"Duelling Proposers Problem"* shown above, we don't need to experience message loss in order for non-termination to occur.
 
 ## Other Consensus Protocols
 
@@ -315,11 +315,11 @@ This is passive replication because the operation is executed only on the primar
 
 ### These Are Both Examples of Primary Backup Replication
 
-Irrespective of whether an active or passive strategy is used, both approaches are still primary backup replication:
+Irrespective of whether an active or passive strategy is used, both approaches shown here are examples of primary backup replication:
 
 * The clients still communicate only with the primary
 * The primary executes the required operation and communicates (in some way) with the backups
-* The backups all acknowledge that they have completed whatever message was sent to them
+* The backups all acknowledge that they have successfully processed whatever message was sent to them
 * Lastly, the primary commits the work itself and sends an acknowledgement back to the client
 
 Exactly what type of message the primary sends to the backups is an internal implementation detail &mdash; as far as the external observer is concerned, it’s all primary backup replication
@@ -332,12 +332,17 @@ Well, we need to consider factors such as the size of the resulting updated stat
 
 For instance, what should we do if the primary receives the operation *"Increment everyone's account balance by one cent"* &mdash; and we have a million bank accounts?  In this case, the size of the state change would be huge, so passive backup would not be a good approach.
 
-In general, then:
+The following factors should be evaluated when deciding between active and passive replication:
 
-* If an operation results in a large state change, then active replication is probably going to be better because sending the operation uses up much less bandwidth than sending the changed stated
+* The update requires me to run a computation that costs `t` units of time
+* I have `n` nodes on which this update must be applied
+* The new state created by the computation is `s` bytes in size
+* The network connecting the nodes transmits data at a rate of `r` bytes per unit of time
+
+The question then boils down to crunching these numbers in order to work out which option gives me the quickest result.  In general, then:
+
+* If an operation results in a large state change, then active replication is probably going to be better because sending the operation over the network uses up much less bandwidth than sending the changed stated
 * If the cost of an operation is high, then passive replication is probably going to be better because the cost of computation is incurred only once (on the primary)
-
-
 
 Active replication is also known as *"State Machine Replication"*
 
@@ -346,5 +351,4 @@ Active replication is also known as *"State Machine Replication"*
 | Previous | Next
 |---|---
 | [Lecture 15](./Lecture%2015.md) | [Lecture 17](./Lecture%2017.md)
-
 
