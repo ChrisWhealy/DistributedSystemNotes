@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 20](./Lecture%2020.md) |
+| [Lecture 20](./Lecture%2020.md) | [Lecture 22](./Lecture%2022.md) |
 
 
 ## Recap: MapReduce Phases
