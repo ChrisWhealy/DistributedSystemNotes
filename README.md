@@ -27,3 +27,4 @@ Due to the Covid-19 lockdown being enforced at the time, these lectures had to b
 | [Lecture 19](./Lecture%2019.md)<br>May&nbsp;13<sup>th</sup>,&nbsp;2020 | More about Quorum Consistency<br>Introduction to sharding<br>Consistent hashing
 | [Lecture 20](./Lecture%2020.md)<br>May&nbsp;18<sup>th</sup>,&nbsp;2020 | Online systems vs. Offline systems<br>Raw data vs. Derived data<br>Introduction to Google's MapReduce framework<br>MapReduce example: transform a forward index into an inverted index
 | [Lecture 21](./Lecture%2021.md)<br>May&nbsp;20<sup>th</sup>,&nbsp;2020 | MapReduce<ul><li>Types</li><li>Approach to fault tolerance</li><li>Combine functions</li><li>More examples</li></ul> | MapReduce phases
+| [Lecture 22](./Lecture%2022.md)<br>May&nbsp;29<sup>th</sup>,&nbsp;2020 | The math behind replica conflict resolution<ul><li>Upper bounds</li><li>Least upper bounds</li><li>Join-semilattices</li></ul> | Strong convergence<br>Partial orders
