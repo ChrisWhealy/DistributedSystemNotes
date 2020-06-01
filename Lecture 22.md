@@ -23,9 +23,9 @@ Well, we could use a consensus protocol to decide which updates should processed
 
 ![Replica Consensus 1](./img/L22%20Replica%20Consensus%201.png)
 
-If replica `R1` receives update `A` and replica `R2` receives update `B`, then an agreement must be reached consider the order in which these updates should be applied.
+If replica `R1` receives update `A` and replica `R2` receives update `B`, then an agreement must be reached concerning the order in which these updates should be delivered.
 
-So, even though the messages will arrive in some unpredictable order, a consensus protocol will be used to decide upon the order in which these messages are delivered.  In this case, both replicas operate a system of delivery slots, and the consensus protocol determines that event `B` should occupy delivery slot `1` and event `A` should occupy delivery slot `2`.
+So, even though the messages will arrive in some unpredictable order, a consensus protocol will be used to decide upon the delivery order.  In this case, both replicas operate a system of delivery slots and the consensus protocol determines that event `B` should occupy delivery slot `1` and event `A` should occupy delivery slot `2`.
 
 ***Q:***&nbsp;&nbsp; But how many messages need to be sent in order to arrive at this agreement?  
 ***A:***&nbsp;&nbsp; Lots!
@@ -55,7 +55,7 @@ So far however, we have not even discussed what events `A` and `B` represent.  C
 > 
 > A useful analogy here is to think of the people working in a mail sorting room.  These people are concerned with the fact that all the letters and packages have been addressed correctly, and that the correct postage has been paid for a letter or package of that weight and dimensions.
 > 
-> It is quite irrelevant for these people to concern themselves with the contents of letters and packages.
+> It is quite irrelevant for these people to concern themselves with the contents of the letters and packages.
 
 However, from the perspective of the human developer, we can see firstly that we're having to go to a lot of trouble simply to agree on the order in which a set of events are delivered, and secondly, the algorithm that determines the delivery order is completely agnostic to the real-life functionality that needs to be performed as a result of processing those events.
 
@@ -74,14 +74,14 @@ Of course, there will be some situations in which message delivery order is crit
 Just as a reminder:
 
 ***Strong Consistency***  
-If replica `R1` delivers messages in the order `M1`, `M2` and `M3`, then all replicas receiving the same set of messages deliver them in the same order.  Only then can it be known that the replicas have equivalent state.
+If replica `R1` delivers messages in the order `M1`, `M2` and `M3`, then all replicas receiving the same set of messages must deliver them in the same order.  Only then can it be known that the replicas have equivalent state.
 
 ***Strong Convergence***  
 All replicas delivering the same set of messages eventually have the equivalent state.
 
 Strong convergence might still be tricky to implement, but it will be easier than strong consistency, because with strong convergence, we know that state equivalence can be achieved simply by delivering the same set of updates.  Strong consistency however requires us to deliver the same set of updates in ***precisely the same order***.
 
-The bottom line here is that if you should only implement strong consistency when you have no other choice.
+The bottom line here is that you should only implement strong consistency when you have no other choice.
 
 ## How Do We Generalise the Requirement for Strong Convergence?
 
@@ -107,11 +107,11 @@ For example, if we have a set containing:
 | ![jeans](./img/emoji_jeans.png) | A pair of jeans
 | ![Torch](./img/emoji_torch.png) | A torch
 
-Then the set of subsets will contain the following eight members:
+Then the inclusion set (the set of subsets) will contain the following eight members:
 
 ![Set of Subsets](./img/L22%20Set%20of%20Subsets.png)
 
-Our relation here is set inclusion as described by the *"less than or equals"* operator `≤`.  Using this operator, certain members of our set of subsets can be compared as follows:
+Our relation here is the *"less than or equals"* operator `≤`.  Using this operator, certain members of our set of subsets can be compared as follows:
 
 ![Comparable Subsets 1](./img/L22%20Comparable%20Subsets.png)
 
@@ -133,7 +133,7 @@ So, this would be the sets `{👖,🔦}` and `{📓,👖,🔦}`.  These two sets
 
 In more formal language, the upper bound is:
 
-> Given a partially ordered set<sup id="a1">[1](#f1)</sup> (`S`, `≤`) and upper bound of `a,b ∈ S` is an element `u ∈ S` such that `a ≤ u` and `b ≤ u`.
+> Given a partially ordered set<sup id="a1">[1](#f1)</sup> (`S`, `≤`) an upper bound of `a,b ∈ S` is an element `u ∈ S` such that `a ≤ u` and `b ≤ u`.
 
 Notice that we talk of ***an*** upper bound.  This means it is possible that for the members `a` and `b` there could well be multiple examples of some set `u` that all satisfy the upper bound requirements.
 
@@ -141,13 +141,9 @@ Notice that we talk of ***an*** upper bound.  This means it is possible that for
 
 The upper bound set that contains all the members of the original set is not very interesting because this will always be a common upper bound for all its subsets, so we can ignore this one.
 
-Generally speaking, the upper bounds that are the most interesting are the smallest ones.  But how do we define the smallest upper bound?
+Generally speaking, the upper bounds that are the most interesting are the smallest ones.  But how do we define the smallest upper bound?  The formal definition is:
 
-The formal definition is:
-
->  `a`, `b`, `u` and `v` are all members of the inclusion set `S`.
-> 
-> `u` is the least upper bound<sup id="a2">[2](#f2)</sup> of `a,b ∈ S` if `u ≤ v` for each `v`
+>  If `a`, `b`, `u` and `v` are all members of the inclusion set `S`, then `u` is the least upper bound<sup id="a2">[2](#f2)</sup> of `a,b ∈ S` if `u ≤ v` for each `v`
 
 ### Join-semilattice
 
@@ -163,12 +159,11 @@ So, it follows therefore that if some partially ordered sets are join-semilattic
 
 It's quite hard to think of a set within which every 2 elements ***do not*** have a least upper bound (I.E. think of a set that is not a join-semilattice), but a good example is a Boolean register.  This is a tri-state variable that can be either `empty`, `true` or `false`
 
-So, the poset is simply `{empty, true, false}`.  These values can also be ordered using the
-`≤` operator:
+So, the poset is simply `{empty, true, false}`.  This is a very simple set containing only three members that can be arranged as follows:
 
 ![Boolean Ordering](./img/L22%20Boolean%20Ordering.png)
 
-This is a very simple set containing only three members and has the following relations:
+These values can also be ordered using the `≤` operator:
 
 ```
 empty ≤ empty
@@ -194,7 +189,7 @@ So, this Boolean Register qualifies as a true partially-ordered set; however, we
 
 ### What's This Got to do with Distributed Systems?
 
-Let's say we have a system with two replicas that holds information very different to the shopping cart example.  Here, these replicas hold the value of our Boolean register and they receive conflicting updates:
+Let's say we have a system with two replicas that hold a type of information that is very different to the shopping cart example.  Here, these replicas hold the value of our Boolean register and they then receive conflicting updates:
 
 ![Conflicting Updates](./img/L22%20Conflicting%20Updates.png)
 
@@ -226,15 +221,15 @@ So, here's an informal claim:
 
 > If the states that replicas can take on can be thought of as elements of a join-semilattice, then there is a natural way of resolving conflicts between replicas without needing a consensus algorithm.
 
-This claim is described as *"informal"* because it uses unqualified words such as *"natural"*.  Nonetheless, there is a lot of interesting work being done to do conflict resolution.  If you're interested in this type of work, take a look at a topic called [*"Conflict-Free Replicated Datatypes"*](https://crdt.tech/) or (CRDTs)
+This claim is described as *"informal"* because it uses unqualified words such as *"natural"*.  Nonetheless, there is a lot of interesting work being done on this type of conflict resolution.  If you're interested in this type of work, take a look at a topic called [*"Conflict-Free Replicated Datatypes"*](https://crdt.tech/) or (CRDTs)
 
-## Some Title
+## Back to the Shopping Cart...
 
 So far, we've been thinking about conflicts that can arise when different clients add members to a set. In the case of the shopping cart, the order in which items are added does not matter because the different members within the shopping cart have no dependency on each other.  Therefore, this situation is not one in which consensus is required.
 
-This is a particularly useful property in the event of a network partition.  If communication is lost for some period of time between replicas, then the fact that the state of the shopping carts might diverge whilst the network partition exists is not going to create a problem.
+This is a particularly useful property in the event of a network partition.  If communication is lost for some period of time between replicas, then the fact that the states of the shopping carts might diverge whilst the network partition exists does not create a problem.
 
-As soon as the partition heals, and the replicas can communicate with each other again, their states will converge.
+As soon as the partition heals, the replicas can communicate with each other again, and their states will converge.
 
 But what happens if we are allowed to remove items from the shopping cart?
 
@@ -282,7 +277,7 @@ Even though replica `R2` never found out about the removal of the book, this doe
 
 But we still haven't solved all our problems...
 
-Let's say that even though all those bad reviews about the book caused us to delete it, we change our mind (I mean, can a book really be that bad? Let's find out).
+Let's say that even though all those bad reviews about the book caused us to delete it, we change our mind (I mean, can a book really be that bad? Let's find out).  So you add the book again.
 
 However, look at the addition set &mdash; it already contains the book, and our addition set can only hold single instances of an item.  And the book is still in the tombstone set because we really did delete it.  So, if we left the situation like it is, even though we added the book a second time, it would disappear from the resolved shopping cart because it's in the tombstone set...
 
@@ -294,11 +289,13 @@ If you know that the addition of previously deleted items will be a frequently u
 
 * You could have of global coordination point in which all the replicas are notified that a previously deleted item is being added again and then try to ensure that everyone agrees.
 * Or you could take a simplistic approach and say that additions always win over removals.
-* Or you could keep a counter against each added or removed item so that adding the same book twice sets the addition counter to `a`, but removing it sets the removal counter to `-1`. Now the desired total is simply the sum of additions total and the removals total.
+* Or you could keep a counter against each added or removed item so that adding the same book twice sets the addition counter to `2`, and removing it sets the removal counter to `-1`. Now the desired total is simply the sum of additions total and the removals total.
 
-The bottom line here is this is hard to get right and has been an active area of research over the last 10 years or so.  Quite a few interesting data structures have been proposed for resolving this problem, but it does not appear that any of them have been implemented into production systems yet.
+The bottom line is this: this is hard to get right and has been an active area of research over the last 10 years or so.  Quite a few interesting data structures have been proposed for resolving this problem, but it does not appear that any of them have been implemented in production systems yet.
 
-As a developer however, it is difficult to reason about the data you are working with in this abstract manner - can I really treat my data as elements of a join-semilattice?  This is a difficult question to answer that typically requires the help of specialist verification tools, and this is an area of research in which Lindsey Kuper is actively involved
+As a developer however, it is difficult to reason about the data you are working with in this abstract manner. The question *"Can I really treat my data as elements of a join-semilattice?"* is difficult to answer and typically requires the help of specialist verification tools.
+
+This is an area of research in which Lindsey Kuper is actively involved.
 
 ---
 
