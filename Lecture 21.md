@@ -339,7 +339,7 @@ reduce add 0 [1,1,2,1,] = 5
 
 | Previous | Next
 |---|---
-| [Lecture 20](./Lecture%2020.md) |
+| [Lecture 20](./Lecture%2020.md) | [Lecture 22](./Lecture%2022.md) |
 
 
 ---
