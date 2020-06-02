@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 21](./Lecture%2021.md) |
+| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md) 
 
 
 ## Keeping Replicas Consistent
@@ -221,7 +221,7 @@ So, here's an informal claim:
 
 > If the states that replicas can take on can be thought of as elements of a join-semilattice, then there is a natural way of resolving conflicts between replicas without needing a consensus algorithm.
 
-This claim is described as *"informal"* because it uses unqualified words such as *"natural"*.  Nonetheless, there is a lot of interesting work being done on this type of conflict resolution.  If you're interested in this type of work, take a look at a topic called [*"Conflict-Free Replicated Datatypes"*](https://crdt.tech/) or (CRDTs)
+This claim is described as *"informal"* because it uses unqualified words such as *"natural"*.  Nonetheless, there is a lot of interesting work being done on this type of conflict resolution.  If you're interested in this type of work, take a look at a topic called [*"Conflict-Free Replicated Datatypes"*](https://crdt.tech/) or (CRDTs).  An example implementation by Martin Kleppmann and Alastair Beresford has been described in this [paper](./papers/JSON%20CRDT.pdf) for JSON datatypes.
 
 ## Back to the Shopping Cart...
 
@@ -301,7 +301,7 @@ This is an area of research in which Lindsey Kuper is actively involved.
 
 | Previous | Next
 |---|---
-| [Lecture 21](./Lecture%2021.md) |
+| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md) 
 
 
 ---
