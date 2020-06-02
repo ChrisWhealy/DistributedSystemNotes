@@ -27,17 +27,17 @@ Since Paxos is the only strategy we've really talked about during this course, l
 
 ### 2-Phase Commit (2PC)
 
-In the discussions we've had in this course, we have been talking about Primary Backup Replication and Chain Replication as the more basic forms of fault-tolerance.  So, these two techniques could go at the same location as 2-phase commit in this diagram.
+In the discussions we've had in this course, we have been talking about Primary Backup Replication and Chain Replication as the more basic forms of fault-tolerance.  These two techniques could be placed at the same location as 2-phase commit in this diagram.
 
 2-phase commit is typically used in a database that operates with some number of replicas.  Here, everyone needs to agree on what action should be taken for the current logical unit of work (LUW).  There is typically some coordinating process that goes out to the other replicas and asks them the "go/no go" question of *"Do you want to commit or abort?"*
 
-But why would one replica want to abort the LUW when the others are happy to commit.  Typically, this situation happens due to some hardware issue such as running out of disk space.
+But why would one replica want to abort the LUW when the others are happy to commit?  Typically, this situation happens due to some hardware issue such as running out of disk space.
 
 A key difference here between 2PC and a consensus algorithm is that the coordinator cannot accept a commit response from a majority of replicas, it must receive unanimous agreement from ***all*** the replicas before the commit can proceed.
 
 If all the replicas respond with `commit`, then the coordinator will instruct all the replicas to commit, otherwise it instructs them to abort.
 
-The point here is that just like Primary Backup or Chain Replication, if you want fault-tolerance, then you must have a primary or coordinator process.  However, having only one coordinator process still does not provide fault-tolerance because that coordinator might crash.  Therefore, in order to implement fault-tolerance, you need a cluster of coordinator processes that can all agree on a course of action by means of some sort of consensus protocol.
+The point here is that just like Primary Backup Replication or Chain Replication, if you want fault-tolerance, then you must have a primary or coordinator process.  However, having only one coordinator process still does not provide fault-tolerance because that coordinator might crash.  Therefore, in order to implement fault-tolerance, you need a cluster of coordinator processes that can all agree on a course of action by means of some sort of consensus protocol.
 
 Alternatively, you could use a protocol such as Paxos or RAFT in which there is no distinct "coordinator" process, but all the replicas coordinate directly with each other whilst performing at least one of the roles of proposer, acceptor or learner.
 
@@ -45,9 +45,9 @@ This diagram is good for illustrating the fact that 2-phase commit is typically 
 
 The obvious question at this point then is this:
 
-> Why not implement 2-phase commit **and** have a cluster of coordinator processes to provide fault-tolerance?
+> Why not implement 2-phase commit ***and*** have a cluster of coordinator processes to provide fault-tolerance?
 
-Well, this has already been done, and is described in the first paper we're going to look at.
+Well, this has already been done and is described in the first paper we're going to look at.
 
 ### Consensus on Transaction Commit
 
@@ -69,9 +69,7 @@ This is another [classic paper](./papers/pbft.pdf) published in 1999 by Miguel C
 
 PBFT is a replication technique that tolerates Byzantine faults, and in spite of having the word *"practical"* in the name, it is not used in practice that often.  
 
-The distinguishing feature of this fault-tolerance behaviour is that if you have a system with `n` replicas, then `floor((n - 1) / 3)` of those replicas are allowed to "fail".
-
-The world "fail" is put in quotation marks because what we mean here is really *"exhibit Byzantine behaviour"*.  By this we mean that a process could:
+The distinguishing feature of this fault-tolerance behaviour is that if you have a system with `n` replicas, then `floor((n - 1) / 3)` of those replicas are allowed to "fail".  The world "fail" is put in quotation marks because what we mean here is really *"exhibit Byzantine behaviour"*.  By this, we mean that a process could:
 
 * Genuinely crash
 * Pretend to crash
@@ -104,13 +102,13 @@ Overall, go for the weakest safety property you can reasonably tolerate.  Hence 
 
 ## Discovering Who Invented Vector Clocks
 
-It is not clear who first invented vector clocks, and in many respects, attribution of this concept to a single person or groups will not change much, but it is interesting to trace the development of this idea.
+It is not clear who first invented vector clocks, and in many respects, attribution of this concept to a single person or group is not of much consequence; however, it is interesting to trace the development of this idea.
 
-Firstly, we can place a lower bound on the date by referring to the first paper to treat distributed systems as a science.  This paper was written by Leslie Lamport in 1978 and was called [Time, Clocks and the Ordering of Events in Distributed Systems](./papers/TCOEDS.pdf).  In it, the concept of *"happens before"* relation was properly defined as was the notion of a Logical or Lamport Clock.
+Firstly, we can place a lower bound on the date by referring to the first paper to treat distributed systems as a science.  This paper was written by Leslie Lamport in 1978 and was called [Time, Clocks and the Ordering of Events in Distributed Systems](./papers/TCOEDS.pdf).  In it, the concept of the *"happens before"* relation was properly defined as was the notion of a Logical or Lamport Clock.
 
 A couple of interesting things to notice about the space-time diagrams (now known as "Lamport Diagrams") shown in this paper are:
 
-1. Stylistically, they bear a passing resemblance to Feynman Diagrams (maybe there is an influence from physics because the final section of this paper on physical clocks seems only to make sense to physicists)
+1. Stylistically, they bear a passing resemblance to Feynman Diagrams (maybe there is an influence from physics because the final section of this paper on physical clocks seems only to make sense to physicists; and even then, that proposition is not entirely sound...)
 1. He has time going upwards; which does tend to make them harder to read
 
 Later, these diagrams have been drawn to show time going left, right or down.  Lamport however, is one of the few people to draw these diagrams with time going up.
@@ -119,11 +117,10 @@ Later, these diagrams have been drawn to show time going left, right or down.  L
 
 * Logical, or Lamport Clocks
 * The *"Happens Before"* relation denoted by the arrow `->` syntax
-* The idea of the *"clock condition"* that can test whether the happens before relation is satisfied for a part of events.  
-    For events `a` and `b`, if `a -> b` the `C(a) < C(b)` where `C(a)` and `C(b)` are the respective *"clock conditions"* of events `a` and `b` - in other words, the value of the Lamport Clock associated with each event.
-* Initial proposition for turning the partial order implemented by Lamport Clocks into a total order.  This idea, however, requires that if two events have the same clock value, then an arbitrary algorithm is used to decide the outcome, for instance: events happening on process `P1` are arbitrarily assumed to have happened before events on process `P2`.
-* Distributed Mutual Exclusion Algorithm.  This controls how to manage exclusive access to a shared resource for a group of processes.  
-    However, no one actually uses Lamport's Distributed Mutual Exclusion Algorithm for the simple reason that it's not fault-tolerant.
+* The idea of the *"clock condition"* that can test whether the happens before relation is satisfied for a pair of events.  
+    For events `a` and `b`, if `a -> b` then `C(a) < C(b)` where `C(a)` and `C(b)` are the respective *"clock conditions"* of events `a` and `b` - in other words, the value of the Lamport Clock associated with each event.
+* Initial proposition for turning the partial order implemented by Lamport Clocks into a total order.  This idea, however, requires that if two events have the same clock value, then an arbitrary algorithm is used to decide the outcome; for instance: events happening on process `P1` might always be assumed to have happened before events on process `P2`.
+* Distributed Mutual Exclusion Algorithm.  This controls how to manage exclusive access to a shared resource for a group of processes. However, no one actually uses this algorithm for the simple reason that it's not fault-tolerant.
 * The observation that distributed processes simulate the execution of State Machines
 
 ### The "Holy Grail" Paper
@@ -147,7 +144,7 @@ At the end of this footnote, two references are given to a paper by Colin Fidge 
 
 > Rather than a single integer value, timestamps are represented as an array
 > 
-> <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>[C<sub>1</sub>,C<sub>2</sub>&hellip;C<sub>n</sub>,]</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+> <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>[C<sub>1</sub>,C<sub>2</sub>,&hellip;,C<sub>n</sub>]</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
 > 
 > with an integer clock value for every process in the network.
 
@@ -161,13 +158,13 @@ At the end of this footnote, two references are given to a paper by Colin Fidge 
 
 There's the use of vectors again to hold a set of individual clock values.
 
-Then in section 3, Mattern talks about *Consistent Cuts* that we have already looked at in the context of snapshots and the Chandy-Lamport Algorithm.  The interesting thing here is that although the Chandy-Lamport algorithm predates the Mattern's paper, at the time Chandy and Lamport devised this snapshot algorithm, vector clocks had not yet been invented.
+Then in section 3, Mattern talks about *Consistent Cuts* that we have already looked at in the context of snapshots and the Chandy-Lamport Algorithm.  The interesting thing here is that although the Chandy-Lamport algorithm predates Mattern's paper by a few years, at the time Chandy and Lamport devised their snapshot algorithm, vector clocks had not yet been invented.
 
 Here, Mattern now ties together (apparently for the first time), the use of consistent cuts with the use of clock values held in vectors.
 
 ### Frank Schmuck's 1988 PhD Paper
 
-In 1988, a German PhD student by the name of Frank Schmuck<sup>[1](#f1)</sup> at Cornell published his thesis on ["The Use of Efficient Broadcast protocols in Distributed Systems"](./papers/Frank%20Schmuck%20PhD%20Paper.pdf)
+In 1988, a German PhD student at Cornell by the name of Frank Schmuck<sup>[1](#f1)</sup> published his thesis on ["The Use of Efficient Broadcast protocols in Distributed Systems"](./papers/Frank%20Schmuck%20PhD%20Paper.pdf)
 
 On page 53, Schmuck states:
 
@@ -224,7 +221,7 @@ Using the analogy of photographing a vast number of migrating birds, this paragr
 
 The paper that tends to be cited the most here is called ["A Principle for Resilient Sharing of Distributed Resources"](./papers/Alsberg%20and%20Day.pdf) by Peter Alsberg and John Day, first published in October 1976.  However, the methodology described in the paper does not look very much like what we now call primary backup; nonetheless, Alsberg and Day did produce a working system that operated in the packet switched networks of the day, where data packets sent over the network really could get lost.
 
-When reading these old papers that were written when the nearest thing to the "internet" was ARPAnet or Cyclades.  You have to admire the ingenuity of these people and their ability to solve hard problems in what we would now describe as a very hostile environment.  Many (though not all) of the assumptions they made 40+ years ago are still valid today.
+When reading these old papers that were written when the nearest thing to the "internet" was [ARPANET](https://en.wikipedia.org/wiki/ARPANET) or [CYCLADES](https://en.wikipedia.org/wiki/CYCLADES), you have to admire the ingenuity of these people and their ability to solve hard problems in what we would now describe as a very hostile environment.  Many (though not all) of the assumptions they made 40+ years ago are still valid today.
 
 
 ### Reliable, Autonomic Distributed Store (RADOS)
@@ -237,21 +234,21 @@ Moving closer to home, the 2007 paper called ["RADOS: A Scalable, Reliable Stora
 
 This has the features of Primary Backup (also known as Primary Copy) in that the writes are received at the primary node and broadcast in parallel to the other replicas.  However, the principles of Chain Replication are now used insomuch as the last replica in the chain is responsible for sending an `ack` back to the client, and all reads are directed to the tail replica.
 
-So, the interesting thing here is that even in 2007, people were still interested in improving strongly consistent datastore systems.
+So, the interesting thing here is that even in 2007, people were still working towards improving strongly consistent replication strategies.
 
 ## Consensus
 
-What is interesting about both these papers (and many others not mentioned here) is that anytime someone sets out to talk about replication, they end up needing to talk about consensus.  So, they implemented a consensus algorithm that has been tailored for their particular use case.
+What is interesting about both these papers (and many others not mentioned here) is that anytime someone sets out to talk about replication, they end up needing to talk about consensus.  However, rather than using a general purpose consensus algorithm such as Paxos, they always talk of a consensus algorithm that has been specially tailored for their particular use case.
 
-This stand in contrast to Paxos which is a general purpose, one-size-fits-all consensus algorithm.  However, the general problem with the one-size-fits-all approach is that everyone ends up wearing size XXXL.  This is the same with Paxos: in order to make it efficient in a replication scenario, you need to implement optimisations such as multi-Paxos.  With these algorithms, they simply assume that you want to do replication and provide you with a consensus algorithm already customised for that use-case.
+Paxos, on the other hand, is a general purpose, one-size-fits-all consensus algorithm.  However, the general problem with the one-size-fits-all approach is that everyone ends up wearing size XXXL.  This is the same with Paxos: in order to make it efficient in a replication scenario, you need to implement optimisations such as multi-Paxos.  With the following algorithms however, they simply assume that you want to do replication and provide you with a consensus algorithm already customised for that use-case.
 
-See the ["Vive la Différence"](./papers/Paxos%20vs%20VSR%20vs%20ZAB.pdf) paper for a comparison of these various strategies.  The great thing about this paper is that at the top of page 6, there is a table of equivalent terminology across the different replication protocols.  What this demonstrates is that while different terms are used, the same basic concepts pop up in these different places.
+See the ["Vive la Différence"](./papers/Paxos%20vs%20VSR%20vs%20ZAB.pdf) paper for a comparison of these various strategies.  The great thing about this paper is that at the top of page 6, there is a table of equivalent terminology across the different replication protocols.  What this demonstrates is that while different terms are used, the same basic concepts always pop up.
 
 ![Equivalent Terminology Across Different Replication Protocols](./img/L23%20Equivalent%20Terms.png)
 
 ### The RAFT Paper
 
-The [RAFT paper](./papers/raft.pdf) came out in 2014 and emphasises understandability over Paxos's complexity.  They have a user study in which they compare user's impression of how easy RAFT is to use compared to Paxos.
+The [RAFT paper](./papers/raft.pdf) came out in 2014 and emphasises understandability over Paxos's complexity.  They have a user study in which they compare users' impressions of how easy RAFT is to use compared to Paxos.
 
 This system is very well documented on their website <https://raft.github.io/>
 
@@ -259,7 +256,7 @@ The authors cite that the RAFT consensus algorithm is similar to the earlier con
 
 ### Viewstamped Replication
 
-The [Viewstamped Replication](./papers/VS520Replication.pdf) paper immediately places us in situation where in one breath we are calling is a replication strategy, and then in the next, we are calling is a consensus algorithm.
+The [Viewstamped Replication](./papers/VS520Replication.pdf) paper immediately places us in situation where in one breath we are calling it a replication strategy, and then in the next, we are calling it a consensus algorithm.
 
 Aren't these different things?
 
@@ -270,7 +267,7 @@ Many of the replication strategies that we’ve looked can only work because und
 
 ### Are Paxos and RAFT So Different?
 
-In 2004, a [comparison paper](./papers/Paxos%20vs%20RAFT.pdf) was published by Heidi Howard and Richard Martier in which a simplified version of Paxos for described using the terminology of RAFT.  The paper concludes that Paxos and RAFT contain a lot of similarities, but RAFT has become more popular because it is easier to understand.  For example, RAFT is very easy to implement from its paper, whereas it is very challenging to implement Paxos from its paper.
+Very recently in April 2020, a [comparison paper](./papers/Paxos%20vs%20RAFT.pdf) was published by Heidi Howard and Richard Martier in which a simplified version of Paxos was described using the terminology of RAFT.  The paper concludes that Paxos and RAFT contain a lot of similarities, but RAFT has become more popular because it is easier to understand.  For example, RAFT is very easy to implement from its paper, whereas it is very challenging to implement Paxos from its paper.
 
 
 ---
@@ -284,7 +281,7 @@ In 2004, a [comparison paper](./papers/Paxos%20vs%20RAFT.pdf) was published by H
 
 ***Endnotes***
 
-<b id="f1">1</b>  Just in case your mind has fixated on the Yiddish meaning of this word, ["Schmuck"](https://dict.leo.org/german-english/Schmuck) is the German word for "jewellery" or "decoration" or "ornament"...
+<b id="f1">1</b>  Stop giggling... Just in case your mind has fixated on the Yiddish meaning of this word, ["Schmuck"](https://dict.leo.org/german-english/Schmuck) is the German word for "jewellery" or "decoration" or "ornament"...
 
 [↩](#a1)
 
