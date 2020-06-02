@@ -251,7 +251,7 @@ Now from your laptop, you want to look at the contents of your shopping cart and
 
 ![Shopping Cart Item Deletion 3](./img/L22%20Delete%20Cart%20Item%203.png)
 
-Maybe it's a sign that you really should really read that book... or maybe it's the situation described in the Dynamo paper where, under certain circumstances, deleted items can reappear in shopping carts.
+Maybe it's a sign that you really should read that book... or maybe it's the situation described in the Dynamo paper where, under certain circumstances, deleted items can reappear in shopping carts.
 
 Why did this happen?
 
