@@ -1,6 +1,6 @@
 # Distributed Systems Lecture 23
 
-## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on June  1<sup>st</sup>, 2020 via [Twitch](https://www.twitch.tv/videos/638291080)
+## Lecture Given by [Lindsey Kuper](https://users.soe.ucsc.edu/~lkuper/) on June  1<sup>st</sup>, 2020 via [YouTube](https://www.youtube.com/watch?v=tqCUDPWE0JE)
 
 | Previous | Next
 |---|---
