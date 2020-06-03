@@ -164,7 +164,7 @@ Here, Mattern now ties together (apparently for the first time), the use of cons
 
 ### Frank Schmuck's 1988 PhD Paper
 
-In 1988, a German PhD student at Cornell by the name of Frank Schmuck<sup>[1](#f1)</sup> published his thesis on ["The Use of Efficient Broadcast protocols in Distributed Systems"](./papers/Frank%20Schmuck%20PhD%20Paper.pdf)
+In 1988, a German PhD student at Cornell by the name of Frank Schmuck<sup id="a1">[1](#f1)</sup> published his thesis on ["The Use of Efficient Broadcast protocols in Distributed Systems"](./papers/Frank%20Schmuck%20PhD%20Paper.pdf)
 
 On page 53, Schmuck states:
 
