@@ -11,11 +11,11 @@
 
 | Safety Property | Liveness Property
 |---|---|
-| Something bad will ***no*** happen | Something good ***eventually*** happens
+| Something bad will ***not*** happen | Something good ***eventually*** happens
 | Can be violated in a finite execution.<br>![FIFO Anomaly](./img/L5%20FIFO%20Anomaly.png) | Cannot be violated in finite execution.<br>![No violation - yet](./img/L5%20Protocol%204.png)
-| Examples of safety properties include all the delivery guarantees we've spoken about so far such as FIFO, Causal and Totally-Ordered | An example of a liveness property is the guarantee that the system will ***eventually*** respond to a client request.<br>However, the diagram above is not a counterexample because the definitions of liveness guarantees tend to be open-ended and cannot exclude the possibility of *"waiting forever"*
+| Examples of safety properties include all the delivery guarantees we've spoken about so far such as FIFO, Causal and Totally-Ordered | An example of a liveness property is the guarantee that the system will ***eventually*** respond to a client request.<br>However, the diagram above is not a counterexample because the definitions of liveness guarantees tend to be open-ended and therefore cannot exclude the possibility of *"waiting forever"*
 
-The trouble with Distributed System design is that in order to be useful, our system needs both types of property to be present; however, the open-ended nature of liveness properties makes them hard to reason about.
+The trouble with Distributed System design is that in order to be useful, it needs both types of property to be present; however, the open-ended nature of liveness properties makes them hard to reason about.
 
 Let's say we want to implement a protocol that satisfies the safety property of FIFO delivery, but doesn't need to care about any liveness properties.  So, we could build a system that either drops or ignores every message...
 
@@ -27,9 +27,7 @@ So, it turns out that on their own, neither safety nor liveness properties are o
 
 ### Liveness Property: Reliable Delivery
 
-Other than the *"eventual deliver"* property we've spoken of, the only other liveness property we've mentioned is *"reliable delivery"*.
-
-The definition of *"reliable delivery"* varies depending on who you ask, but here's one definition:
+Other than the *"eventual deliver"* property we've spoken of, the only other liveness property we've mentioned is *"reliable delivery"*, and the definition varies depending on who you ask, but here's one definition:
 
 > Let `P1` be a process that sends a message `m` to process `P2`.  
 > If neither `P1` nor `P2` crashes, then `P2` eventually delivers message `m`
@@ -70,35 +68,37 @@ What sort of faults could occur here?
 
 ### Fault Categories
 
-Let's try to categories these messages into different fault informal types.
+Let's arrange these types of fault into different informal categories.
 
+* ***Crash*** : Software execution halts or hardware fails
 * ***Omission*** : Messages are sent, but not received (I.E. lost)
 * ***Timing*** : Messages are sent and processed successfully, but very slowly (Also known as a ***performance*** fault)
-* ***Crash*** : Software execution halts or hardware fails
 * ***Byzantine***<sup id="a1">[1](#f1)</sup> : Malicious or arbitrary behaviour
 
-These fault categories have been used in Distributed System's design since about the early 1990's and can be arranged into a fault hierarchy.
+These fault categories have been used in Distributed System's design since about the early 1990's and and are presented above in hierarchical order, starting with the lowest level first.
 
 ### Crash Fault
 
 At the bottom of this hierarchy is the ***crash fault***.  This simply means that the process has stopped exchanging messages with the other participants in the system.
 
-A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.  Whilst this second case is not due to software execution halting, this detail is invisible as far as the other participants in the system are concerned.  For all practical purposes therefore, this process takes no further part in the overall operation of the system and may as well have crashed due to halting.
+A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.  Whilst this second case is not due to software execution halting, this detail is invisible as far as the other participants in the system are concerned.
+
+For all practical purposes therefore, this process takes no further part in the overall operation of the system and may as well have crashed due to halting.
 
 ### Omission Fault
 
-When a process fails to send or receive a message.
+When a process continues execution, but for whatever reason, fails to send or receive messages.
 
 
 ### Timing Fault
 
 A process responds either too late or too early.  The typical case is where a process does not respond quickly enough; however, at the hardware level, it is possible for a response to be too fast when we need it to be slower.
 
-We won't be discussing timing faults too much in this course because we will be focussing on the asynchronous message delivery model in which delivery time guarantees are never made in the first place!
+In this course, we're going to sidestep the discussion of timing faults because we will be focussing on the asynchronous message delivery model &mdash; which never makes any delivery time guarantees in the first place!
 
 ### Byzantine Fault
 
-A process behaves in an arbitrary or possibly even malicious way.  Again, in this course we won't be spending much time talking about this type of fault.
+A process behaves in an arbitrarily erroneous, or possibly even malicious way.  Again, in this course we won't be spending much time talking about this type of fault.
 
 ## Fault Hierarchy
 
