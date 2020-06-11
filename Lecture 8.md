@@ -198,7 +198,7 @@ Now we can appreciate the importance of the assumptions listed at the start.  Th
 
 * Eventual message delivery is guaranteed, and
 * Messages never arrive out of order (all channels are FIFO queues), and
-* Processes do not crash (yeah, right! Again, see [lecture 10](./lecture%2010.md))
+* Processes do not crash (yeah, right! Again, see [lecture 10](./Lecture%2010.md))
 
 In Chandy & Lamport's [original paper](https://lamport.azurewebsites.net/pubs/chandy.pdf) they provide a proof that the snapshot process does in fact terminate.
 
