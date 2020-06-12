@@ -87,7 +87,7 @@ For all practical purposes therefore, this process takes no further part in the 
 
 ### Omission Fault
 
-When a process continues execution, but for whatever reason, fails to send or receive messages.
+When a process continues execution, but for whatever reason, fails to send or receive some, but not all messages.
 
 
 ### Timing Fault
@@ -156,7 +156,7 @@ The list of possible fault behaviours here is endless...
 
 ![Fault Hierarchy 3](./img/L10%20Fault%20Hierarchy%203.png)
 
-For more details, see the paper ["Atomic Broadcast: From Simple Message Diffusion to Byzantine Agreement"](./papers/atomic_broadcast.pdf) by Cristian et al
+For more details, see the paper ["Atomic Broadcast: From Simple Message Diffusion to Byzantine Agreement"](./papers/atomic_broadcast.pdf) by Cristian et al.
 
 Given the fact that we will confine our discussion to systems that use asynchronous communication, such systems cannot give any guarantees about message delivery times; therefore, for the remainder of this course, discussion around fault categories will look more like this:
 
@@ -168,7 +168,7 @@ No: these fault categories can be subdivided.  For instance, some Byzantine faul
 
 For instance, a Byzantine Fault that is relatively easy to deal with is message alteration or duplication.
 
-If you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.  What's much harder to detect is message corruption where the corruption is so subtle that your authentication techniques fails to detect it.<sup id="a2">[2](#f2)</sup>
+If you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.  What's much harder to detect is message corruption where the corruption is so subtle that your authentication technique fails to detect it.<sup id="a2">[2](#f2)</sup>
 
 So, we can redraw the above diagram as follows:
 
@@ -184,9 +184,9 @@ Based on the preceding discussion we can define a ***Fault Model*** as:
 
 Fault models are nested in the same way as fault categories.
 
-In general, the easiest faults to tolerate are the ones in the centre of the diagram, and as we move outwards, fault model implementation become more and more complicated, simply because more and more bad things can happen.
+In general, the easiest faults to tolerate are the ones in the centre of the diagram, and as we move outwards, fault model implementation become more and more complicated, simply because a greater number and type of bad things can happen.
 
-In this class, we will be looking mostly at the Omission Model.  This will still be hard to implement however because there are still plenty of bad things that can go wrong!
+In this class, we will be looking mostly at the Omission Model.  This will still be hard to implement, however, because there are still plenty of things that can go wrong!
 
 ## The Two Generals Problem
 
@@ -201,25 +201,28 @@ In this situation, two armies commanded by Generals Alice and Bob want to attack
 * Alice and Bob cannot be sure that any messages they send will get through because the messenger risks being captured, and the message fails to get through
 
 
-![Two Generals 1](./img/L10%20Two%20Generals%201.png)
+![Two Generals 1](./img/L10%20Two%20Generals.png)
 
-How can the Generals reliably communicate with each other so that they are both confident they should attack tomorrow at dawn?
+What form of communication can these Generals have with each other so that they can both be confident that they are acting on some shared, common knowledge?  For instance, if the plan is to attack tomorrow at dawn, then how can both Generals be sure that the other has firstly agreed to this plan, and secondly, is ready to act on it?
+
+Since the armies of Alice and Bob are not strong enough on their own to defeat this enemy, victory is only possible if they arrive at a commonly agreed plan of action
 
 Let's look at a few scenarios:
 
-* Alice sends a message ***"Attack at dawn"***.  
-    Having sent this message, should simply Alice go ahead and attack at dawn?
+* Alice sends Bob the message ***"Attack at dawn!"***.  
 
-* No, because she has no way of knowing firstly that Bob received the message or secondly, that he agreed to it.  
+    ***Q:***&nbsp;&nbsp;Having sent this message, should Alice simply go ahead and attack at dawn?  
+    ***A:***&nbsp;&nbsp;No, because she has no way of knowing that Bob has even received the message, let alone agreed to it.  
 
-* If Alice attacks on her own, there is a significant chance of defeat, so she should wait for Bob's confirmation that he has agreed to the plan.
+    If Alice attacks on her own, there is a significant chance of defeat, so she should wait for Bob's confirmation that he has agreed to the plan.
 
 * Let's now say that Bob has received the message, agreed to it, and sent a confirmation back saying *"Yes, we attack at dawn!"*.  
-    Should Bob now go ahead and attack at dawn?
 
-* No!  Because he does not know that Alice has received his confirmation &mdash; again, a lone attack would be very risky.
+    ***Q:***&nbsp;&nbsp;Should Bob now go ahead and attack at dawn?  
+    ***A:***&nbsp;&nbsp;No!  Because he does not know that Alice has received his confirmation &mdash; again, a lone attack would be very risky.
 
-* Let's then say that Alice receives Bob's agreement to attack at dawn - is this good enough for Alice to launch an attack?  No, because Alice doesn't know that Bob knows she knows...  
+* Let's then say that Alice receives Bob's agreement to attack at dawn - is this good enough for Alice to launch an attack?  No, because Bob doesn't know that Alice knows that he's agreed to attack...  
+
     And this is all getting very silly and sounds like good material for a Monty Python sketch!
 
 As it turns out, it has been proven impossible to eliminate 100% of the uncertainty inherent in systems where communication reliability cannot be guaranteed.
@@ -236,15 +239,14 @@ Some possibilities do exist here:
 * Since unreliable communication excludes the possibility of achieving ***total*** certainty, the best we can hope for is ***reasonable*** certainty.
 
  
-To achieve reasonable certainty, Alice could send a sequence of messages knowing that on average, some of them will get through.
+To achieve reasonable certainty, we could adopt the following strategy:
 
-For every one of Alice's messages that reaches Bob, Bob then sends back an acknowledgement.  Again, since not of all these acknowledgments will make it back to Alice, he keeps sending acknowledgements.
+1. Alice could send Bob a sequence of messages knowing that on average, at least one will get through.
+1. For every one of Alice's messages that successfully reaches Bob, Bob sends back an acknowledgement.  Again, since not of all these acknowledgments will make it back to Alice, multiple acknowledgements are needed in the hope that at least one will get through.
+1. Alice receives Bob's first acknowledgement and stops sending her stream of messages.
+1. After a certain period of time, Bob's confidence will start to grow that at least one of his acknowledgements got through because Alice has stopped sending her original message.
 
-Alice then receives Bob's first acknowledgement and stops sending her stream of messages.
-
-After a certain period of time, Bob's confidence will start to grow that at least one of his acknowledgements got through because Alice has stopped sending her original message.
-
-The second approach cannot remove the uncertainty, but it can lower it to levels considered acceptable enough to act upon.
+The objective here is not to remove uncertainty, but to lower it to a level considered acceptable enough to act upon.
 
 
 ---
@@ -271,6 +273,6 @@ The point here is that the behaviour of a small number of malicious participants
 
 [↩](#a2)
 
-<b id="f3">3</b>&nbsp;&nbsp; Knowledge is said to be "common" when all participants in a system know with 100% certainty that all other participants share the same knowledge.  But this is very difficult to establish externally and is very fragile - for instance, what if someone wants to change the plan?
+<b id="f3">3</b>&nbsp;&nbsp; Knowledge is said to be "common" when all participants in a system know with 100% certainty that all other participants share the same knowledge.  But not only is this very difficult to establish externally, it is also very fragile.  What would happen for instance, if someone needs to change the plan?  How could the changed plan then become accepted, common knowledge?
 
 [↩](#a3)
