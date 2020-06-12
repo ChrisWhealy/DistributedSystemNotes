@@ -281,7 +281,7 @@ Very recently in April 2020, a [comparison paper](./papers/Paxos%20vs%20RAFT.pdf
 
 ***Endnotes***
 
-<b id="f1">1</b>  Stop giggling... Just in case your mind has fixated on the Yiddish meaning of this word, ["Schmuck"](https://dict.leo.org/german-english/Schmuck) is the German word for "jewellery" or "decoration" or "ornament"...
+<b id="f1">1</b>  Stop giggling... Just in case your mind has fixated on the [Yiddish meaning](https://en.wikipedia.org/wiki/Schmuck_(pejorative)) of this word, ["Schmuck"](https://dict.leo.org/german-english/Schmuck) is the German word for "jewellery" or "decoration" or "ornament"...
 
 [↩](#a1)
 
