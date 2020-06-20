@@ -8,11 +8,13 @@
 
 ## Causality and the "Happens Before" Relation
 
-The notation `A -> B` means *"A happens before B"*.
+The notation `A -> B` means *"A happens before B"* and helps make the ordering of events in time explicit.
+The "happens before" relation allows us to conclude two things:
 
-This means that event `A` might have been the cause of event `B`, but it is absolutely certain that event `B` ***cannot*** be the cause of event `A`.
+1. It is possible that event `A` ***might*** have been the cause of event `B`
+1. It is ***completely impossible*** for event `B` to have been the cause of event `A`
 
-This notation helps make the ordering of events in time explicit.
+In other words, the arrow in the happens before relation indicates the direction of possible causality.
 
 ## Lamport Diagrams (a.k.a. Spacetime Diagrams)
 
@@ -20,9 +22,7 @@ With time moving downwards, draw a vertical line to represent the events that ha
 
 ![Process events](./img/L3%20Process%20events.png)
 
-This diagram tells us that three events have taken place within this process and that they happened in the order `X` followed by `Y` followed by `Z`.
-
-From this we can infer the following:
+This diagram tells us that three events have taken place within this process and that they happened in the order `X` followed by `Y` followed by `Z`.  From this, we can then infer the following:
 
 * Event `X` happened before events `Y` and `Z`, and therefore ***might*** be their cause, but we cannot be certain about this
 * Event `Y` happened before event `Z` and therefore ***might*** be its cause, but again, we cannot be certain about this
@@ -35,7 +35,7 @@ In the case of multiple machines, we would represent these as a set of adjacent 
 
 ### Communication Between Machines
 
-The only way these machines can communicate with each other is by sending messages.  The send and receive events then show up as dots on each machine's timeline.
+The only way these machines can communicate with each other is by sending messages.  The send and receive events are represented as dots on each machine's timeline.
 
 ![Message passing between processes](./img/L3%20Message%20Passing.png)
 
@@ -58,17 +58,19 @@ Here's an example that highlights the importance of needing to know the exact or
 1. Bob takes offence and immediately responds to both Alice and Carol by saying *"Up yours!"*
 1. However, Alice's original message to Carol is delayed for some reason, and results in Bob's rude response arriving ***before*** Alice's original message
 
-Without a clear understanding of concept of the "happens before", Carol will not be able to understand why Bob has sent her such a rude message.
+Without a clear understanding of concept of the "happens before", Carol will not understand why Bob has apparently started sending her insulting messages.
 
 ## Network Models
 
-### Synchronous or Asynchronous?
+### How Long Does it Take to Send a Message?<br>(Would that be Synchronous or Asynchronous?)
 
-If we could say with certainty that sending a network message required no more than `N` units of time, then we would have a much better idea of how communication should be managed.  Under these circumstances, using timeouts to reason about communication failure would be a reasonable approach.  Networks that make such guarantees are known as "synchronous networks" (E.G a network in which we know that message transmission will take no more than `N` units of time).  In general, synchronous networks require the existence of a stable circuit between sender and receiver.
+If we could say with certainty that sending a network message required no more than `N` units of time, then we would have a much better idea of how communication should be managed.  If such an upper limit could be placed on communication performance, then using timeouts to reason about communication failure would be a reasonable approach.
 
-However, this is not how the internet works.  The internet is an asynchronous network (I.E. a network having no central point of control and in which there is no upper bound on message transmission time)
+Networks that make such timing guarantees are known as "synchronous networks" (E.G a network in which we know that message transmission will take no more than `N` units of time).  In general however, synchronous networks require the existence of a stable circuit between sender and receiver &mdash; which is exactly what does not exist in either public switched telephone neworks ([PSTNs](https://en.wikipedia.org/wiki/Public_switched_telephone_network)) or the internet.
 
-As an aside, there is also a type of network known as *"partially synchronous network"* in which the upper bound on transmission time is large, but finite. (For details, see the book [Distributed Algorithms](https://www.amazon.co.uk/Distributed-Algorithms-Kaufmann-Management-Systems-ebook/dp/B006QUTUR2/ref=sr_1_1) by Nancy Lynch)
+The internet is an asynchronous network (I.E. a network having no central point of control and in which there is no upper bound on message transmission time)
+
+> As an aside, there is also a type of network known as *"partially synchronous network"* in which the upper bound on transmission time is large, but finite. (For details, see the book [Distributed Algorithms](https://www.amazon.co.uk/Distributed-Algorithms-Kaufmann-Management-Systems-ebook/dp/B006QUTUR2/ref=sr_1_1) by Nancy Lynch)
 
 ### But Can We Reason About Transmission Times?
 
@@ -79,7 +81,7 @@ The least forgiving network model is the asynchronous one.  By *"least forgiving
 *  Makes the least number of assumptions about message transmission, and
 *  Allows us the least scope for reasoning about its behaviour
 
-In spite of it being so unforgiving, the most robust designs are built on asynchronous networks.  The flip side of this however is that these are also the hardest networks to reason about.  One of the key consequences here is that you are unable to prove that certain types of situation or event are impossible.
+In spite of it being so unforgiving, the most robust designs are built on asynchronous networks.  The flip side of this however is that these are also the hardest networks to reason about.  One of the key consequences here is that it we have no ability to describe all possible behaviours our system might exhibit, and without this ability, we cannot protect our system against ***all*** possible error conditions (only some).
 
 If, on the other hand, you want to prove than a certain type of event is impossible, then you should choose the most forgiving network model (the synchronous one), for if you can prove that a certain event is impossible in the most forgiving network (for instance, where message delivery is known never to exceed `N` units of time), then you can also be certain that the same event will be impossible in the least forgiving network where `N` is unbounded.
 
@@ -105,7 +107,7 @@ In reality however, even if we have this knowledge, it might still not be possib
 
 ### Reasoning About State
 
-There are three different ways in which events can be in the `->` *"happens before"* relation
+There are three different ways in which events can be ordered using the `->` *"happens before"* relation:
 
 1. Events `A` and `B` occur in the same process, with `B` happening after `A`
 1. If `A` is a message send event and `B` is the corresponding receive event, then `B` ***must*** happen after `A` because it makes no sense to talk of a receive event happening ***before*** its corresponding send event
@@ -161,7 +163,7 @@ In the above diagram, events `X` and `P`, and `Z`, `U`, `V` and `Q` are also con
 
 ## Partial Orders
 
-A partial order is where, for a given set `S`, a binary relation holds that exhibits the following properties.  This binary relation is usually, but not always written as `≤` (less than or equals) and allows you to compare the members of `S` using the following properties:
+A partial order is where, for a given set `S`, a binary relation holds that exhibits the following properties.  This binary relation is usually, but not always written as `≤` (less than or equals) and allows you to compare two members of `S` using the following properties:
 
 | Property | English Description | Mathematical Description |
 |---|---|---|
@@ -169,13 +171,11 @@ A partial order is where, for a given set `S`, a binary relation holds that exhi
 | Anti-symmetry | For all `a` and `b` in `S`,<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
 | Transitivity  | For all `a`, `b` and `c` in `S`,<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
 
-However, it makes no sense to say that event `A` ***"happens before"*** itself, so when speaking of a set of events, the reflexivity property is nonsensical and therefore not applicable.
+However, when the members of the set are events whose ordering is determined by some measure of time, it makes no sense to say that event `A` ***"happens before"*** itself; so when speaking of a set of events, the reflexivity property is nonsensical and therefore not applicable.
 
-Also, we will never encounter the situation in a distributed system where event `A` happens before event `B` ***and*** event `B` happens before event `A` (making `A` and `B` the same event).
+Also, we will never encounter the situation in a distributed system where event `A` happens before event `B` ***and*** event `B` happens before event `A` (making `A` and `B` the same event).  Thus, the anti-symmetry property can never be adhered to in real life.  Strictly speaking however, whilst this rule is never followed, it is also never violated; therefore, this rule is said to be ***"vacuously true"***.  That is, when dealing with a set of real-life events, we will never find an example that exhibits this property; however, we will also never find an example that violates this property either...
 
-The anti-symmetry property can never adhered to in real life, but strictly speaking, it is still never violated; therefore, this rule is said to be ***"vacuously true"***.  That is, when dealing with a set of real-life events, we will never find an example that exhibits this property; however, we will also never find an example that violates this property either...
-
-So, the "happens before" relation is a weird kind of partial order because only two of the three rules of a partial order apply, and even then, one of the two is only vacuously true.
+So, the "happens before" relation is a weird kind of partial order because only two of the three rules governing partial orders apply, and even then, one of those two is only vacuously true.
 
 Therefore, the ***happens before*** relation is said to be *"an irreflexive partial order"*.
 
@@ -195,7 +195,7 @@ Whenever we talk about a relation being a partial order, we must first look at t
 
 ***Endnotes***
 
-<b id="f1">1</b>&nbsp;&nbsp; Lamport Diagrams can also be drawn with time moving from left to right.  This is simply a stylistic choice.
+<b id="f1">1</b>&nbsp;&nbsp; It is not a requirement for the direction of time to be downwards in a Lamport Diagram. This is simply a stylistic choice; however, time is most often drawn moving either downwards, or from left to right.
 
 [↩](#a1)
 
