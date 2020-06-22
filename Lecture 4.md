@@ -19,16 +19,14 @@
 
 ### What is the Definition of the *"Happens Before"* Relation
 
-* Events `A` and `B` are events in the same process and `B` happens after `A`
+* Events `A` and `B` take place in the same process and `B` happens after `A`
 * If `A` is a message send event and `B` is the corresponding receive event, then `B` ***cannot*** have happened before `A`.  
 * If `A -> C` and `C -> B`, the we can be certain that `A -> B` (Transitive closure)
 
 
 ### The *"Happens Before"* Relation is an Irreflexive Partial Order
 
-The set of all events in a system can be ordered by the "happens before" partial order, but this relation does not exhibit the reflexivity property, thus making it an irreflexive partial order.
-
-A partial order for a set `S` is where the members of `S` can be ordered using a binary relation such as `≤`.  The partial order then has the following properties:
+A partial order for a set `S` is where the members of `S` can be ordered using a binary relation such as *"less than or equal to"* `≤`.  The partial order then has the following properties:
 
 | Property | English Description | Mathematical Description |
 |---|---|---|
@@ -36,21 +34,19 @@ A partial order for a set `S` is where the members of `S` can be ordered using a
 | Anti-symmetry | For all `a` and `b` in `S`,<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
 | Transitivity  | For all `a`, `b` and `c` in `S`,<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
 
-But for the *"happens before"* relation, the property of reflexivity simply makes no sense, since an event cannot happen before itself.
+The set of all events in a system can be ordered by the *"happens before"* partial order; however, in the case of events, not all of the three properties described above are applicable.  It is impossible to apply the reflexivity property simply because it makes no sense to say that an event *happened before itself*.
 
 ### Accurate Terminology
 
-Don't get hung up on thinking that you must always state that the "happens before" relation is an irreflexive partial order.
-
-It’s fine just to call it a "partial order".
+Don't get hung up on thinking that you must always state that the "happens before" relation is an irreflexive partial order.  It’s fine just to call it a "partial order".
 
 
 
 ## What's an Example of a True Partial Order?
 
-Set inclusion (or set containment).  This is defined as the set of all subsets of any given set
+Set inclusion (or set containment).  This is defined as the set of all subsets of any given set.
 
-So, if we have a set `{a, b, c}`, then the containment set `S` contains the following 8 elements; each of which is one of the possible subsets of `{a, b, c}` (Don't forget to include the empty set!):
+So, if we have a set `{a, b, c}`, then the containment set `S` contains the following 8 elements; each of which is one of the possible subsets of `{a, b, c}` (Don't forget to include both the empty set and the entire set!):
 
 ```
 { {}
@@ -79,11 +75,11 @@ The `⊆` relation ("is a subset of") is a true partial order because every elem
 As an aside...
 
 ***Q:***&nbsp;&nbsp; In the above inclusion set `S`, how is the element `{a}` related to the element `{b,c}`?  
-***A:***&nbsp;&nbsp; It's not!  A set defined by a ***partial order*** cannot relate every member of that set to every other member. In fact, that's the point of it being called a ***partial*** order!
+***A:***&nbsp;&nbsp; It's not!  In a set defined by a ***partial order***, it is not possible to relate every member of that set to every other member. That's why its called a ***partial*** order!
 
 Some orders however are able to relate every element in a set to every other element in that set.  These are known as ***total orders***.
 
-A good example of this is the natural numbers.  If our set is the natural numbers and the relation is `≤`, then our diagram of this set is simply a straight line:
+A good example of a total order is the counting (or natural) numbers.  If our set is the natural numbers and the relation is `≤`, then our lattice diagram of the containment set is simply a straight line:
 
 ![Total order](./img/L4%20Natural%20Numbers.png)
 
@@ -95,7 +91,7 @@ This is because every natural number is comparable to every other natural number
 This question relates to clocks - specifically ***Logical Clocks***
 
 > A logical clock is a very unusual type of clock because it can neither tell us the time of day, nor how large a time interval has elapsed between two events.  
-> All a logical clock can do is tell us the order in which events occurred.
+> All a logical clock can tell us is the order in which events occurred.
 
 ### Lamport Clocks
 
@@ -105,7 +101,7 @@ The simplest type of logical clock is a ***Lamport Clock***.  In its most basic 
   if A -> B then LC(A) < LC(B)
 ```
 
-In other words, if it is true that event `A` happened before event `B`, then we can be certain that the Lamport Clock value of `A` will be smaller than the Lamport Clock value of `B`.
+In other words, if it is true that event `A` happened before event `B`, then we can be certain that the Lamport Clock value of event `A` will be smaller than the Lamport Clock value of event `B`.
 
 It is not important to know the absolute Lamport Clock value of an event, because outside the context of the *"happens before"* relation, this value is meaningless.  And even in the context of the *"happens before"* relation, we must have at least two events in order to compare their Lamport Clock values.
 
@@ -137,15 +133,13 @@ We have three processes `A`, `B` and `C` and the Lamport Clock values at the top
 
 ![Lamport Clock Message Send 1](./img/L4%20LC%20Msg%20Send%203.png)
 
-As you can see, the value of each process' Lamport Clock only ever changes monotonically (that is, they only ever stay the same, or get bigger &mdash; they can never get smaller)
+As you can see, the value of each process' Lamport Clock increases monotonically (that is, the value only ever stays the same, or gets bigger &mdash; they can never get smaller!)
 
 ## Reasoning About Lamport Clock Values
 
-We know that if `A -> B` then `LC(A) < LC(B)`
+We know that if `A` happens before `B` (`A -> B`) then we also know that `A`'s Lamport Clock value will be smaller than `B`'s Lamport Clock value (`LC(A) < LC(B)`).
 
-But what about the other way around?
-
-If `LC(A) < LC(B)` then does this prove that `A -> B`?
+But can we apply this logic the other way around?  If we know that `LC(A) < LC(B)` then does this prove that `A -> B`?
 
 Actually, no it doesn't.  Consider this situation:
 
@@ -167,54 +161,53 @@ Since `LC(A) < LC(B)` does this prove that `E1 -> E2`?
 
 Absolutely not!
 
-Why?  Because we cannot form a chain of connections between `E1` and `E2`.  These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.
-
-So, in this case, the ***happens before*** relation is unable to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`
+Why?  Because we have no way to connect event `E1` with event `E2`.  These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.  So, in this case, we are unable to use the ***happens before*** relation to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`.
 
 So, in plain language:
 
-> If you cannot draw a continuous line between two events, then we are unable to establish a causal relation between those events
+> If we are unable to trace an unbroken connection between two events, then we are unable to establish a causal relation between those events
 
 Or to use fancier, academic language:
 
 > Causality requires graph reachability in spacetime
 
-So, in summary, when we reason about Lamport Clock values, we understand that for events `A` and `B`:
-
-If we know that `A -> B`, then we can be sure that `LC(A) < LC(B)`
-
-In other words:
+So, in summary, when we reason about Lamport Clock values, if we know that `A -> B`, then we can be sure that `LC(A) < LC(B)`.  In other words:
 
 > Lamport Clocks are consistent with causality
 
-However, simply knowing that `LC(A) < LC(B)` does not prove `A -> B`
-
-This is because
+However, simply knowing that `LC(A) < LC(B)` does not prove `A -> B`; this is because:
 
 > Lamport Clocks do not characterise (or establish) causality
 
-The above example is derived from a paper by Reinhard Schwarz and Friedemann Mattern called [Detecting Causal Relationships in Distributed Computations: In Search of the Holy Grail](./papers/holygrail.pdf)
+The above example is derived from the ["Holy Grail"](./papers/holygrail.pdf) paper by Reinhard Schwarz and Friedemann Mattern.
 
 
 ### So, What Are Lamport Clocks Good For?
 
-Even though Lamport Clocks cannot characterise causality, they are still very useful.
+***Q:***&nbsp;&nbsp; Can we use a Lamport Clock to tell us the time of day?  
+***A:***&nbsp;&nbsp; Nope
 
-We have the logical implication: `if A-> B then LC(A) < LB(B)`
+***Q:***&nbsp;&nbsp; Can we use a Lamport Clock to measure the time interval between two events?  
+***A:***&nbsp;&nbsp; Nope
 
-All logical implications are constructed from a premise (`A-> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the question is true.
+***Q:***&nbsp;&nbsp; So what are they good for?  
+***A:***&nbsp;&nbsp; A Lamport Clock is designed to help establish event ordering in terms of the *happens before* relation
+
+Even though Lamport Clocks cannot characterise causality, they are still very useful because they define the logical implication: `if A -> B then LC(A) < LB(B)`
+
+All logical implications are constructed from a premise (`A -> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the answer to the question is true.
 
 For any logical implication, we can also take its contra-positive.  Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
 
 So, in the case of the "happens before" relation
 
-`if A-> B then LC(A) < LB(B)`
+`if A -> B then LC(A) < LB(B)`
 
 The contra-positive states
 
-`if ¬(LC(A) < LB(B)) then ¬(A->B)`
+`if ¬(LC(A) < LB(B)) then ¬(A -> B)`
 
-The contra-positive states that if the Lamport Clock of `A` is not less than the Lamport Clock of `B`, then `A` cannot have happened before `B`.  This turns out to be really valuable in debugging because if we know that event `A` ***did not*** happen before event `B`, then we can say with complete certainty that whatever might have happened as a result of event `A`, it did not contribute to the problem experienced during event `B`.
+The contra-positive states that if the Lamport Clock of `A` is not less than the Lamport Clock of `B`, then `A` cannot have happened before `B`.  This turns out to be really valuable in debugging because if we know that event `A` ***did not*** happen before event `B`, then we can say with complete certainty that whatever consequences were created by event `A`, they could not have contributed to the earlier problem experienced during event `B`.
 
 
 ## Summary
