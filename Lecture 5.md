@@ -23,6 +23,10 @@ If `LC(A) < LC(B)` then it does ***not*** imply `A->B`
 
 Invented independently by Friedemann Mattern and Colin Fidge.  Both men wrote papers about this subject in 1988.
 
+> Addendum
+> 
+> Subsequent investigation by Lindsey Kuper has uncovered that without using the name *"vector clock"*, the concept was being used by Rivka Ladin and Barbara Liskov in 1986.  See [lecture 23](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2023.md#ladin--liskovs-paper-highly-available-distributed-services-and-fault-tolerant-distributed-garbage-collection) for details.
+
 For Vector Clocks however, this relation ***is*** reversable:
 
 `A->B <==> LC(A) < LC(B)`
