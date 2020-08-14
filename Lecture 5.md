@@ -12,11 +12,11 @@
 
 Lamport Clocks are consistent with causality, but do not characterise (or establish) it.
 
-If `A->B` then this implies that `LC(A) < LC(B)`
+If `A -> B` then this implies that `LC(A) < LC(B)`
 
 However, this implication is not reversable:
 
-If `LC(A) < LC(B)` then it does ***not*** imply `A->B`
+If `LC(A) < LC(B)` then it does ***not*** imply `A -> B`
 
 
 ## Vector Clocks
@@ -25,11 +25,11 @@ Invented independently by Friedemann Mattern and Colin Fidge.  Both men wrote pa
 
 > Addendum
 > 
-> Subsequent investigation by Lindsey Kuper has uncovered that without using the name *"vector clock"*, the concept was being used by Rivka Ladin and Barbara Liskov in 1986.  See [lecture 23](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2023.md#ladin--liskovs-paper-highly-available-distributed-services-and-fault-tolerant-distributed-garbage-collection) for details.
+> Subsequent investigation by Lindsey Kuper has uncovered that without using the name *"vector clock"*, the concept was already being used by Rivka Ladin and Barbara Liskov in 1986.  See [lecture 23](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2023.md#ladin--liskovs-paper-highly-available-distributed-services-and-fault-tolerant-distributed-garbage-collection) for details.
 
 For Vector Clocks however, this relation ***is*** reversable:
 
-`A->B <==> LC(A) < LC(B)`
+`A -> B <==> LC(A) < LC(B)`
 
 A Lamport Clock is just a single integer, but a Vector Clock is a sequence of integers. (The word *"vector"* is being used here in the programming sense, not in the sense of a magnitude and direction)
 
@@ -65,7 +65,7 @@ But how do we take the `max` of two vectors?
 
 The notion of `max` we're going to use here is a per-element comparison (a.k.a. a pointwise maximum)
 
-For example, if my VC is `[1, 12,4]` and I receive the VC `[7,0,2]`, the pointwise maximum would be `[7,12,4]`
+For example, if my VC is `[1,12,4]` and I receive the VC `[7,0,2]`, the pointwise maximum would be `[7,12,4]`
 
 ### Applying the `<` Operator on Two Vectors
 
@@ -198,7 +198,7 @@ What about this?
 
 ![Protocol 3](./img/L5%20Protocol%203.png)
 
-Nope, this is not allowed because our protocol states that the message `Good, thanks` should only be sent in response to the receipt of message `Hi, how are you?`.  Therefore, sending such an unsolicited message constitutes a protocol violation
+Nope, this is not allowed because our protocol states that the message `Good, thanks` should only be sent in response to the receipt of message `Hi, how are you?`.  Therefore, sending such an unsolicited message constitutes a protocol violation.
 
 ### So How Long Did the Message Exchange Take?
 
@@ -208,7 +208,7 @@ What about this - is this a protocol violation?
 
 Hmmm, it's hard to tell.  Maybe the protocol is running correctly and we're simply looking at a particular point in time that does not give us the full story.
 
-The point here is that a Lamport Diagram can only represent logical time - that is, it describes the order in which a sequence of events occurred, but it cannot give us any idea about how much time elapsed between events.
+The point here is that a Lamport Diagram can only represent logical time - that is, it describes the order in which a sequence of events occurred, but it cannot give us any idea about how much real-world time elapsed between those events.
 
 But considering that a Logical Clock is only concerned with the ordering of events, it is not surprising that the following two event sequences appear to be identical:
 
@@ -240,13 +240,14 @@ Hmmmm, it sounds like there is some highly specific meaning attached to the word
 ***Sending*** and ***receiving*** can be understood quite intuitively, but in the context of distributed systems, the concept of ***message delivery*** has a highly specific meaning:
 
 * ***Sending***  
-    The explicit act of causing a message to be transmitted.  The sending process has complete control over when, or even if, that message is sent; therefore, message sending is active.
+    The explicit act of causing a message to be transmitted.  
+    The sending process has complete control over when or even if a message is sent; therefore, sending a message is entirely ***active***.
 * ***Receiving***   
-    An action that happens when a message arrives.  The receiving process has no control over when or even if a message arrives &mdash; they just show up... or not.  Therefore, from the perspective of the receiving process, receiving is passive.
+    An action that happens when a message arrives.  
+    The receiving process has no control over when or even if a message arrives &mdash; they just show up randomly... or not.  Therefore, from the perspective of the receiving process, receiving a message is entirely ***passive***.
 * ***Delivery***  
-    Any processing performed on a message after it has been received. For the receiving process, it can choose when and if to handle the received message; therefore, message delivery is active.   
-    For instance, even though you have no control over when you will receive messages, you can choose to place those messages into a queue and only process them at some time in the future you deem to be correct.  
-    This is known as ***delivering*** a received message which is distinct from simply receiving a message.
+    The purpose of the term ***Delivery*** is to distinguish the passive act of receiving a message from the active choice to start processing the contents of that message. You can't decide when you're going to receive a message, but you can decide when and if to process its contents; therefore, although receiving a message is passive, the choice to deliver a message is entirely ***active***.   
+    For example, by placing a received message into a queue, a process can defer message delivery until some additional set of conditions becomes true.
 
 ### FIFO (or Ordered) Delivery
 
