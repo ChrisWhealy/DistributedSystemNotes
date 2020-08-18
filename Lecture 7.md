@@ -44,20 +44,19 @@ Now `Carol` examines her message queue and discovers that the message with vecto
 
 ## Rules for Causal Broadcast
 
-1. If a message sent by process `P1` is delivered by process `P2`, increment the `P1` position in `P2`'s local clock
-1. Before sending a message, a process must increment its own position in its local clock.  The new local clock value is then sent with the message as metadata.
-1. Process `P2` should only deliver a message `m` received from `P1`, if the timestamp (I.E. vector clock) on message `m` conforms to the following two rules:
+1. Before sending a message to process `P2`, process `P1` records this send event by incrementing its own position in its local vector clock.  The updated vector clock is then sent with the message as metadata.
+1. At such time as `P2` delivers `P1`'s message, `P2` increments the `P1` clock value in its own local vector clock (I.E. it records the delivery of `P1`'s message)
+1. Process `P2` should only deliver `P1`'s message if the clock value received with that message conforms to the following two rules:
     
-    * The vector clock value for process `P1` carried by message `m`, must be exactly one bigger than the vector clock value for process `P1` held by the receiving process `P2`.  Or written more algebraically:  
+    * The clock value for process `P1` in the message must be exactly one bigger than the clock value for process `P1` in the receiving process `P2`.  Or written more algebraically:  
 
-        <code>VC<sub>m</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
+        <code>VC<sub>msg</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
 
         ***and***
 
-    * The vector clock values for all other positions in message `m` must be less than or equal to the corresponding positions in `P2`'s vector clock.  Or, for all positions `k` in the vector clocks where `(k ≠ P1)`:
+    * The message clock values for all other positions must be less than or equal to the corresponding positions in `P2`'s vector clock.  Or, for all positions `k` in the vector clock where `(k ≠ P1)`:
 
-
-        <code>VC<sub>m</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
+        <code>VC<sub>msg</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
 
 ### What Do These Rules Mean?
 
@@ -68,11 +67,11 @@ There are two important things to remember here:
 1. These rules only apply to ***broadcast*** messages.  
     This means that every process in the system will (eventually) receive every message sent by every other process.  These rules do not apply for point-to-point messages!
 
-***Rule 1:***&nbsp;&nbsp;<code>VC<sub>m</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
+***Rule 1:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
 
-Knowing this, we can understand the above rule to mean that in order to avoid creating a causal anomaly (I.E. by delivering a message out of order),  the receiver's local clock value for the sender must be exactly one smaller than the sender's clock value received in the message.  In other words, the timestamp on the message makes it the receiver's next expected message.
+Knowing this, we can understand the above rule to mean that in order to avoid creating a causal anomaly (I.E. by delivering a message out of order),  the receiver's local clock value for the sender must be exactly one smaller than the sender's clock value received in the message.
 
-***Rule 2:***&nbsp;&nbsp;<code>VC<sub>m</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
+***Rule 2:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
 
 The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver keeps a complete record of all broadcast messages sent in the system; no message-send events are missing.
 
@@ -80,7 +79,7 @@ This is the rule that would be violated if `Carol` tried to deliver `Bob`'s rude
 
 The vector clock on the message sent from `Bob` to `Carol` is `[1,1,0]`, but `Carol`'s vector clock is `[0,0,0]`.  The `1` in `Bob`'s position is correct because he is sending the message, and it is one greater than `Carol`'s local value, but the `1` in `Alice`'s position is a problem.  According to this, `Alice` has sent out a broadcast message, but `Carol` has no record of it &mdash; yet.
 
-Since `1` is not ≤ `0`, `Carol` concludes that this newly arrived message has been received out of order and therefore must be queued until such time as we receive the delayed message from `Alice`.
+Since `1` is not ≤ `0`, `Carol` correctly concludes that this newly arrived message has been received out of order and therefore must be queued until such time as we receive the delayed message from `Alice`.
 
 ### Another Example
 
@@ -122,7 +121,7 @@ This is because, if we look back at the hierarchy of delivery guarantees, we can
 
 So how can we rule out causal anomalies and, at the same time, ensure total order?
 
-Well, we would need something more than vector clocks, or at least if we want causal order and also maintain total order, then we will need something more than this causal broadcast algorithm we have just described.
+Well, if we want to maintain both causal order ***and*** total order, then we will need something more than vector clocks and the causal broadcast algorithm we have just described.
 
 In general, it’s pretty annoying to have to enforce total order, so it’s much easier not to enforce it unless you really have to.
 
@@ -147,7 +146,7 @@ So, the ***Consistent Global Snapshot*** is another important use of the *happen
 
 ## How Do You Take a Global Snapshot of a Distributed System?
 
-As has already been pointed out, in a distributed system, there really is no such things as an "observable" global state.  Each process has its own state that is the sum total of events that have happened in that process up until some particular point.  This includes the state of the process' internal memory.
+As has already been pointed out, in a distributed system, there really is no such things as an "observable" global state.  Each process has its own state that represents the sum total of activity in that process up until some particular point.  This includes the state of the process' internal memory.
 
 So, we could lasso all the events and internal variables of a process and call that the state...
 
