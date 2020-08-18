@@ -71,11 +71,18 @@ For example, if my VC is `[1,12,4]` and I receive the VC `[7,0,2]`, the pointwis
 
 What does `<` mean in the context of two vectors?
 
-This is calculated by performing a pointwise comparison of each element in the vector ***and*** rejecting the special case where `VC(A) = VC(B)`.  That is:
+It means that when a pointwise comparison is made of the values in vector clocks `VC(A)` and `VC(B)`, the value in every position of `VC(A)` is less than the corresponding value in `VC(B)`.
 
-<code>for all elements in the VCs, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub> && VC(A) ≠ VC(B)</code>
+> It is assumed here that `VC(A)` and `VC(B)` are actually comparable.  This means that both vector clocks must refer to the same set of clock values listed in the same order.
 
-Meaning that for all elements in Vector Clocks `A` and `B`, the element at `VC(A)[i]` must be less than or equal to the element at `VC(B)[i]` and `VC(A) ≠ VC(B)`
+This comparison can be performed using the `≤` operator as long as we first reject the case where `VC(A) == VC(B)`.  To put that more algorithmically, the following condition must be true:
+
+<pre>
+   VC(A) !== VC(B)
+&& VC(A).length == VC(B).length
+&& for each element at position i, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub>
+</pre>
+
 
 ### But Is This Comparison Enough to Characterise Causality?
 
