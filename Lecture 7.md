@@ -64,14 +64,14 @@ There are two important things to remember here:
 
 1. We are only incrementing vector clock values on message-***send*** events, not message-receive events.  
     The value in each vector clock position is simply a count of the number of messages that process has sent so far.
-1. These rules only apply to ***broadcast*** messages.  
-    This means that every process in the system will (eventually) receive every message sent by every other process.  These rules do not apply for point-to-point messages!
+1. These rules only apply to ***broadcast*** messages, not point-to-point messages!  
+    This means that every process in the system will (eventually) receive every message sent by every other process.
 
 ***Rule 1:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
 
 Knowing this, we can understand the above rule to mean that in order to avoid creating a causal anomaly (I.E. by delivering a message out of order),  the receiver's local clock value for the sender must be exactly one smaller than the sender's clock value received in the message.
 
-***Rule 2:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>]</code>
+***Rule 2:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P<sub>k</sub>] ≤ VC<sub>P2</sub>[P<sub>k</sub>], (k ≠ P1)</code>
 
 The second rule means that the number of message-sends performed by all the other processes in the system (I.E. the vector clock values) must be no bigger than the values recorded in the receiver's local clock.  In other words, the receiver keeps a complete record of all broadcast messages sent in the system; no message-send events are missing.
 
@@ -136,6 +136,8 @@ We have already spoken of two of them:
 
 These techniques provide ordering guarantees that prevent causal anomalies.
 
+## Consistent Global Snapshot
+
 Another thing we have not mentioned yet is something called ***Consistent Global Snapshot***.  This is related to the first point above and is a way to obtain a picture of the global state of a distributed system.  However, this is far from trivial to implement because not only does every process in a system have its own state, every process also has its own idea of the state of every other process.
 
 One thing we can say is that:
@@ -154,19 +156,25 @@ So, we could lasso all the events and internal variables of a process and call t
 
 But what about the state of all the other processes in the system?
 
-One approach might be to use a global clock and inform every process that at a certain time of day (say `09:20`), every process must take a snapshot of itself.  However, as we have already seen in [lecture 2](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%202.md#time-and-how-we-measure-it), this approach won't work reliably because synchronising clocks between computers is a notoriously difficult task.
+One approach might be to use a global clock and inform every process that at a certain time of day (say `09:20`), they must all take a snapshot of themselves.  However, as we have already seen in [lecture 2](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%202.md#time-and-how-we-measure-it), this approach won't work reliably &mdash; not because a process can't take a selfie (so to speak), but because synchronising clocks between computers is a notoriously difficult task.
 
 ![Snapshot Anomaly Caused by Using a Wall clock](./img/L7%20Wallclock%20Snapshot%20Anomaly.png)
 
-We now have two inconsistent snapshots.
+Uh oh! Now we have a problem.  Remember what we said above:
 
-`P1` takes a snapshot of itself when its clock reaches `09:20`.  It then sends a message to `P2` informing it that a snapshot has been taken.  However, `P2`'s clock is running slightly slower than `P1`'s, so the `{p1:snapshot}` message receive event happens just before `P2`\'s clock ticks over to `09:20` and is therefore included in `P2`'s snapshot.
+> If `A->B` and `B` is in the snapshot, then we should also expect to find `A` in the snapshot
 
-In spite of the fact that both snapshots were supposedly taken at `09:20`, they are in fact inconsistent with each other.  This is because `P1`'s message-send event `E5` is missing from `P1`'s snapshot but contained within `P2`'s snapshot.  Looking at this the other way around, `P2`'s snapshot contains a message-receive event, for which there is no corresponding send-event in `P1`'s snapshot.
+From the diagram, we can see that the message-send event `E` in `P1` causes event `W` in `P2`.
 
-As we can see, using the time-of-day clock is an error-prone approach to taking snapshots.
+Therefore `E(P1) -> W(P2)`
 
-So, we need an algorithm that allows us to take a consistent global snapshot.
+But since `P2`'s clock is running slightly slower than `P1`'s, the `{p1:snapshot}` message arrives at `P2` (causing event `W`) just ***before*** `P2`'s clock ticks over to `09:20`; therefore, as far as `P2` is concerned, event `W` should be included in the snapshot.
+
+Now when we compare the data in `P1`'s snapshot with the data in `P2`'s snapshot, we are unable to explain the cause of event `W` &mdash; it just pops up out of nowhere because there's a gap in its causal history.  And all of this happens in spite of both processes thinking they took their snapshots at `09:20`.
+
+As we can see, using a machine's time-of-day clock is an error-prone approach to taking consistent snapshots.
+
+So, we need an algorithm that allows us to snapshot an entire system ***consistently***.
 
 ## The Chandy-Lamport Algorithm
 
@@ -178,19 +186,17 @@ A channel is simply a unidirectional communication path between two processes.
 
 As an aside, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
 
-1. Eventual message delivery is ***guaranteed***, thus making delivery failure impossible
-1. All channels act as FIFO queues, thus making it impossible for messages to be delivered out of order (I.E. it guarantees that there will never be any FIFO anomalies)
+1. A message is ***guaranteed*** to arrive at the recipient &mdash; eventually
+1. All channels act as FIFO queues, thus making it impossible for two messages to arrive out of order (I.E. we can exclude the possibility of FIFO anomalies)
 1. Processes don't crash! (The topic of process failure is dealt with later in [lecture 10](./Lecture%2010.md))
 
 ### Channel Naming Convention
 
-The channel from `P1` to `P2` is called <code>C<sub>12</sub></code>
-
-The channel from `P2` back to `P1` is called <code>C<sub>21</sub></code>
+Between any two processes `P1` and `P2`, two channels exist.  Communication from `P1` to `P2` passes along channel <code>C<sub>12</sub></code>, and communication in the other direction passes along channel <code>C<sub>21</sub></code>
 
 ![Channels 1](./img/L7%20Channels%201.png)
 
-`P1` sends a message at event `A` over channel <code>C<sub>12</sub></code>.  This is received by `P2` at event `B`.
+`P1` sends a message to `P2` at event `A` over channel <code>C<sub>12</sub></code>.  This is received by `P2` at event `B`.
 
 `P2` then sends a message back to `P1` at event `C` over channel <code>C<sub>21</sub></code>, but since this message has not yet arrived at `P1`, it is said to be ***in the channel***.
 
