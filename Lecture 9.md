@@ -179,7 +179,7 @@ Another way of saying this is that a Chandy-Lamport snapshot is causally correct
 
 ### FIFO Guarantee
 
-If a process sends message `m2` after `m1`, then any processing delivering both of these messages must deliver `m1` first.
+If a process sends message `m2` after `m1`, then any process delivering both of these messages must deliver `m1` first.
 
 A violation of this guarantee is a FIFO anomaly:
 
