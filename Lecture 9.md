@@ -162,7 +162,7 @@ However, this cut is inconsistent because the causality of events `B` and `D` ha
 
 ![Inconsistent Cut](./img/L9%20Inconsistent%20Cut.png)
 
-The happens-before relation of between events `B` and `D` is now broken because the cut has moved the future event `D` into the past, and the past event `B` into the future.
+The happens-before relation between events `B` and `D` is now broken because the cut has moved the future event `D` into the past, and the past event `B` into the future.
 
 ## The Chandy-Lamport Algorithm Determines a Consistent Cut
 
