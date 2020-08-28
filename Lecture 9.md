@@ -61,7 +61,7 @@ However, Chandy & Lamport require only that the graph is strongly connected; for
 
 ![Connected Graph](./img/L9%20Connected%20Graph.png)
 
-`P3` can still send messages to `P2` but must send them via `P1`.
+`P3` can still send messages to `P2` but it must send them via `P1`.
 
 ## Simultaneous Snapshot Initiators
 
@@ -99,23 +99,23 @@ Could we end up with a bad snapshot such as the one shown below?
 
 ![Bad Snapshot](./img/L9%20Bad%20Snapshot.png)
 
-No, this is in fact impossible because as soon as a process records its own state, it must immediately send out marker messages.  This is the rule that makes it impossible for event `B` to send message `m` to `P2` before the snapshot processing has completed.
+No, this is in fact impossible because as soon as a process records its own state, it must immediately send out marker messages.  This is the rule that makes it impossible for message `m` to arrive at `P2` before the snapshot processing has completed.
 
-The rules of the Chandy-Lamport Snapshot algorithm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all outgoing channels.  So, the marker message will always be sent ***before*** `P1` send message `m` to `P2`.  Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
+The rules of the Chandy-Lamport Snapshot algorithm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all outgoing channels.  So, the marker message will always be sent ***before*** event `B` happens in `P1` that sends message `m` to `P2`.  Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
 
-To understand how important this is, let's consider what would happen if simultaneous initiators were ***not*** permitted:
+To understand how important this is, let's consider what would happen if simultaneous initiators were ***not*** permitted and the initiator had to seek agreement from the other participants before initiating the snapshot:
 
 * `P1` decides it wants to take a snapshot
-* `P1` sends a message to all the participants in the system saying *"Hi guys, I'd like to take a snapshot.  Is that OK with you?"*
+* `P1` sends a message to all the participants saying *"Hi guys, I'd like to take a snapshot.  Is that OK with you?"*
 * But whilst `P1` is waiting for everyone to respond, another process sends out a message saying *"Hi guys, I'd like to take a snapshot.  Is that OK with you?"*
 
-This all gets very chaotic and might possibly lead to some sort of deadlock.
+This all gets very chaotic and could well lead to some sort of deadlock.
 
 So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.  This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: here be dragons!)
 
-Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing on who will act as the initiator &mdash; ***any*** process can take a snapshot ***any*** time it likes!
+Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing on either who will act as the initiator, or when a snapshot should be taken &mdash; ***any*** process can take a snapshot ***any*** time it likes!
 
-Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.  Hence, markers can be very lightweight messages that do not need to carry any identifiers.
+Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.  Hence, markers can be very lightweight messages that do not need to carry any data such as the identity of the initiator.
 
 The Chandy-Lamport algorithm is an example of a decentralised algorithm.  There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (We'll talk more about this type of algorithm later in the course).
 
@@ -124,7 +124,8 @@ The Chandy-Lamport algorithm is an example of a decentralised algorithm.  There 
 What are snapshots good for?  Here are some ideas:
 
 * ***Checkpointing***  
-    In the event of failure, a checkpoint provides us with a reasonable restart point without having to repeat the whole calculation over again
+    If we are performing a process that is either expensive or based on non-deterministic input (such as user requests arriving over a network), then in the event of failure, a checkpoint allows us to reconstruct the system's state and provides us with a reasonable restart point.  
+    For expensive calculations, all our calculation effort up until the last checkpoint is preserved, and for transactional systems, the system state preserved at the checkpoint reduces data loss down to only those transactions that occurred between the checkpoint being taken and the system failing.
 * ***Deadlock detection***  
     Once a dead lock occurs at time `T` in a system, unless it is resolved, that deadlock will continue to exist for all points in time greater than `T`.  A snapshot can be used to perform deadlock detection and thus serves as a useful debugging tool
 * ***Stable Property Detection***  
@@ -137,15 +138,19 @@ Be careful not to conflate a ***deadlock*** with a process crashing.  Typically 
 
 The set of events in a Chandy-Lamport Snapshot will always make sense with respect to the causality of those events.
 
-Now we need to introduce a new piece of terminology:  A ***cut*** is a time frontier that divides a Lamport diagram into past and future events.
+Now we need to introduce a new piece of terminology: a ***cut***.
+
+A cut is a time frontier that divides a Lamport diagram into past and future events.
 
 ![Cut](./img/L9%20Cut.png)
 
-An event is said to be ***in the cut*** if it belongs to the past.  In Lamport diagrams where  time goes downwards, this means events occurring above the line.
+An event is said to be ***in the cut*** if it belongs to the past.  In Lamport diagrams, where time goes downwards, this means events occurring above the line.
 
-So, for a cut to be ***consistent***, for all the events `E` in the cut, if `F->E` then `F` is also in the cut.
+So, if event `E` is in the cut and `D->E` then for the cut to be ***consistent***, event `D` must also be in the cut.
 
-In both the following diagrams `B->D`.  In other words, since event `B` happens before event `D`, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
+This is a restatement of the principle of [consistent global snapshots](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%207.md#consistent-global-snapshot) that we saw in [lecture 7](./Lecture%207.md).
+
+In both the of following diagrams `B->D`.  Therefore, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
 
 So, this cut is valid and is therefore called a consistent cut:
 
@@ -153,13 +158,11 @@ So, this cut is valid and is therefore called a consistent cut:
 
 Even though the cut has separated events `B` and `D`, their causality has not been reversed: event `B` remains on the "past" side of the cut, and event `D` remains on the "future" side.
 
-However, this is an inconsistent cut:
+However, this cut is inconsistent because the causality of events `B` and `D` has been reversed:
 
 ![Inconsistent Cut](./img/L9%20Inconsistent%20Cut.png)
 
-This cut is inconsistent because the causality of events `B` and `D` has been reversed.
-
-As far as the data in this cut is concerned, the relation `B->D` is now broken.  This is because the cut has moved the future event `D` into the past but done so without recording the event that caused it.  Similarly, the past event `B` has been moved into the future, but without any connection to event `D` it causes.
+The happens-before relation of between events `B` and `D` is now broken because the cut has moved the future event `D` into the past, and the past event `B` into the future.
 
 ## The Chandy-Lamport Algorithm Determines a Consistent Cut
 
@@ -169,7 +172,7 @@ Going back to the more detailed example used in the previous lecture, we can see
 
 ![Consistent Cut 2](./img/L9%20Consistent%20Cut%202.png)
 
-Another way of saying this is that a Chandy-Lamport snapshot is causally correct
+Another way of saying this is that a Chandy-Lamport snapshot is causally correct.
 
 
 ## Recap: Delivery Guarantees and Protocols
@@ -191,9 +194,9 @@ In order to enforce FIFO delivery, we could implement strategies such as:
 
 ### Causal Delivery
 
-The causal delivery guarantee says that if the send of message `m1` happens before the send of message `m2`, then `m1` must be delivered before `m2`.
+The [causal delivery](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%206.md#causal-delivery) guarantee simply says messages must be delivered in the order they were sent.
 
-A causal anomaly looks like this:
+> If `m1`'s send happens before `m2`'s send, then `m1`'s delivery must happen before `m2`'s delivery.  A causal anomaly looks like this:
 
 ![Causal Anomaly](./img/L3%20Causal%20Anomaly.png)
 
@@ -217,8 +220,8 @@ But here's an idea.  If a fifth process were added to act as a coordinator, then
 
 However, this approach has several downsides:
 
-* The coordinator process can become a bottleneck, potentially making the system slow
-* If the coordinator crashes, then all updates stop until such time as the coordinator can be restarted
+* Under high-load situations, the coordinator process could become a performance bottleneck
+* If the coordinator crashes, then all updates stop until such time as the coordinator can be restarted (but who's going to monitor the coordinator process &mdash; a coordinator-coordinator process?)
 
 ## Safety and Liveness Properties
 
@@ -227,7 +230,7 @@ Let's now briefly introduce the next topic, that of ***safety*** and ***liveness
 | Safety Property | Liveness Property |
 |---|---|
 | Something bad will ***not*** happen | Something good ***eventually*** happens
-| In a finite execution, we can demonstrate that something bad will happen if this property is not satisfied.<br><br>FIFO anomalies, Causal Anomalies and Totally-Ordered Anomalies are all examples of safety properties because we can demonstrate that their failure causes something bad to happen | For example, all client messages are eventually answered.<br><br>However, since the definition of a liveness property tends to be open-ended, it is very difficult to provide a counter example when considering ***finite*** execution, since the possibility of having to wait forever is not excluded.<br><br>This is why liveness properties are much harder to reason about.
+| In a finite execution, we can demonstrate that something bad will happen if this property is not satisfied.<br><br>FIFO anomalies, Causal Anomalies and Totally-Ordered Anomalies are all examples of safety properties because we can demonstrate that their failure causes something bad to happen | For example, all client messages are eventually answered.<br><br>The problem though is that liveness properties tend to have very open-ended definitions.  This means we might have to wait forever before something good happens... Consequently, when considering ***finite*** execution, it is very difficult (impossible?) to provide counter examples.<br><br>This is why liveness properties are much harder to reason about.
 
 ---
 
