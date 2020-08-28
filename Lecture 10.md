@@ -47,58 +47,62 @@ So, since we know that all the properties we care about are either safety proper
 
 ## So, What Exactly is a "Fault"?
 
-Any time you design a system, you need to make certain assumptions about the environment in which that system will be operating.  So, if you're designing a fault tolerant system, you first need to understand what types of fault might occur in order to understand what conditions your system needs to tolerate.
+Any time you design a system, you need to make certain assumptions about the environment in which that system will be operating.  So, before you can describe your system as being ***fault tolerant***, you must first clearly define what circumstances could occur that constitute a fault, and secondly, how your system will respond under such circumstances.  Only then will you understand what conditions your system needs to tolerate.
 
-In other words, we need a clearer understand of what exactly constitutes a fault.
-
-We therefore need to identify and then categorise the faults that might occur.
+In other words, we must start with a clear understanding of what exactly constitutes a fault.
 
 In a simple scenario like the one below, machine `M1` asks machine `M2` the question *"What's the value of `x`?"* and expects to hear something back such as `x=5`.
 
-What sort of faults could occur here?
-
 ![Possible Faults](./img/L10%20Possible%20Faults.png)
 
-* There is some sort of communication fault in between `M1` and `M2`, causing the message either to be lost, corrupted or significantly delayed
-* `M2` crashes
+What sort of faults could occur here?
+
+* `M2` never receives the message because it was lost due to a communication fault
+* `M2` gets the message, but is unable to answer it because it became corrupted
+* `M2` gets the message, but only after a significant delay
+* `M2` does not respond because it has already crashed
+* `M2` crashes as a result of trying to answer `M1`'s question
 * `M2` is too busy to answer the question
-* The message from `M2` back to `M1` gets lost, corrupted or is delayed
 * `M2` ignores the message
 * `M2` deliberately responds with the wrong answer
+* `M2` sends a response back to `M1` which gets lost, corrupted or delayed
+* `M2` sends a response back to `M1`, but then `M1` crashes as it tries to proces the answer
+* etc...
+
+The problem here is that even in this minimal scenario, we cannot enumerate all the possible errors the might occur; however, we can categorise them.
 
 ### Fault Categories
 
 Let's arrange these types of fault into different informal categories.
 
-* ***Crash*** : Software execution halts or hardware fails
-* ***Omission*** : Messages are sent, but not received (I.E. lost)
-* ***Timing*** : Messages are sent and processed successfully, but very slowly (Also known as a ***performance*** fault)
-* ***Byzantine***<sup id="a1">[1](#f1)</sup> : Malicious or arbitrary behaviour
+| Fault Category | Description
+|---|---
+| Crash | Software execution halts or hardware fails
+| Omission | Messages are sent, but not received (I.E. lost)
+| Timing | Messages are sent and processed successfully, but very slowly<br>Also known as a ***performance*** fault
+| Byzantine<sup id="a1">[1](#f1)</sup> | Intentionally malicious or arbitrary behaviour
 
-These fault categories have been used in Distributed System's design since about the early 1990's and and are presented above in hierarchical order, starting with the lowest level first.
+These fault categories have been used in Distributed System's design since about the early 1990's and are presented above in hierarchical order, starting with the lowest level first.
 
 ### Crash Fault
 
-At the bottom of this hierarchy is the ***crash fault***.  This simply means that the process has stopped exchanging messages with the other participants in the system.
+At the bottom of this hierarchy is the ***crash fault***.  This simply means that a process has stopped exchanging messages with the other participants in the system.
 
-A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.  Whilst this second case is not due to software execution halting, this detail is invisible as far as the other participants in the system are concerned.
-
-For all practical purposes therefore, this process takes no further part in the overall operation of the system and may as well have crashed due to halting.
+A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.  Whilst this second case is not due to software execution halting, as far as the other participants in the system are concerned, this process takes no further part in the overall operation of the system and may as well have crashed.
 
 ### Omission Fault
 
 When a process continues execution, but for whatever reason, fails to send or receive some, but not all messages.
 
+### Timing (or Performance) Fault
 
-### Timing Fault
-
-A process responds either too late or too early.  The typical case is where a process does not respond quickly enough; however, at the hardware level, it is possible for a response to be too fast when we need it to be slower.
+A process responds either too late or too early.  The typical case is where a process responds too slowly; however, at the hardware level, it is possible for a response to be too fast.
 
 In this course, we're going to sidestep the discussion of timing faults because we will be focussing on the asynchronous message delivery model &mdash; which never makes any delivery time guarantees in the first place!
 
 ### Byzantine Fault
 
-A process behaves in an arbitrarily erroneous, or possibly even malicious way.  Again, in this course we won't be spending much time talking about this type of fault.
+A process behaves in an arbitrarily erroneous, or possibly even malicious way.  Usually, such behaviour is intentional. Again, in this course we won't be spending much time talking about this type of fault.
 
 ## Fault Hierarchy
 
@@ -121,7 +125,7 @@ If a process crashes, then ***every*** message sent to that process will not be 
 
 Hence if process `P1` can tolerate process `P2` failing to send or receive ***some*** messages (an omission fault), then by definition, `P1` must also be able to tolerate the case where `P2` fails to send or receive ***all*** messages (a crash fault).
 
-The set of crash faults form a proper subset of the set of omission faults.
+The set of crash faults form a proper subset within the set of omission faults.
 
 ### Timing Faults
 
@@ -134,7 +138,7 @@ A timing fault is where the response to a message is received outside an accepta
 
 ### Byzantine Faults
 
-A Byzantine fault is where a process behaves in an arbitrary or malicious way.  So, if a protocol is tolerant of Byzantine faults, does this mean it must also tolerate timing faults?
+A Byzantine fault is where a process behaves in an arbitrary or intentionally malicious way.  So, if a protocol is tolerant of Byzantine faults, does this mean it must also tolerate timing faults?
 
 Yes, it does.
 
@@ -144,7 +148,7 @@ Consequently, if process `B` decides that to say:
 
 * *"I'm going to pretend to crash"*, or
 * *"I'm not going to respond to certain messages from certain other processes"*, or
-* *I'm deliberately going to swap my responses to two different process around*
+* *I'm deliberately going to mislead two processes by swapping my responses around*
 
 Any process communicating with `B` will be unable to determine the true cause of such behaviour.
 
