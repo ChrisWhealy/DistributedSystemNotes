@@ -196,7 +196,9 @@ In order to enforce FIFO delivery, we could implement strategies such as:
 
 The [causal delivery](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%206.md#causal-delivery) guarantee simply says messages must be delivered in the order they were sent.
 
-> If `m1`'s send happens before `m2`'s send, then `m1`'s delivery must happen before `m2`'s delivery.  A causal anomaly looks like this:
+> If `m1`'s send happens before `m2`'s send, then `m1`'s delivery must happen before `m2`'s delivery.
+
+A causal anomaly looks like this:
 
 ![Causal Anomaly](./img/L3%20Causal%20Anomaly.png)
 
