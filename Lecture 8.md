@@ -27,10 +27,10 @@ In this case, the initiator process is `P1`.
 If process `P1` decides to initiate a snapshot, then the following sequence of events takes place:
 
 * `P1` records its own state as `S1`
-* Immediately after recording its own state, `P1` sends out a marker message out on all its outgoing channels (only one in this case)
-* `P1` starts recording any messages that might arrive on its incoming channels (again, only one in this case)
+* Immediately after recording its own state, `P1` sends out marker messages on all its outgoing channels (only one in this case: channel <code>C<sub>12</sub></code>)
+* `P1` starts recording any messages that might arrive on its incoming channels (again, only one in this case: channel <code>C<sub>21</sub></code>)
 
-Notice that at the time `P1`'s snapshot happens, message `m` is currently in flight (or ***in the channel***) from `P2` to `P1`.
+Notice that at the time `P1`'s snapshot happens, message `m` is currently ***in the channel*** from `P2` to `P1` (channel <code>C<sub>21</sub></code>).
 
 ### Processes Receiving a Marker Message
 
@@ -38,49 +38,50 @@ Notice that at the time `P1`'s snapshot happens, message `m` is currently in fli
 >
 > ![A Marker FIFO Anomaly Cannot Happen](./img/L8%20Marker%20FIFO%20Anomaly.png)
 >
-> Due the fact that all channels behave as FIFO queues, it is not possible for FIFO anomalies to occur such as a marker message arriving ***before*** an earlier event in the originating process.
+> Due the fact that all channels behave as FIFO queues, we do not need to be concerned about the possibility of FIFO anomalies.  This system is designed such that marker messages cannot arrive ***before*** earlier message-send events in the originating process.
 >
-> All of what follows would not work if we had not first eliminated the possibility of FIFO anomalies!
+> None of what follows would work if we had not first eliminated the possibility of FIFO anomalies!
 
-There are two situations here that depend on whether the process has already seen a marker message during this run of the global snapshot.
+When a process receives a marker message, it can react in one of two different ways.  How it reacts depends on whether or not that process has already seen a marker message during this run of the global snapshot.
+
+#### Nope, I Haven't Seen a Marker Message Before...
 
 If this is the first time this process has seen a marker message, the receiver:
 
 * Records its own state
 * Flags the channel on which the marker message was received as ***empty***
 * Sends out a marker message on each of its outgoing channels
-* Starts recording incoming messages on all channels except the one on which it received the original marker message (now flagged as empty)
+* Starts recording incoming messages on all channels ***except*** the one on which it received the original marker message (now flagged as empty)
 
 ***Q:***&nbsp;&nbsp; During a snapshot, once a channel is marked as empty, what happens if you then receive a message on that channel?  
 ***A:***&nbsp;&nbsp; Whilst the snapshot is running, messages received on channels marked as empty are ignored!
 
-
 In the diagram below, since this is the first marker message `P2` has seen, it does the following:
 
 * It records its own state as `S2`
-* Marks channel <code>C<sub>12</sub></code> as empty
+* Flags channel <code>C<sub>12</sub></code> as empty
 * Sends out a marker message on all its outgoing channels (in this case, only channel <code>C<sub>21</sub></code>)
 * Normally, it would now start recording any messages that arrive on its other, incoming channels, but in this case, since its only incoming channel (<code>C<sub>12</sub></code>) has already been marked as empty, there is nothing to record
 
 ![Chandy-Lamport Snapshot 2](./img/L8%20CL%20Snapshot%202.png)
 
-However, if a process ***has*** already seen a marker message during this run of the global snapshot (sending out a marker message counts as "seeing" a marker), then for the channel on which the marker message arrived, the receiver:
+#### Yup, I've Already Seen a Marker Message...
+
+However, if a process sends out a marker message, then we consider that process already to have "seen" a marker message.  So when the receiving process receives a marker message, it:
 
 * Stops recording incoming messages on that channel
 * Sets that channel's final state to be the sequence of all messages received whilst recording was active
 
-In the case of `P2`'s marker message arriving at `P1`, `P1` has already "seen" a marker message because it sent one out in the first place.  
-
 Message `m` from `P2` (sent at event `C`) arrives on channel <code>C<sub>21</sub></code> as event `D` on process `P1`.  This message arrived ***before*** the marker message because channels always behave as FIFO queues.
 
-Upon receiving this marker message, `P1` does the following:
+Upon receiving this marker message, `P1` then:
 
-* It stops recording on the marker message's channel (<code>C<sub>21</sub></code>)
-* The state of channel <code>C<sub>21</sub></code> is set to the sequence of messages that arrived whilst recording was active
+* Stops recording on the marker message's channel (<code>C<sub>21</sub></code> in this case)
+* The final state of channel <code>C<sub>21</sub></code> is set to the sequence of messages that arrived whilst recording was active
 
 ![Chandy-Lamport Snapshot 3](./img/L8%20CL%20Snapshot%203.png)
 
-So, we now have a complete snapshot of our entire system, which in this simple case, consists of four things:
+So, we now have a consistent snapshot of our entire system, which in this simple case, consists of four things:
 
 1. The state of our two processes:
     * `P1`'s state recorded as `S1`
@@ -92,21 +93,19 @@ So, we now have a complete snapshot of our entire system, which in this simple c
 
 ## The Chandy-Lamport Algorithm in a More Detailed Scenario
 
-When a snapshot takes place, every process ends up sending out a marker message to every other process.  So, for a system containing `N` participating processes, `N * (N - 1)` marker messages will be sent.
-
-This might seem inefficient as the number of messages rises quadratically with the number of participating processes, but unfortunately, there is no better approach.
+When a snapshot takes place, every process ends up sending out a marker message to every other process.  So, for a system containing `N` participating processes, `N * (N - 1)` marker messages will be sent.  This might seem inefficient as the number of messages rises quadratically with the number of participating processes, but unfortunately, there is no better approach.
 
 As stated in the previous lecture, the success of the Chandy-Lamport algorithm relies entirely on the truth of the following assumptions:
 
 1. Eventual message delivery is guaranteed, thus making delivery failure impossible
-1. All channels act as FIFO queues, thus eliminating the possibility of messages being delivered out of order
+1. All channels act as FIFO queues, thus eliminating the possibility of messages being delivered out of order (FIFO anomalies)
 1. Processes don't crash! (See [lecture 10](./Lecture%2010.md))
 
 ### A Worked Example
 
 In this example, we have three communicating processes `P1`, `P2` and `P3` in our system, and we want to take a snapshot.
 
-Process `P1` acts as the initiator; so, it follows the above steps:
+Process `P1` acts as the initiator; so it follows the above steps:
 
 * It records its own state as <code>S<sub>1</sub></code>
 * It sends out two marker messages; one to `P2` and one to `P3` - but notice that the arrival of the marker message at `P2` is delayed.  
@@ -161,7 +160,7 @@ Lastly, the marker message from `P2` arrives at `P3`.  This is not the first mar
 
 ![Chandy-Lamport Example Step 7](./img/L8%20Snapshot%20Ex%207.png)
 
-We now have a coherent snapshot of the entire system composed of three process states:
+We now have a consistent snapshot of the entire system composed of three process states:
 
 * <code>P1 = S<sub>1</sub></code>
 * <code>P2 = S<sub>2</sub></code>
