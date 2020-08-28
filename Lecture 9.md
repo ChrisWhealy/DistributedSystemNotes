@@ -158,7 +158,7 @@ So, this cut is valid and is therefore called a consistent cut:
 
 Even though the cut has separated events `B` and `D`, their causality has not been reversed: event `B` remains on the "past" side of the cut, and event `D` remains on the "future" side.
 
-However, this cut is inconsistent because the causality of events `B` and `D` has been reversed:
+However, in the diagram below, the cut is inconsistent because the causality of events `B` and `D` has been reversed:
 
 ![Inconsistent Cut](./img/L9%20Inconsistent%20Cut.png)
 
