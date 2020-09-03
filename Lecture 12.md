@@ -198,7 +198,7 @@ There are several drawbacks to primary backup replication:
 * During a write operation, the fastest response time can be no less than the sum of the time taken for the slowest replica to send back its `ack`, plus the time taken for the primary to deliver the message to itself
 * Under high load conditions, the primary becomes a bottleneck
 * Having only one primary has at least two limitations:
-    * Under high load situations, we cannot implement spin up more instances of the primary (horizontal scaling)
+    * Under high load situations, we cannot spin up more instances of the primary (horizontal scaling)
     * We cannot ease response time problems created by data locality
 
 But could we do better?
