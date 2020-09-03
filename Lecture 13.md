@@ -13,7 +13,7 @@ In P/B Replication, the clients only ever talk to the primary node `P`.  Any tim
 
 When the primary has received `ack`s from all its backups, it then delivers the write to itself and sends an `ack` back to the client.  This point in time is known as the ***commit point***.
 
-The write latency time experienced by the client is the sum of the times taken to complete each of the following four steps (imagine we have some function `rt_time` that can measure the round-trip time between two nodes):
+The write latency time experienced by the client is the sum of the times taken to complete each of the following four steps (imagine we have some function `rt_time` that can measure the response time between two nodes):
 
 <code>rt\_time(C, P) + rt\_time(P, B<sub>slowest</sub>) + rt\_time(B<sub>slowest</sub>, P) + rt\_time(P, C)</code>
 
