@@ -195,10 +195,11 @@ When the client wants to read a value, the answer need only come from the primar
 
 There are several drawbacks to primary backup replication:
 
-* The fastest response time can be no faster than the time taken for the slowest replica to send back its `ack`, ***plus*** the time taken for the primary to deliver the message to itself
+* During a write operation, the fastest response time can be no less than the sum of the time taken for the slowest replica to send back its `ack`, plus the time taken for the primary to deliver the message to itself
 * Under high load conditions, the primary becomes a bottleneck
-* There is no possibility for horizontal scaling if the primary becomes overloaded
-* It cannot help with data locality since, by definition, there can only be one primary
+* Having only one primary has at least two limitations:
+    * Under high load situations, we cannot implement spin up more instances of the primary (horizontal scaling)
+    * We cannot ease response time problems created by data locality
 
 But could we do better?
 
@@ -208,7 +209,7 @@ On the surface, this looks like a good solution, but upon closer examination, we
 
 How so?
 
-If a write is issued to the primary, that write is broadcast to all the backups.  However, the backups never send their `ack`s back to the client - only the primary receives these `acks`.  Only after the primary has received `ack`s from all its backups, and has delivered the message to itself, does it then send an `ack` to the client.
+If a write is issued to the primary, that write is broadcast to all the backups.  However, the backups never send their `ack`s back to the client - only the primary receives these `acks`.  Only after the primary has received `ack`s from all its backups, and has delivered the message to itself, does it then send an `ack` back to the client.
 
 This means that if we direct a read request to a backup for data that has just been updated, but before the `ack` has reached the client (via the primary), then potentially, we could be reading data from a state held in one of the backups that is ***ahead*** of the primary.  I.E. we will be reading ***data from the future***
 
@@ -226,8 +227,8 @@ The division of labour is now modified slightly:
 
 * All write requests from clients are handled by the "Head" process
 * The "Head" then passes the write instruction to the first backup in the chain
-* Each backup successively passes the write request down the chain until it terminates at the "Tail"
-* When the "Tail" process completes the write, we know that since it is the last link in the chain, it can send its `ack` directly back to the client
+* Each backup successively passes the write request down the chain until it reaches the "Tail"
+* When the "Tail" process completes the write, we know that since it is the last link in the chain, all the other replicas must ***already*** have completed their writes, so we can send an `ack` directly back to the client
 
 ![Chain Replication - Write](./img/L12%20Chain%20Replication%201.png)
 
@@ -237,13 +238,13 @@ This then means that should the client wish to make a subsequent read; it can di
 
 This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain Replication for Supporting High Throughput And Availability"](./papers/chain_replication.pdf)
 
-***Q:***&nbsp;&nbsp; But the response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the write and propagate the request through to the next link in the chain.  How can this then be described as *High Throughput*?
+***Q:***&nbsp;&nbsp; But how can this be faster? The response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the write and propagate the request through to the next link in the chain.  How can this then be described as *High Throughput*?
 
 ***A:***&nbsp;&nbsp; Well, to answer this question, we must first define what we mean by "Throughput".
 
-> Throughput: The number of operations a system can perform per unit of time
+> **Throughput**: The number of operations a system can perform per unit of time
 
-The answer to this question also depends on the ratio of reads and writes we expect our system to have to handle.  For systems the perform mostly writes, then Primary Backup Replication will probably achieve higher throughput, but for systems that perform mostly reads, Chain Replication will probably achieve higher throughput.
+The answer to this question also depends on the ratio of reads and writes we expect our system to handle.  For systems the perform mostly writes, then Primary Backup Replication will probably achieve higher throughput, but for systems that perform mostly reads, Chain Replication will probably achieve higher throughput.
 
 ### Chain Replication: Drawbacks
 
