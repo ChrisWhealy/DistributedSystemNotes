@@ -161,7 +161,7 @@ Here, we are just going to look at the "vanilla" Paxos algorithm.  In this case,
     Contributes towards choosing from one of the proposed values
 
 * ***Learner***  
-    Does not directly participate in negotiating the final value.  Instead, a learner simply learns the value agreed upon by the other participants.
+    Does not directly participate in negotiating the final value.  Instead, a learner simply adopts the value agreed upon by the other participants.
 
 It is entirely possible for Paxos participants to take on two, or even three roles; but to start with, it is simplest to assign one role to one participant.
 
@@ -169,9 +169,10 @@ One of the first things that needs to be known by all the nodes in a Paxos syste
 
 So, if there are three processes performing the role of acceptor, then a majority is two; if there are five, then the majority is three.  This fact must be known ***in advance*** by all participating processes - you can't start running the Paxos algorithm until this knowledge has first been shared.
 
-Another thing is that Paxos nodes need to be able to remember what values they have accepted, so they must have some form of persistent storage.
+We must also keep these additional things in mind:
 
-Another thing to keep in mind here is that we are looking at a protocol for deciding upon a ***single*** value.  If you want to decide upon a sequence of values (which is often needed), then you need to run the protocol again.  There are various optimisations that can be implemented at this point but were not going to talk about those yet.  To start with, we will simply confine ourselves to the process of agreeing upon a single value.
+* Paxos nodes need to be able to remember what values they have already accepted, so they must have some form of persistent storage.
+* Paxos is a protocol that decides upon a ***single*** value, not a sequence of values.  If you want to decide upon a sequence of values (which is often the case), then you need to run the protocol again.  There are various optimisations that can be implemented at this point but were not going to talk about those yet.  To start with, we will simply confine ourselves to the process of agreeing upon a single value.
 
 ### Paxos Algorithm: A Basic Worked Example
 
