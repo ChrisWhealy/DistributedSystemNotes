@@ -110,9 +110,8 @@ In Chain Replication, coordination is slightly more involved in that:
 
 So, in both situations, it is necessary to have some sort of internal coordinating process whose job it is to know who all the replicas are, and what role they are playing at any given time.
 
-> ***Assumption***  
-> This discussion makes the following assumptions:
-> 
+> ***Assumptions***  
+>
 > * Not all the processes in our system will crash.  
 >    For a system containing `n` processes, we are relying on the fact that no more than `n-1` processes will ever crash (Ha ha!!)
 > * The coordinator process is able to detect when a process crashes.
