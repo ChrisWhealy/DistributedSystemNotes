@@ -13,9 +13,9 @@ In P/B Replication, the clients only ever talk to the primary node `P`.  Any tim
 
 When the primary has received `ack`s from all its backups, it then delivers the write to itself and sends an `ack` back to the client.  This point in time is known as the ***commit point***.
 
-The write latency time experienced by the client is the sum of the times taken to complete each of the following four steps (imagine we have some function `rt_time` that can measure the response time between two nodes):
+The write latency time experienced by the client is the sum of the times taken to complete each of the following four steps (imagine we have some function `rt(From, To)` that can measure the response time between two nodes):
 
-<code>rt\_time(C, P) + rt\_time(P, B<sub>slowest</sub>) + rt\_time(B<sub>slowest</sub>, P) + rt\_time(P, C)</code>
+<code>rt(C, P) + rt(P, B<sub>slowest</sub>) + rt(B<sub>slowest</sub>, P) + rt(P, C)</code>
 
 Irrespective of the number of backups in this system, all write requests are completed in these four steps.
 
@@ -28,7 +28,7 @@ Read requests are handled directly by the primary.
 
 The read latency time is the sum of the time taken to complete the two steps:
 
-`rt_time(C, P) + rt_time(P, C)`
+`rt(C, P) + rt(P, C)`
 
 ### Primary Backup Replication: Drawbacks
 
@@ -44,7 +44,7 @@ Chain Replication was developed to alleviate some of the drawbacks of Primary Ba
 
 Here, the write latency time grows linearly with the number of backups and is calculated as the sum of the time taken to complete the `3 + n` steps (where `n` is the number of intermediate backups between the head and the tail):
 
-<code>rt\_time(C, H) + rt\_time(H, B<sub>1</sub>) + &hellip; + rt\_time(B<sub>n</sub>, T) + rt\_time(T, C)</code>
+<code>rt(C, H) + rt(H, B<sub>1</sub>) + &hellip; + rt(B<sub>n</sub>, T) + rt(T, C)</code>
 
 So, if you have a large number of backups, the client could experience a higher latency time for each write requests.
 
@@ -54,7 +54,7 @@ The point however of Chain Replication is to improve read throughput by redirect
 
 Now the read latency time is simply the sum of the time taken to complete the two steps:
 
-`rt_time(C, T) + rt_time(T, C)`
+`rt(C, T) + rt(T, C)`
 
 Here are some figures from the [Chain Replication paper](./papers/chain_replication.pdf) by Renesse and Schneider.  Looking at Figure 4 at the top of page 8
 
