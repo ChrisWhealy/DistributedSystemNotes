@@ -44,6 +44,30 @@ In this case, we know that we have three processes `Alice`, `Bob` and `Carol`, a
 
 So, each process will create its own copy of the vector clock with an initial value of `[0,0,0]` for `Alice`, `Bob` and `Carol` respectively.
 
+> ***IMPLEMENTATION DETAIL***  
+> When implementing a vector clock, the above two constraints can be relaxed.
+> 
+> Rather than implementing a vector clock as a simple list of integers, it is useful first to create data type for a Lamport Clock which could be as simple as just the process name and a clock value.
+> 
+> A minimal Rust implementation might look something like this:
+>     
+> ```rust
+> pub struct LamportClock {
+>   pub process_name: String,
+>   pub clock_value: u64
+> }
+> ```
+>     
+> A minimal Vector Clock is then simply an array of Lamport Clocks.
+>     
+> ```rust
+> pub struct VectorClock {
+>   pub entries: Vec<LamportClock>
+> }
+> ```
+> 
+> Now with suitable coding to manage vector clocks, process names can occur in any order, or even be missing.
+
 The Vector Clock is then managed by applying the following rules:
 
 1. Every process maintains a vector of integers initialised to `0` - one for each process with which we wish to communicate
@@ -71,16 +95,19 @@ For example, if my VC is `[1,12,4]` and I receive the VC `[7,0,2]`, the pointwis
 
 What does `<` mean in the context of two vectors?
 
-It means that when a pointwise comparison is made of the values in vector clocks `VC(A)` and `VC(B)`, at least one value in `VC(A)` is less than the corresponding value in `VC(B)` and no value in `VC(A)` is greater than the corresponding value in `VC(B)`.
+It means that when a pointwise comparison is made of the values in `VC(A)` and `VC(B)`, two things must be true:
+    * At least one value in `VC(A)` is less than the corresponding value in `VC(B)`, and
+    * No value in `VC(A)` is greater than the corresponding value in `VC(B)`
 
-> It is assumed here that `VC(A)` and `VC(B)` are actually comparable.  This means that both vector clocks must refer to the same set of clock values listed in the same order.
+> ***IMPORTANT***   
+> For two vector clocks to be comparable, they must refer to exactly the same set of clock values, and depending on your implemention, those values may also have to be listed in the same order.
 
-This comparison can be performed using the `≤` operator as long as we first reject the case where `VC(A) == VC(B)`.  To put that more algorithmically, the following condition must be true:
+This comparison can be performed using the `≤` operator as long as we first reject the case where `VC(A) == VC(B)`.  To put that more algorithmically, the following must be true (and here we assume that a vector clock is a simple list of integers):
 
 <pre>
    VC(A) !== VC(B)
 && VC(A).length == VC(B).length
-&& for each element at position i, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub>
+&& for each process at position i, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub>
 </pre>
 
 
