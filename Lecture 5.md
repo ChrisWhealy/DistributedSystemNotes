@@ -96,8 +96,9 @@ For example, if my VC is `[1,12,4]` and I receive the VC `[7,0,2]`, the pointwis
 What does `<` mean in the context of two vectors?
 
 It means that when a pointwise comparison is made of the values in `VC(A)` and `VC(B)`, two things must be true:
-    * At least one value in `VC(A)` is less than the corresponding value in `VC(B)`, and
-    * No value in `VC(A)` is greater than the corresponding value in `VC(B)`
+
+ * At least one value in `VC(A)` is less than the corresponding value in `VC(B)`, and
+ * No value in `VC(A)` is greater than the corresponding value in `VC(B)`
 
 > ***IMPORTANT***   
 > For two vector clocks to be comparable, they must refer to exactly the same set of clock values, and depending on your implemention, those values may also have to be listed in the same order.
