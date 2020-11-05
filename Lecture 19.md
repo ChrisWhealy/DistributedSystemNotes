@@ -13,9 +13,9 @@ We finished the last lecture with this overview of quorum consistency.
 In a quorum consistency environment, there are three specific, configurable values that control how a system can be configured.
 
 * `N` - The number of node replicas
-* `W` - **The Write Quorum**  
+* `W` - **The Write Quorum**
     The number of replicas that must respond to a write operation in order to consider that operation a success
-* `R` - **The Read Quorum**  
+* `R` - **The Read Quorum**
     The number of replicas that must respond to a read operation
 
 Depending on what balance our system needs to have between availability and consistency, we need to tune the `NWR` values accordingly.
@@ -38,7 +38,7 @@ If the client then immediately reads the value of `x`, it is possible that befor
 
 This will result in the client receiving different values of `x`.
 
-At this point, it is important to understand that there is a discrepancy between different system implementations about what exactly the read quorum value `R` means in practice.  Does is refer to:
+At this point, it is important to understand that there is a discrepancy between different system implementations about what exactly the read quorum value `R` means in practice.  Does it refer to:
 
 * The number of nodes that must respond to a read request, or
 * The number of nodes that must respond to a read request *with the same value*?
@@ -54,7 +54,10 @@ A further caveat is to understand that simply satisfying the inequality `R + W >
 The Dynamo paper quotes the configuration settings as `N=3, W=2, R=2` because this ensures that ***someone*** will respond to a read operation with the correct value.  In Amazon's situation, if a read request returns a set of conflicting values, then typically, the client application must resolve the conflict.
 
 ***Q:***&nbsp;&nbsp; What's wrong with the "Read One, Write All" approach?  
-***A:***&nbsp;&nbsp; Several reasons.  Firstly, ensuring strong consistency is slow.  Since we have to wait for all the nodes to acknowledge a write operation, the write response time cannot be any faster than the slowest node.  Also, this configuration is not fault tolerant.  If a node crashes or a network partition suddenly appears, then immediately, we have lost the ability to performs writes.
+***A:***&nbsp;&nbsp; Several reasons:
+
+* Firstly, ensuring strong consistency is slow.  Since we have to wait for all the nodes to acknowledge a write operation, the write response time cannot be any faster than the slowest node,
+* Secondly, this configuration is not fault tolerant.  If a node crashes or a network partition suddenly appears, then immediately, we have lost the ability to performs writes.
 
 ## Sharding or Data Partitioning
 
@@ -66,11 +69,11 @@ In the systems we've spoken of so far, all the machines store all the data.  So,
 
 But this approach has several drawbacks:
 
-* ***Scalability***  
+* ***Scalability***
     If you're running primary backup replication, then under heavy load conditions, all the work falls on the primary which soon becomes a bottleneck
-* ***Quantity***  
+* ***Quantity***
     Maybe you have more data than will fit on a single machine
-* ***Synchronisation***  
+* ***Synchronisation***
     Each copy must synchronise with all the others every time there is a write
 
 But how about an approach like this?
@@ -209,8 +212,6 @@ The first change we need to make is to arrange our nodes in a ring.  The positio
 
 The MD5 hash function has a vast output space ranging from `0` all the way up to <code>2<sup>128</sup> - 1</code>.  This is such a huge range of values that we cannot represent it graphically in any meaningful way, so for the purposes of the following diagrams, let's pretend the hash function's output space occupies only the range `0` to `63`.
 
-![Dynamo Node Ring 1](./img/L19%20Ring%201.png)
-
 So, in this scenario, our reduced-output-space hash function has positioned our four nodes roughly evenly around the ring at the following locations:
 
 * `M1` is at location `08`
@@ -220,7 +221,7 @@ So, in this scenario, our reduced-output-space hash function has positioned our 
 
 Let's now say we want to add the new key `"apple"`.  When put through the hash function, this key yields the value `14`.
 
-![Dynamo Node Ring 2](./img/L19%20Ring%202.png)
+![Dynamo Node Ring 1](./img/L19%20Ring%201.png)
 
 There is no node sitting exactly at location `14` on the ring, so we scan clockwise around the ring looking for the next available node, which in this case, turns out to be `M2`.
 
@@ -228,7 +229,7 @@ The rule here is that keys belong to their clockwise successor on the ring.
 
 Now let's say our old friend the Aardvark wants to move in.  In our particular scheme, `"aardvark"` hashes to `62`, so we repeat the same process as before:
 
-![Dynamo Node Ring 3](./img/L19%20Ring%203.png)
+![Dynamo Node Ring 2](./img/L19%20Ring%202.png)
 
 There is no node at location `62`, so we continue clockwise around the ring, passing go, collecting $200 and encountering `M1`.  So, `"aardvark"` will be stored in node `M1`.
 
@@ -242,9 +243,9 @@ If we assume that the ring's replication factor is 3, then this means every key 
 * Once the key is stored on the home node, it is then forwarded to the next clockwise node around the ring and stored there too.
 * The key continues to be forwarded clockwise around the ring until it has been stored in the correct number of replicas.
 
-So, in the example where we stored `"apple"` on `M2`, the replication factor of 3 requires that this key is also replicated on nodes `M3` and `M4`
+![Dynamo Node Ring 3](./img/L19%20Ring%203.png)
 
-![Dynamo Node Ring 4](./img/L19%20Ring%204.png)
+So, in the example where we stored `"apple"` on `M2`, the replication factor of 3 requires that this key is also replicated on nodes `M3` and `M4`
 
 The Dynamo Paper refers to this list of nodes as the *"preference list"*, and it usually includes more nodes than the replication factor requires because some nodes could be down or unavailable.  So, in Dynamo, you keep working your way down the preference list using the next available node until the ring's replication factor has been satisfied.
 
@@ -274,13 +275,11 @@ Ok, but now let's add a new node `M5` at position `60`.
 | `48` to `60` | `M5` &lt;&mdash; New node
 | `61` to `08` | `M1`
 
-So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to be moved are the keys currently stored in `M1` whose hash function values fall in the range `48` to `60`.
+![Dynamo Node Ring 4](./img/L19%20Ring%204.png)
 
-Nothing else needs to change.
+So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to be moved are the keys currently stored in `M1` whose hash function values fall in the range `48` to `60` that now belongs to the new node `M5`.
 
-![Node Addition 3](./img/L19%20Node%20Addition%203.png)
-
-None of the other nodes are affected.  In fact, these other nodes do not even need to know that a new node at some other, distant part of the ring has been added.
+Since none of the other nodes are affected, nothing else needs to change.  In fact, these other nodes do not even need to know that a new node at some other, distant part of the ring has been added.
 
 ### What Happens if a Node Crashes?
 
@@ -292,7 +291,7 @@ In our diagram, let's look at the consequences of node `M2` crashing.  First, le
 
 ![Node Crash 1](./img/L19%20Node%20Crash%201.png)
 
-All that happens is that `M3` simply extends its hash value range to include `M2`'s range.  In this case, `M3`'s hash value range now extends from `09` to `32`.
+When `M2` crashes, all that happens is that `M3` simply extends its hash value range to include `M2`'s range.  In this case, `M3`'s hash value range now starts down at `09` and extends up to `32`.
 
 All of `M2`'s keys backed up in `M3` are now promoted from backup to primary copies, and any new key values in the range `09` to `32` are written directly to `M3`.
 
@@ -302,7 +301,7 @@ At this point in time, the administrator will probably want to bring up a new no
 
 Yes.  If your input values fall into a narrow range, then there will not be a particularly good distribution of nodes around the ring, which in turn, could cause a node to become overloaded and potentially crash.
 
-One trick that Amazon use in Dynamo is the idea of virtual nodes.  This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.  This means that one physical node could be mapped to 10, or 20 or even 50 different hash value locations around the ring.  Using this trick, you are much more likely to achieve an even node distribution around the ring.  
+One trick that Amazon use in Dynamo is the idea of virtual nodes.  This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.  This means that one physical node could be mapped to 10, or 20 or even 50 different hash value locations around the ring.  Using this trick, you are much more likely to achieve an even node distribution around the ring.
 
 In addition to improving the distribution of nodes around the ring, you could have a different number of virtual nodes per physical node to account for differing storage capacities of the physical hardware running each node.
 
@@ -310,9 +309,9 @@ For instance, if the hardware on which one node is running has a 1Tb hard drive,
 
 Unfortunately, the use of virtual nodes has a couple of downsides.
 
-Firstly, if lots of virtual nodes are assigned to a physical node and that physical node goes down, then this has a large impact on the rest of the ring because it appears that suddenly, lots of "nodes" have disappeared.  Now lots of other nodes will need to take over the gaps that have appeared in the hash value ranges.  The Dynamo paper, however, declares this to be a feature because if a physical node running multiple virtual nodes goes down, then the workload becomes spread out around the ring, rather than being taken on a single successor.  Although this point does tend to make sense, it is somewhat harder to reason about objectively.
+Firstly, if lots of virtual nodes are assigned to a physical node and that physical node goes down, then this has a large impact on the rest of the ring because it appears that suddenly, lots of "nodes" have disappeared.  Now lots of other nodes will need to take over the gaps that have appeared in the hash value ranges.  The Dynamo paper, however, declares this to be a feature because if a physical node running multiple virtual nodes goes down, then the workload becomes spread out around the ring, rather than being taken on a single successor.  Although this point does tend to make sense, it is somewhat harder to reason about objectively given the increased complexity of the implementation.
 
-Secondly, replication of virtual nodes is more complicated because you should not replicate data between two virtual nodes if those nodes are running on the same physical machine, because then you haven't achieved true fault tolerance &mdash; the data still lives on the same hardware!
+Secondly, replication of virtual nodes is more complicated because if two virtual nodes reside on the same physical machine, then it is redundant to replicate data between these virtual nodes because you'd just be copying data to a different location on the same hard disk &mdash; which does not achieve the required level of fault tolerance.
 
 
 
@@ -328,4 +327,3 @@ In preparation for the next lecture, please read Google's [MapReduce](./papers/M
 | Previous | Next
 |---|---
 | [Lecture 18](./Lecture%2018.md) | [Lecture 20](./Lecture%2020.md)
-
