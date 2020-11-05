@@ -277,7 +277,7 @@ Ok, but now let's add a new node `M5` at position `60`.
 
 ![Dynamo Node Ring 4](./img/L19%20Ring%204.png)
 
-So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to be moved are the keys currently stored in `M1` whose hash function values fall in the range `48` to `60` that now belongs to the new node `M5`.
+So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to move are the keys currently stored in `M1` whose hash function values now belong to the new node `M5` (I.E. they fall in the range `48` to `60`).
 
 Since none of the other nodes are affected, nothing else needs to change.  In fact, these other nodes do not even need to know that a new node at some other, distant part of the ring has been added.
 
@@ -291,7 +291,7 @@ In our diagram, let's look at the consequences of node `M2` crashing.  First, le
 
 ![Node Crash 1](./img/L19%20Node%20Crash%201.png)
 
-When `M2` crashes, all that happens is that `M3` simply extends its hash value range to include `M2`'s range.  In this case, `M3`'s hash value range now starts down at `09` and extends up to `32`.
+When `M2` crashes, all that happens is that `M3` simply extends its hash value range downwards to include `M2`'s range.  So here, `M3`'s hash value range now starts down at `09` and extends up to `32`.
 
 All of `M2`'s keys backed up in `M3` are now promoted from backup to primary copies, and any new key values in the range `09` to `32` are written directly to `M3`.
 
