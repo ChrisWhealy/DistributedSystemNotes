@@ -26,7 +26,8 @@
 
 ### The *"Happens Before"* Relation is an Irreflexive Partial Order
 
-A partial order for a set `S` is where the members of `S` can be ordered using a binary relation such as *"less than or equal to"* `≤`.  The partial order then has the following properties:
+A partial order for a set `S` is where the members of `S` can be ordered using a binary relation such as *"less than or equal to"* `≤`.
+The partial order then has the following properties:
 
 | Property | English Description | Mathematical Description |
 |---|---|---|
@@ -34,17 +35,18 @@ A partial order for a set `S` is where the members of `S` can be ordered using a
 | Anti-symmetry | For all `a` and `b` in `S`,<br>if `a ≤ b` and `b ≤ a`, then `a = b` | `∀ a, b ∈ S: a ≤ b, b ≤ a => a = b`
 | Transitivity  | For all `a`, `b` and `c` in `S`,<br>if `a ≤ b` and `b ≤ c`, then `a ≤ c` | `∀ a, b, c ∈ S: a ≤ b, b ≤ c => a ≤ c`
 
-The set of all events in a system can be ordered by the *"happens before"* partial order; however, in the case of events, not all of the three properties described above are applicable.  It is impossible to apply the reflexivity property simply because it makes no sense to say that an event *happened before itself*.
+The set of all events in a system can be ordered by the *"happens before"* partial order; however, in the case of events, not all of the three properties described above are applicable.
+It is impossible to apply the reflexivity property simply because it makes no sense to say that an event *happened before itself*.
 
 ### Accurate Terminology
 
-Don't get hung up on thinking that you must always state that the "happens before" relation is an irreflexive partial order.  It’s fine just to call it a "partial order".
-
-
+Don't get hung up on thinking that you must always state that the "happens before" relation is an irreflexive partial order.
+It’s fine just to call it a "partial order".
 
 ## What's an Example of a True Partial Order?
 
-Set inclusion (or set containment).  This is defined as the set of all subsets of any given set.
+Set inclusion (or set containment).
+This is defined as the set of all subsets of any given set.
 
 So, if we have a set `{a, b, c}`, then the containment set `S` contains the following 8 elements; each of which is one of the possible subsets of `{a, b, c}` (Don't forget to include both the empty set and the entire set!):
 
@@ -75,16 +77,19 @@ The `⊆` relation ("is a subset of") is a true partial order because every elem
 As an aside...
 
 ***Q:***&nbsp;&nbsp; In the above inclusion set `S`, how is the element `{a}` related to the element `{b,c}`?  
-***A:***&nbsp;&nbsp; It's not!  In a set defined by a ***partial order***, it is not possible to relate every member of that set to every other member. That's why its called a ***partial*** order!
+***A:***&nbsp;&nbsp; It's not!
+In a set defined by a ***partial order***, it is not possible to relate every member of that set to every other member.
+That's why its called a ***partial*** order!
 
-Some orders however are able to relate every element in a set to every other element in that set.  These are known as ***total orders***.
+Some orders however are able to relate every element in a set to every other element in that set.
+These are known as ***total orders***.
 
-A good example of a total order is the counting (or natural) numbers.  If our set is the natural numbers and the relation is `≤`, then our lattice diagram of the containment set is simply a straight line:
+A good example of a total order is the counting (or natural) numbers.
+If our set is the natural numbers and the relation is `≤`, then our lattice diagram of the containment set is simply a straight line:
 
 ![Total order](./img/L4%20Natural%20Numbers.png)
 
 This is because every natural number is comparable to every other natural number using the `≤` relation.
-
 
 ## How Can a Computer Determine the *"Happens Before"* Relation?
 
@@ -95,7 +100,9 @@ This question relates to clocks - specifically ***Logical Clocks***
 
 ### Lamport Clocks
 
-The simplest type of logical clock is a ***Lamport Clock***.  In its most basic form, this is simply a counter assigned to an event.  The way we can reason about Lamport Clock values is by knowing that:
+The simplest type of logical clock is a ***Lamport Clock***.
+In its most basic form, this is simply a counter assigned to an event.
+The way we can reason about Lamport Clock values is by knowing that:
 
 ```
   if A -> B then LC(A) < LC(B)
@@ -103,7 +110,8 @@ The simplest type of logical clock is a ***Lamport Clock***.  In its most basic 
 
 In other words, if it is true that event `A` happened before event `B`, then we can be certain that the Lamport Clock value of event `A` will be smaller than the Lamport Clock value of event `B`.
 
-It is not important to know the absolute Lamport Clock value of an event, because outside the context of the *"happens before"* relation, this value is meaningless.  And even in the context of the *"happens before"* relation, we must have at least two events in order to compare their Lamport Clock values.
+It is not important to know the absolute Lamport Clock value of an event, because outside the context of the *"happens before"* relation, this value is meaningless.
+And even in the context of the *"happens before"* relation, we must have at least two events in order to compare their Lamport Clock values.
 
 In other words, Lamport Clocks mean nothing in themselves, but are consistent with causality.
 
@@ -111,8 +119,10 @@ In other words, Lamport Clocks mean nothing in themselves, but are consistent wi
 
 When assigning a value to a Lamport Clock, we need first to make a defining decision, and then follow a simple set of rules:
 
-1. First, decide what constitutes *"an event"*. The outcome of this decision then defines what our particular Lamport Clock will count.  
-    In this particular case, we decide that receiving a message ***is*** counted as an event.  (Some systems choose not to count *"message receives"* as events).
+1. First, decide what constitutes *"an event"*.
+The outcome of this decision then defines what our particular Lamport Clock will count.  
+    In this particular case, we decide that receiving a message ***is*** counted as an event.
+    (Some systems choose not to count *"message receives"* as events).
 1. Every process has an integer counter, initially set to 0
 1. On every event, the process increments its counter by 1
 1. When a process sends a message, the current Lamport Clock value is included as metadata sent with the message payload
@@ -149,7 +159,6 @@ Actually, no it doesn't.  Consider this situation:
 
 ![Lamport Clock Message Send 1](./img/L4%20LC%20Msg%20Send%206.png)
 
-
 Let's compare the Lamport Clock values of processes `A` and `B`
 
 ```
@@ -161,7 +170,11 @@ Since `LC(A) < LC(B)` does this prove that `E1 -> E2`?
 
 Absolutely not!
 
-Why?  Because we have no way to connect event `E1` with event `E2`.  These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.  So, in this case, we are unable to use the ***happens before*** relation to define any causal relation between events `E1` and `E2`.  All we can say is that `E1` is independent of `E2`, or `E1 || E2`.
+Why?
+Because we have no way to connect event `E1` with event `E2`.
+These two events do not sit in the same process, neither is there a sequence of message send/receive events that allows us to draw a continuous line between them.
+So, in this case, we are unable to use the ***happens before*** relation to define any causal relation between events `E1` and `E2`.
+All we can say is that `E1` is independent of `E2`, or `E1 || E2`.
 
 So, in plain language:
 
@@ -169,7 +182,7 @@ So, in plain language:
 
 Or to use fancier, academic language:
 
-> Causality requires graph reachability in spacetime
+> Causality requires graph reachability moving forwards through spacetime
 
 So, in summary, when we reason about Lamport Clock values, if we know that `A -> B`, then we can be sure that `LC(A) < LC(B)`.  In other words:
 
@@ -180,7 +193,6 @@ However, simply knowing that `LC(A) < LC(B)` does not prove `A -> B`; this is be
 > Lamport Clocks do not characterise (or establish) causality
 
 The above example is derived from the ["Holy Grail"](./papers/holygrail.pdf) paper by Reinhard Schwarz and Friedemann Mattern.
-
 
 ### So, What Are Lamport Clocks Good For?
 
@@ -197,7 +209,8 @@ Even though Lamport Clocks cannot characterise causality, they are still very us
 
 All logical implications are constructed from a premise (`A -> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the answer to the question is true.
 
-For any logical implication, we can also take its contra-positive.  Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
+For any logical implication, we can also take its contra-positive.
+Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
 
 So, in the case of the "happens before" relation
 
@@ -207,20 +220,19 @@ The contra-positive states
 
 `if ¬(LC(A) < LB(B)) then ¬(A -> B)`
 
-The contra-positive states that if the Lamport Clock of `A` is not less than the Lamport Clock of `B`, then `A` cannot have happened before `B`.  This turns out to be really valuable in debugging because if we know that event `A` ***did not*** happen before event `B`, then we can say with complete certainty that whatever consequences were created by event `A`, they could not have contributed to the earlier problem experienced during event `B`.
+The contra-positive states that if the Lamport Clock of `A` is not less than the Lamport Clock of `B`, then `A` cannot have happened before `B`.
+This turns out to be really valuable in debugging because if we know that event `A` ***did not*** happen before event `B`, then we can say with complete certainty that whatever consequences were created by event `A`, they could never have contributed to the earlier problem experienced during event `B`.
 
 
 ## Summary
 
-Lamport Clocks are good for certain aspects of determining causality, but they do leave us with indeterminate situations.  This is because a Lamport Clock is consistent with causality but does not characterise it.
+Lamport Clocks are good for certain aspects of determining causality, but they do leave us with indeterminate situations.
+This is because a Lamport Clock is consistent with causality but does not characterise it.
 
 In order to remove this indeterminacy, we need a different type of clock, called a Vector Clock.
-
 
 ---
 
 | Previous | Next
 |---|---
 | [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
-
-
