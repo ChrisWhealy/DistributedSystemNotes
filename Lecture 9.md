@@ -11,18 +11,23 @@
 
 ### Chandy-Lamport Assumptions
 
-The Chandy-Lamport algorithm was the very first to define how you can take a reliable snapshot of a running distributed system.  This algorithm does make some fairly large assumptions, but the fact that it works even if marker messages are delayed is a significant achievement.
+The Chandy-Lamport algorithm was the very first to define how you can take a reliable snapshot of a running distributed system.
+This algorithm does make some fairly large assumptions, but the fact that it works even if marker messages are delayed is a significant achievement.
 
 #### FIFO Delivery
 
-We have assumed that the communication channels used between processes in a distributed system operate as FIFO queues.  This means that a channel is a mechanism for delivering an ordered sequence of messages.  But as we saw in the previous lecture, this is far more than an assumption - it is a requirement.  If channels did not behave as FIFO queues, then the Chandy-Lamport Snapshot Algorithm will break.
+We have assumed that the communication channels used between processes in a distributed system operate as FIFO queues.
+This means that a channel is a mechanism for delivering an ordered sequence of messages.
+But as we saw in the previous lecture, this is far more than an assumption - it is a requirement.
+If channels did not behave as FIFO queues, then the Chandy-Lamport Snapshot Algorithm would break.
 
 So, this requirement then leads to the question:
 
 ***Q:***&nbsp;&nbsp; If the delivery mechanism in a distributed system ***cannot*** guarantee ordered delivery (I.E. FIFO anomalies are possible), then are other algorithms available for taking a global snapshot?  
 ***A:***&nbsp;&nbsp; Yes, there are, but such algorithms have other drawbacks such as needing to pause application processing while the snapshot is taking place.
 
-One particularly nice thing about the Chandy-Lamport algorithm is that you can take a snapshot while the application is running (I.E. it’s not a *stop-the-world* style algorithm).  The fact that a process sends out marker messages during its snapshot does not interfere with the application messages already travelling through the system.
+One particularly nice thing about the Chandy-Lamport algorithm is that you can take a snapshot while the application is running (I.E. it’s not a *stop-the-world* style algorithm).
+The fact that a process sends out marker messages during its snapshot does not interfere with the application messages already travelling through the system.
 
 #### Reliable Delivery
 
@@ -34,7 +39,8 @@ The Chandy-Lamport algorithm requires that messages are never:
 
 #### Processes Don't Crash
 
-The Chandy-Lamport algorithm is not robust against processes crashing whilst the snapshot is being taken.  If this were to happen, at best the snapshot would be incomplete; but to obtain a full snapshot, you would have to start the snapshot process over again.
+The Chandy-Lamport algorithm is not robust against processes crashing whilst the snapshot is being taken.
+If this were to happen, at best the snapshot would be incomplete; but to obtain a full snapshot, you would have to start the snapshot process over again.
 
 ### The Chandy-Lamport Algorithm is Guaranteed to Terminate
 
@@ -45,13 +51,14 @@ Without giving a formal proof, in order to take a snapshot of a distributed syst
 
 Then, when all the processes in the system have completed their snapshots, the sum of the individual snapshots becomes the consistent snapshot of the entire system.
 
-If it can be demonstrated that these actions will terminate for an individual process, then it follows that they will terminate for the entire distributed system.
+If it can be demonstrated that this approach for taking a snapshot will terminate for an individual process, and all processes follow the same approach, then it follows that the entire snapshot process will terminate for the entire distributed system.
 
 In section 3.3 of Chandy & Lamport's [original paper](./papers/chandy.pdf) they say:
 
 > If the graph is strongly connected and at least one process spontaneously records its state, then all processes will record their states in finite time (assuming reliable delivery)
 
-The term ***strongly connected*** means that every process is reachable from every other process via channels.  In our example however, we have assumed that every process is directly connected to every other process by a channel, thus we not only have a strongly connected graph, we have a ***complete graph***.
+The term ***strongly connected*** means that every process is reachable from every other process via channels.
+In our example however, we have assumed that every process is directly connected to every other process by a channel, thus we not only have a strongly connected graph, we have a ***complete graph***.
 
 If we draw the processes in our example system as a graph, every process is connected to every other process, making a total graph.
 
@@ -65,7 +72,8 @@ However, Chandy & Lamport require only that the graph is strongly connected; for
 
 ## Simultaneous Snapshot Initiators
 
-It is interesting that Chandy & Lamport state that ***at least*** one process must start the global snapshot by recording its own state.  They do not require that ***only*** one process initiates the global snapshot.
+It is interesting that Chandy & Lamport state that ***at least*** one process must start the global snapshot by recording its own state.
+They do not require that ***only*** one process initiates the global snapshot.
 
 So, let's look at what happens when two processes simultaneously decide to take a snapshot.
 
@@ -99,11 +107,14 @@ Could we end up with a bad snapshot such as the one shown below?
 
 ![Bad Snapshot](./img/L9%20Bad%20Snapshot.png)
 
-No, this is in fact impossible because as soon as a process records its own state, it must immediately send out marker messages.  This is the rule that makes it impossible for message `m` to arrive at `P2` before the snapshot processing has completed.
+No, this is in fact impossible because as soon as a process records its own state, it must immediately send out marker messages.
+This is the rule that makes it impossible for message `m` to arrive at `P2` before the snapshot processing has completed.
 
-The rules of the Chandy-Lamport Snapshot algorithm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all outgoing channels.  So, the marker message will always be sent ***before*** event `B` happens in `P1` that sends message `m` to `P2`.  Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
+The rules of the Chandy-Lamport Snapshot algorithm state that as soon as the internal state of `P1` is recorded, marker message ***must*** be sent on all outgoing channels.
+So, the marker message will always be sent ***before*** event `B` happens in `P1` that sends message `m` to `P2`.
+Also, because channels are FIFO queues, it is impossible for message `m` to arrive at `P2` before the marker message arrives.
 
-To understand how important this is, let's consider what would happen if simultaneous initiators were ***not*** permitted and the initiator had to seek agreement from the other participants before initiating the snapshot:
+To understand how important this is, let's consider what would happen if simultaneous initiators were ***not*** permitted and the process wishing to initiate a snapshot had to seek agreement from the other participants before starting:
 
 * `P1` decides it wants to take a snapshot
 * `P1` sends a message to all the participants saying *"Hi guys, I'd like to take a snapshot.  Is that OK with you?"*
@@ -111,13 +122,16 @@ To understand how important this is, let's consider what would happen if simulta
 
 This all gets very chaotic and could well lead to some sort of deadlock.
 
-So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.  This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: here be dragons!)
+So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.
+This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: here be dragons!)
 
 Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing on either who will act as the initiator, or when a snapshot should be taken &mdash; ***any*** process can take a snapshot ***any*** time it likes!
 
-Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.  Hence, markers can be very lightweight messages that do not need to carry any data such as the identity of the initiator.
+Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.
+Hence, markers can be very lightweight messages that do not need to carry any data such as the identity of the initiator.
 
-The Chandy-Lamport algorithm is an example of a decentralised algorithm.  There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (We'll talk more about this type of algorithm later in the course).
+The Chandy-Lamport algorithm is an example of a decentralised algorithm.
+There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (we'll talk more about this type of algorithm later in the course).
 
 ## Why Do We Want Snapshots in the First Place?
 
@@ -127,12 +141,16 @@ What are snapshots good for?  Here are some ideas:
     If we are performing a process that is either expensive or based on non-deterministic input (such as user requests arriving over a network), then in the event of failure, a checkpoint allows us to reconstruct the system's state and provides us with a reasonable restart point.  
     For expensive calculations, all our calculation effort up until the last checkpoint is preserved, and for transactional systems, the system state preserved at the checkpoint reduces data loss down to only those transactions that occurred between the checkpoint being taken and the system failing.
 * ***Deadlock detection***  
-    Once a dead lock occurs at time `T` in a system, unless it is resolved, that deadlock will continue to exist for all points in time greater than `T`.  A snapshot can be used to perform deadlock detection and thus serves as a useful debugging tool
+    Once a dead lock occurs at time `T` in a system, unless it is resolved, that deadlock will continue to exist for all points in time greater than `T`.
+    A snapshot can be used to perform deadlock detection and thus serves as a useful debugging tool
 * ***Stable Property Detection***  
-    A deadlock is an example of a ***Stable Property***.  A property of the system is said to be ***stable***, if, once it becomes true, it remains true.  
+    A deadlock is an example of a ***Stable Property***.
+    A property of the system is said to be ***stable***, if, once it becomes true, it remains true.  
     Another example of a stable property is when the system has finished doing useful work - I.E. Task termination (however, human intervention might be required in order to detect that this state has been reached) 
 
-Be careful not to conflate a ***deadlock*** with a process crashing.  Typically (but not always), a deadlock occurs when two running processes enter a mutual wait state.  Thus, neither process has crashed, but at the same time, neither process is capable of doing any useful work because each is waiting for a response from the other.
+Be careful not to conflate a ***deadlock*** with a process crashing.
+Typically (but not always), a deadlock occurs when two running processes enter a mutual wait state.
+Thus, neither process has crashed, but at the same time, neither process is capable of doing any useful work because each is waiting for a response from the other.
 
 ## Chandy-Lamport Algorithm and Causality
 
@@ -144,13 +162,15 @@ A cut is a time frontier that divides a Lamport diagram into past and future eve
 
 ![Cut](./img/L9%20Cut.png)
 
-An event is said to be ***in the cut*** if it belongs to the past.  In Lamport diagrams, where time goes downwards, this means events occurring above the line.
+An event is said to be ***in the cut*** if it belongs to the past.
+In Lamport diagrams, where time goes downwards, this means events occurring above the line.
 
 So, if event `E` is in the cut and `D->E` then for the cut to be ***consistent***, event `D` must also be in the cut.
 
 This is a restatement of the principle of [consistent global snapshots](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%207.md#consistent-global-snapshot) that we saw in [lecture 7](./Lecture%207.md).
 
-In both the of following diagrams `B->D`.  Therefore, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
+In both the of following diagrams `B->D`.
+Therefore, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
 
 So, this cut is valid and is therefore called a consistent cut:
 
@@ -166,14 +186,14 @@ The happens-before relation between events `B` and `D` is now broken because the
 
 ## The Chandy-Lamport Algorithm Determines a Consistent Cut
 
-If you take a cut of a distributed system and discover that the set of events in that cut is identical to a Chandy-Lamport snapshot, then you have a consistent cut.  This is what is meant when we say that a Chandy-Lamport Snapshot determines a consistent cut.
+If you take a cut of a distributed system and discover that the set of events in that cut is identical to a Chandy-Lamport snapshot, then you have a consistent cut.
+This is what is meant when we say that a Chandy-Lamport Snapshot determines a consistent cut.
 
 Going back to the more detailed example used in the previous lecture, we can see that the snapshot formed from three process states and six channel states forms a consistent cut.
 
 ![Consistent Cut 2](./img/L9%20Consistent%20Cut%202.png)
 
 Another way of saying this is that a Chandy-Lamport snapshot is causally correct.
-
 
 ## Recap: Delivery Guarantees and Protocols
 
@@ -189,7 +209,8 @@ A violation of this guarantee is a FIFO anomaly:
 
 In order to enforce FIFO delivery, we could implement strategies such as:
 
-* Giving each message a sequence number.  The receiving process is then required to deliver these messages in sequence number order
+* Giving each message a sequence number.
+The receiving process is then required to deliver these messages in sequence number order
 * Requiring the receiving process to acknowledge receipt of a message
 
 ### Causal Delivery
@@ -204,7 +225,8 @@ A causal anomaly looks like this:
 
 ### A Protocol to Enforce Causal Delivery
 
-In order to enforce causal delivery (at least in the case of broadcast messages), we could implement a causal broadcast strategy based on vector clocks.  Each process is then responsible for maintaining its own vector clock and by means of a queueing mechanism, ensures that no ***messages from the future*** are delivered early.
+In order to enforce causal delivery (at least in the case of broadcast messages), we could implement a causal broadcast strategy based on vector clocks.
+Each process is then responsible for maintaining its own vector clock and by means of a queueing mechanism, ensures that no ***messages from the future*** are delivered early.
 
 ### Totally Ordered Delivery
 
@@ -218,7 +240,9 @@ A violation of totally-ordered delivery looks like this:
 
 We did not actually talk about a protocol for enforcing totally-ordered delivery - we just spoke about it being hard!
 
-But here's an idea.  If a fifth process were added to act as a coordinator, then totally-ordered delivery could be ensured by telling every client process that in order to change the state of the data in the replicated databases, it must first check in with the coordinator.  The coordinator then acts as a middleman for ensuring that message delivery happens in the correct order.
+But here's an idea.
+If a fifth process were added to act as a coordinator, then totally-ordered delivery could be ensured by telling every client process that in order to change the state of the data in the replicated databases, it must first check in with the coordinator.
+The coordinator then acts as a middleman for ensuring that message delivery happens in the correct order.
 
 However, this approach has several downsides:
 
