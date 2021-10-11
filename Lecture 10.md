@@ -6,7 +6,6 @@
 |---|---
 | [Lecture 9](./Lecture%209.md) | [Lecture 11](./Lecture%2011.md)
 
-
 ## Recap: Safety & Liveness Properties
 
 | Safety Property | Liveness Property
@@ -17,13 +16,15 @@
 
 The trouble with Distributed System design is that in order to be useful, it needs both types of property to be present; however, the open-ended nature of liveness properties makes them hard to reason about.
 
-Let's say we want to implement a protocol that satisfies the safety property of FIFO delivery, but doesn't need to care about any liveness properties.  So, we could build a system that either drops or ignores every message...
+Let's say we want to implement a protocol that satisfies the safety property of FIFO delivery, but doesn't need to care about any liveness properties.
+So, we could build a system that either drops or ignores every message...
 
 ![Vacuous FIFO Delivery](./img/L10%20Vacuous%20FIFO%20Delivery.png)
 
 This is completely useless, but at least it guarantees FIFO delivery! (Doh!)
 
-So, it turns out that on their own, neither safety nor liveness properties are of much practical use.  We need a system that implements a combination of both.
+So, it turns out that on their own, neither safety nor liveness properties are of much practical use.
+We need a system that implements a combination of both.
 
 ### Liveness Property: Reliable Delivery
 
@@ -37,7 +38,9 @@ However, you might also see an extended version of the above definition:
 > Let `P1` be a process that sends a message `m` to process `P2`.  
 > If neither `P1` nor `P2` crashes ***and not all messages are lost***, then `P2` eventually delivers message `m`
 
-These definitions vary only in respect of whether or not we should be concerned about message loss.  This question then leads us into the topic of fault models that we will come to shortly.  However, here we assert that reliable delivery is a liveness property.
+These definitions vary only in respect of whether or not we should be concerned about message loss.
+This question then leads us into the topic of fault models that we will come to shortly.
+However, here we assert that reliable delivery is a liveness property.
 
 But why is this?
 
@@ -47,7 +50,9 @@ So, since we know that all the properties we care about are either safety proper
 
 ## So, What Exactly is a "Fault"?
 
-Any time you design a system, you need to make certain assumptions about the environment in which that system will be operating.  So, before you can describe your system as being ***fault tolerant***, you must first clearly define what circumstances could occur that constitute a fault, and secondly, how your system will respond under such circumstances.  Only then will you understand what conditions your system needs to tolerate.
+Any time you design a system, you need to make certain assumptions about the environment in which that system will be operating.
+So, before you can describe your system as being ***fault tolerant***, you must first clearly define what circumstances could occur that constitute a fault, and secondly, how your system will respond under such circumstances.
+Only then will you understand what conditions your system needs to tolerate.
 
 In other words, we must start with a clear understanding of what exactly constitutes a fault.
 
@@ -86,9 +91,11 @@ These fault categories have been used in Distributed System's design since about
 
 ### Crash Fault
 
-At the bottom of this hierarchy is the ***crash fault***.  This simply means that a process has stopped exchanging messages with the other participants in the system.
+At the bottom of this hierarchy is the ***crash fault***.
+This simply means that a process has stopped exchanging messages with the other participants in the system.
 
-A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.  Whilst this second case is not due to software execution halting, as far as the other participants in the system are concerned, this process takes no further part in the overall operation of the system and may as well have crashed.
+A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.
+Whilst this second case is not due to software execution halting, as far as the other participants in the system are concerned, since this process takes no further part in the overall operation of the system, it may as well have crashed.
 
 ### Omission Fault
 
@@ -96,18 +103,20 @@ When a process continues execution, but for whatever reason, fails to send or re
 
 ### Timing (or Performance) Fault
 
-A process responds either too late or too early.  The typical case is where a process responds too slowly; however, at the hardware level, it is possible for a response to be too fast.
+A process responds either too late or too early.
+The typical case is where a process responds too slowly; however, at the hardware level, it is possible for a response to be too fast.
 
 In this course, we're going to sidestep the discussion of timing faults because we will be focussing on the asynchronous message delivery model &mdash; which never makes any delivery time guarantees in the first place!
 
 ### Byzantine Fault
 
-A process behaves in an arbitrarily erroneous, or possibly even malicious way.  Usually, such behaviour is intentional. Again, in this course we won't be spending much time talking about this type of fault.
+A process behaves in an arbitrarily erroneous, or possibly even malicious way.
+Usually, such behaviour is intentional.
+Again, in this course we won't be spending much time talking about this type of fault.
 
 ## Fault Hierarchy
 
 Why are the fault categories listed in this particular order?
-
 
 Let's says we have two different protocols, `X` and `Y`.
 
@@ -115,7 +124,8 @@ Let's says we have two different protocols, `X` and `Y`.
 |---|---|---|
 | **Tolerates** | Crash Faults | Omission Faults
 
-If Protocol `Y` tolerates omission faults, does it also tolerate crash faults?  If so, why?
+If Protocol `Y` tolerates omission faults, does it also tolerate crash faults?
+If so, why?
 
 ### Crash and Omission Faults
 
@@ -135,10 +145,10 @@ A timing fault is where the response to a message is received outside an accepta
 
 ![Fault Hierarchy 2](./img/L10%20Fault%20Hierarchy%202.png)
 
-
 ### Byzantine Faults
 
-A Byzantine fault is where a process behaves in an arbitrary or intentionally malicious way.  So, if a protocol is tolerant of Byzantine faults, does this mean it must also tolerate timing faults?
+A Byzantine fault is where a process behaves in an arbitrary or intentionally malicious way.
+So, if a protocol is tolerant of Byzantine faults, does this mean it must also tolerate timing faults?
 
 Yes, it does.
 
@@ -168,17 +178,21 @@ Given the fact that we will confine our discussion to systems that use asynchron
 
 ## Are These the Only Fault Categories?
 
-No: these fault categories can be subdivided.  For instance, some Byzantine faults are easier to deal with than others.
+No: these fault categories can be subdivided.
+For instance, some Byzantine faults are easier to deal with than others.
 
 For instance, a Byzantine Fault that is relatively easy to deal with is message alteration or duplication.
 
-If you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.  What's much harder to detect is message corruption where the corruption is so subtle that your authentication technique fails to detect it.<sup id="a2">[2](#f2)</sup>
+If you receive a message that has been altered (maliciously or otherwise), then such faults are generally fairly easy to detect using techniques such as checksums or message hashes.
+What's much harder to detect is message corruption where that corruption is so subtle that your authentication technique fails to detect it.<sup id="a2">[2](#f2)</sup>
 
 So, we can redraw the above diagram as follows:
 
 ![Fault Hierarchy 5](./img/L10%20Fault%20Hierarchy%205.png)
 
-If we detect that a message has been corrupted, the simplest way of handling it is to ignore it completely.  In this case, we have handled the message in the same way as if we had never received it in the first place.  Thus, we have downgraded this particular type of Byzantine fault to an Omission fault. 
+If we detect that a message has been corrupted, the simplest way of handling it is to ignore it completely.
+In this case, we have handled the message in the same way as if we had never received it in the first place.
+Thus, we have downgraded this particular type of Byzantine fault to an Omission fault. 
 
 ## Fault Models
 
@@ -188,9 +202,11 @@ Based on the preceding discussion we can define a ***Fault Model*** as:
 
 Fault models are nested in the same way as fault categories.
 
-In general, the easiest faults to tolerate are the ones in the centre of the diagram, and as we move outwards, fault model implementation become more and more complicated, simply because a greater number and type of bad things can happen.
+In general, the easiest faults to tolerate are the ones in the centre of the diagram.
+As we move outwards, fault model implementation becomes increasingly complicated simply because a greater number and type of bad things can happen.
 
-In this class, we will be looking mostly at the Omission Model.  This will still be hard to implement, however, because there are still plenty of things that can go wrong!
+In this class, we will be looking mostly at the Omission Model.
+This will still be hard to implement however, because there are still plenty of things that can go wrong!
 
 ## The Two Generals Problem
 
@@ -204,10 +220,10 @@ In this situation, two armies commanded by Generals Alice and Bob want to attack
 * Alice and Bob can only communicate with each other by sending messengers through enemy territory
 * Alice and Bob cannot be sure that any messages they send will get through because the messenger risks being captured, and the message fails to get through
 
-
 ![Two Generals 1](./img/L10%20Two%20Generals.png)
 
-What form of communication can these Generals have with each other so that they can both be confident that they are acting on some shared, common knowledge?  For instance, if the plan is to attack tomorrow at dawn, then how can both Generals be sure that the other has firstly agreed to this plan, and secondly, is ready to act on it?
+What form of communication can these Generals have with each other so that they can both be confident that they are acting on some shared, common knowledge?
+For instance, if the plan is to attack tomorrow at dawn, then how can both Generals be sure that the other has firstly agreed to this plan, and secondly, is ready to act on it?
 
 Since the armies of Alice and Bob are not strong enough on their own to defeat this enemy, victory is only possible if they arrive at a commonly agreed plan of action
 
@@ -233,25 +249,26 @@ As it turns out, it has been proven impossible to eliminate 100% of the uncertai
 
 ### Indeterminacy of the Omission Model
 
-In the Omission Model, it is impossible for either of the two Generals to know with 100% certainty that the other has agreed to attack.  This example is just one of many fundamental impossibility results in distributed systems, and it applies in any setting where the communication between participants is liable to failure.
+In the Omission Model, it is impossible for either of the two Generals to know with 100% certainty that the other has agreed to attack.
+This example is just one of many fundamental impossibility results in distributed systems, and it applies in any setting where the communication between participants is liable to failure.
 
 ## Work Arounds for the Two Generals Problem
 
 Some possibilities do exist here:
 
-* Instead of trying to decide on the basis of unreliable communication, make a plan in advance and share that plan between the participants.  In other words, act on the basis of shared common knowledge<sup id="a3">[3](#f3)</sup>.
+* Instead of trying to decide on the basis of unreliable communication, make a plan in advance and share that plan between the participants.
+  In other words, act on the basis of shared common knowledge<sup id="a3">[3](#f3)</sup>.
 * Since unreliable communication excludes the possibility of achieving ***total*** certainty, the best we can hope for is ***reasonable*** certainty.
-
  
 To achieve reasonable certainty, we could adopt the following strategy:
 
 1. Alice could send Bob a sequence of messages knowing that on average, at least one will get through.
-1. For every one of Alice's messages that successfully reaches Bob, Bob sends back an acknowledgement.  Again, since not of all these acknowledgments will make it back to Alice, multiple acknowledgements are needed in the hope that at least one will get through.
+1. For every one of Alice's messages that successfully reaches Bob, Bob sends back an acknowledgement.
+   Again, since not of all these acknowledgments will make it back to Alice, multiple acknowledgements are needed in the hope that at least one will get through.
 1. Alice receives Bob's first acknowledgement and stops sending her stream of messages.
 1. After a certain period of time, Bob's confidence will start to grow that at least one of his acknowledgements got through because Alice has stopped sending her original message.
 
-The objective here is not to remove uncertainty, but to lower it to a level considered acceptable enough to act upon.
-
+The objective here is not to remove all uncertainty, but to lower it to a level considered acceptable enough to act upon.
 
 ---
 
