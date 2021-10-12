@@ -22,7 +22,8 @@ However, replication is used for more than just mitigating loss.
 * ***Fault Tolerance***  
     Multiple, redundant instances of hardware/software
 * ***Data Locality***  
-    If you are physically close to your data, then you are likely to get a faster response to your requests.  Hence, geographic distribution of data tends to provide better response times for users spread out around the world
+    If you are physically close to your data, then you are likely to get a faster response to your requests.
+    Hence, geographic distribution of data tends to provide better response times for users spread out around the world
 
 However, what are the downsides of replication?
 
@@ -35,11 +36,14 @@ Maintaining consistency of data across replicas is especially challenging when y
 * Are continually changing state asynchronously
 * Are connected by an unreliable communication network
 
-But mitigation of these problems was the reason for wanting to do replication in the first place!  So, all the reasons for needing replication also make it hard to implement.
+But mitigation of these problems was the reason for wanting to do replication in the first place!
+So, all the reasons for needing replication also make it hard to implement.
 
 Another consideration is cost.
 
-If a message is lost during transmission, you can simply resend it; so, the cost of transmission failure is paid only ***after*** the failure has occurred; however, if a server crashes, you cannot avoid data loss unless you ***already*** have a replica server up and running.  So, to protect against hardware failure, you must incur the cost of running replica servers ***before*** anything has gone wrong.
+If a message is lost during transmission, you can simply resend it; so, the cost of transmission failure is paid only ***after*** the failure has occurred.
+However, if a server crashes, you cannot avoid data loss unless you ***already*** have a replica server up and running.
+So, to protect against hardware failure, you must incur the cost of running replica servers ***before*** anything has gone wrong.
 
 ## Total Order vs. Determinism
 
@@ -61,13 +65,16 @@ Or, we might end up with `x=1`
 
 So simply reducing the number of replicas to one does not solve our problem.
 
-A further problem is that neither of the situations described above can be considered wrong.  Both runs of the system are valid and correct, and neither violate Total-Order delivery.
+A further problem is that neither of the situations described above can be considered wrong.
+Both runs of the system are valid and correct, and neither violate Total-Order delivery.
 
 Remember that if we want totally-ordered delivery:
 
 > If a process delivers message `M1` followed by `M2`, then all processes delivering both `M1` and `M2` must deliver `M1` first followed by `M2`.
 
-Process `R1` above is the only process delivering messages; therefore, it can never be in violation of the Totally-Ordered Delivery rule!  This gives process `R1` a lot of control over when to deliver messages.  In fact, process `R1` can decide for itself what *"Total Order"* actually means by controlling when it delivers messages.
+Process `R1` above is the only process delivering messages; therefore, it can never be in violation of the Totally-Ordered Delivery rule!
+This gives process `R1` a lot of control over when to deliver messages.
+In fact, process `R1` can decide for itself what *"Total Order"* actually means by controlling when it delivers messages.
 
 In fact, `R1` could deliver messages in different orders across different runs and still not violate the safety property of Totally Ordered Delivery; however, it would be violating a different property called ***Determinism***
 
@@ -77,13 +84,14 @@ Determinism is a property that relates multiple runs of a system to each other.
 
 ![Determinism Violation](./img/L12%20Determinism%20Violation.png)
 
-If `R` delivers messages in one order on one run, but in a different order on the next run, then this is a violation of determinism.
+If process `R` delivers a set of messages in one order on its first run, but in a different order on the second run, then this is a violation of determinism.
+I.E. The system is inherently unreliable because its behaviour is now indeterminate
 
 > ***Totally-Ordered Delivery***  
-> This is a property that relates to a single run of a system
+> The property that describes consistent system behaviour over a single run
 > 
 > ***Determinism***  
-> This is a property that relates to multiple runs of the same system
+> The property that describes consistent system behaviour over a multiple runs
 
 BTW, any property relating to system behaviour across multiple runs is known as a ***hyperproperty***.
 
@@ -93,11 +101,12 @@ Here's an informal definition of what we want:
 
 > A replicated storage system is ***strongly consistent*** if clients can't tell that it's replicated
 
-As far as the clients are concerned, they should think that there is only one data storage system, even though, under the hood, there could be multiple replicas all working together.
+As far as the clients are concerned, they should think that there is only one data storage system; even though, under the hood, there could be multiple replicas all working together.
 
 Every strongly consistent replication protocol that we're going to discuss will implement a ***total order*** on events, but each will do so in different ways.
 
-However, before we jump into these details, let's look at some of the ways that a client could tell that its working with multiple replicas.  To put this the other way around, let's look at the different ways in which replicas might disagree.
+However, before we jump into these details, let's look at some of the ways that a client could tell that its working with multiple replicas.
+To put this the other way around, let's look at the different ways in which replicas might disagree.
 
 ### Disagreements Between Replicas: Read Your Writes
 
@@ -105,7 +114,8 @@ Here's a possibility.
 
 ![Replica Disagreement 1](./img/L12%20Replica%20Disagreement%201.png)
 
-The client wants to bind the value `5` to the name `x`, so it sends the message `x=5` to `R1`; but this value is not replicated across to `R2`.  So, when the client next queries the value of `x`, it gets back the unexpected result of `undefined` (in other words *"Who's x?"*)
+The client wants to bind the value `5` to the name `x`, so it sends the message `x=5` to `R1`; but this value is not replicated across to `R2`.
+So, when the client next queries the value of `x`, it gets back the unexpected result of `undefined` (in other words *"I don't know about any variable called `x`"*)
 
 In this case, this is known as a ***Read Your Writes*** anomaly and is one of the most fundamental questions you should ask of any replicated storage system &mdash; that is, if I've just written a value, do I get the same value back when I perform a subsequent read?
 
@@ -120,20 +130,27 @@ Here's a situation in which violation of this property results in replica disagr
 
 ![Replica Disagreement 2](./img/L12%20Replica%20Disagreement%202.png)
 
-Let's says we have a banking system with two replicas `R1` and `R2`.  The client `C1` makes the following sequence of transactions against `R1`:
+Let's says we have a banking system with two replicas `R1` and `R2`.
+The client `C1` makes the following sequence of transactions against `R1`:
 
 * Deposits \$50
 * Receives an acknowledgement for the deposit
 * Withdraws \$40
 * Receives an acknowledgement for the withdrawal
 
-Ok, that's fine.  `C1` can be very confident that her balance is \$10 &mdash; at least according to the records held in `R1`.
+Ok, that's fine.
+`C1` can be very confident that her balance is \$10 &mdash; at least according to the records held in `R1`.
 
 
-However, `R1` now sends out some synchronising messages, but `R2` delivers these messages in the wrong order.  After delivering the second message first, the client's balance is now incorrectly shown to be \$40 overdrawn.  If at this point in time, some automated balance checking process such as `C2` queries the client's balance, it will get the incorrect impression that this client has been spending too much money.
+However, `R1` now sends out some synchronising messages, but `R2` delivers these messages in the wrong order.
+After delivering the second message first, the client's balance is now incorrectly shown to be \$40 overdrawn.
+If at this point in time, some automated balance checking process such as `C2` queries the client's balance, it will get the incorrect impression that this client has been spending too much money.
 
 > ***Aside***  
-> Wells Fargo Bank actually got in trouble for doing exactly this.  They deliberately reordered transactions so that debits were processed before credits, thus maximising their ability to charge overdraft fees.
+> Wells Fargo Bank got in trouble for doing exactly this.
+> They deliberately reordered transactions so that debits were processed before credits.
+> This was done to reduce customer account balances to a minimum before calculating overdraft fees.
+> Only then were the credits applied.
 
 This is an example of a FIFO anomaly between replicas `R1` and `R2` and is a violation of FIFO consistency.
 
@@ -142,8 +159,8 @@ This is an example of a FIFO anomaly between replicas `R1` and `R2` and is a vio
 > ***Causal Consistency***  
 > Writes that are potentially causally related (I.E. related by the ***happens before*** relation `->`) must be seen by all processes in the same order
 
-
-In this situation, all the events happen in chronological order such that the ***happens before*** relation is never violated.  However, replica `R2` is missing an event in its causal history and consequently gives the wrong answer to a query.
+In this situation, all the events happen in chronological order such that the ***happens before*** relation is never violated.
+However, replica `R2` is missing an event in its causal history and consequently gives the wrong answer to a query.
 
 ![Replica Disagreement 3](./img/L12%20Replica%20Disagreement%203.png)
 
@@ -157,7 +174,9 @@ The follow sequence of events happens:
 This problem is created by the fact that `R2` is missing an event in the causal history of the request to withdraw \$50.
 
 ***Q:***&nbsp;&nbsp; Why did `C2` makes its request against `R2` instead of `R1`?  
-***A:***&nbsp;&nbsp; Well, in distributed systems, it is often the case that the client has no control over which replica serves its request.  Having said that, some distributed systems maintain consistency by forcing a client's requests to be served by the same replica - however, decisions like this are taken by the distributed system and lie beyond the control of the client.
+***A:***&nbsp;&nbsp; Well, in distributed systems, it is often the case that the client has no control over which replica serves its request.
+Having said that, some distributed systems maintain consistency by forcing a client's requests to be served by the same replica.
+However, decisions like this are taken by the distributed system and lie beyond the control of the client.
 
 ### Hierarchy of Consistency Guarantees
 
@@ -165,9 +184,11 @@ As with fault models, consistency guarantees can be arranged in a hierarchy.
 
 ![Consistency Hierarchy](./img/L12%20Consistency%20Hierarchy.png)
 
-This is a very incomplete list - over 50 different types of consistency have been identified!  This is mentioned, not because we will need to learn all of these consistency guarantees in this course, but because different systems make different choices about which guarantees they feel it appropriate to make.
+This is a very incomplete list - over 50 different types of consistency have been identified!
+This is mentioned, not because we will need to learn all of these consistency guarantees in this course, but because different systems make different choices about which guarantees they feel it appropriate to make.
 
-Higher up this hierarchy is not necessarily better.  There are cases when it makes good sense to offer only weaker consistency guarantees.
+Higher up this hierarchy is not necessarily better.
+There are cases when it makes good sense to offer only weaker consistency guarantees.
 
 ## Replication Strategies That Enforce Strong Consistency
 
@@ -175,27 +196,33 @@ Remember that we informally defined strong consistency as the case where a clien
 
 ### Primary Backup Replication
 
-Here the idea is pretty straight-forward and has been around since the 1970's.  We pick a system to act as the primary, and all the other systems act as backups. This arrangement has the following advantages:
+Here the idea is pretty straight-forward and has been around since the 1970's.
+We pick a system to act as the primary, and all the other systems act as backups.
+This arrangement has the following advantages:
 
-* It provides fault tolerance.  If the primary fails, then one of the backups can immediately take over.
-* Since the clients only ever talk to the primary, whatever total order is used by the primary is sufficient to maintain consistency.  However, if we got rid of the division between primary and backup system and allowed any system to service client requests, then we would need to solve the harder problem of establishing a consistent total order across all these systems.
+* It provides fault tolerance.
+   If the primary fails, then one of the backups can immediately take over.
+* Since the clients only ever talk to the primary, whatever total order is used by the primary is sufficient to maintain consistency.
+   However, if we got rid of the division between primary and backup system and allowed any system to service client requests, then we would need to solve the harder problem of establishing a consistent total order across all these systems.
 
-
-In this scenario, clients only ever interact with the primary.  When a client write message arrives at the primary, it is replicated to all the backup systems in parallel, each of which must send back an `ack` to the primary.  
+In this scenario, clients only ever interact with the primary.
+When a client write message arrives at the primary, it is replicated to all the backup systems in parallel, each of which must send back an `ack`nowledge to the primary.
 
 ![Primary Backup Replication 1](./img/L12%20Primary%20Backup%20Replication%201.png)
 
-When the primary receives `ack`s from all its replicas, it then delivers the message to itself, and finally sends an `ack` back to the client.  This is known as the ***Commit Point***.
+When the primary receives `ack`s from all its replicas, it then delivers the message to itself, and finally sends an `ack` back to the client.
+This is known as the ***Commit Point***.
 
 ![Primary Backup Replication 2](./img/L12%20Primary%20Backup%20Replication%202.png)
 
-When the client wants to read a value, the answer need only come from the primary.  There is no need for reads to be broadcast to the replicas.
+When the client wants to read a value, the answer need only come from the primary.
+There is no need for reads to be broadcast to the replicas.
 
 ### Primary Backup Replication: Drawbacks
 
 There are several drawbacks to primary backup replication:
 
-* During a write operation, the fastest response time can be no less than the sum of the time taken for the slowest replica to send back its `ack`, plus the time taken for the primary to deliver the message to itself
+* During a write operation, the fastest response time can be no less than the time taken for the slowest replica to send back its `ack`, plus the time taken for the primary to deliver the message to itself
 * Under high load conditions, the primary becomes a bottleneck
 * Having only one primary has at least two limitations:
     * Under high load situations, we cannot spin up more instances of the primary (horizontal scaling)
@@ -209,9 +236,13 @@ On the surface, this looks like a good solution, but upon closer examination, we
 
 How so?
 
-If a write is issued to the primary, that write is broadcast to all the backups.  However, the backups never send their `ack`s back to the client - only the primary receives these `acks`.  Only after the primary has received `ack`s from all its backups, and has delivered the message to itself, does it then send an `ack` back to the client.
+If a write is issued to the primary, that write is first broadcast to all the backups.
+However, the backups only ever send their `ack`s back to the primary, not the client.
+The primary does not deliver the message to itself until it has first received `ack`s from all its backups.
+Only then does it send an `ack` back to the client.
 
-This means that if we direct a read request to a backup for data that has just been updated, but before the `ack` has reached the client (via the primary), then potentially, we could be reading data from a state held in one of the backups that is ***ahead*** of the primary.  I.E. we will be reading ***data from the future***
+This means that if we direct a read request to a backup for data that has just been updated, but before the `ack` has reached the client (via the primary), then potentially, we could be reading data from a state held in one of the backups that is ***ahead*** of the primary.
+I.E. we will be reading ***data from the future***
 
 But we can fix this problem by making a small change to the way `ack`s are handled.
 
@@ -219,16 +250,17 @@ Which leads us to...
 
 ### Chain Replication
 
-In chain replication, the last backup to receive the write request sends its `ack` not back to the primary, but directly to the client.  
+In chain replication, the last backup to receive the write request does not send its `ack` back to the primary, but directly to the client.  
 
-In Chain Replication, the process that we previously called the "Primary" is now called the "Head", and the process that acted as the last backup is now called the "Tail".  In between, there can be any number of processes that we here call simply "Backup".
+In Chain Replication, the process that we previously called the "Primary" is now called the "Head", and the process that acted as the last backup is now called the "Tail".
+In between, there can be any number of processes that here, we will simply call "Backup".
 
 The division of labour is now modified slightly:
 
 * All write requests from clients are handled by the "Head" process
-* The "Head" then passes the write instruction to the first backup in the chain
-* Each backup successively passes the write request down the chain until it reaches the "Tail"
-* When the "Tail" process completes the write, we know that since it is the last link in the chain, all the other replicas must ***already*** have completed their writes, so we can send an `ack` directly back to the client
+* The "Head" delivers the nmessage to itself, then passes the write instruction to the first backup in the chain
+* Each backup delivers the message to itself, then passes the write request down the chain until it reaches the "Tail"
+* When the "Tail" process completes message delivery, we know that since it is the last link in the chain, all the other replicas must ***already*** have completed their writes, so we can send an `ack` directly back to the client
 
 ![Chain Replication - Write](./img/L12%20Chain%20Replication%201.png)
 
@@ -238,23 +270,30 @@ This then means that should the client wish to make a subsequent read; it can di
 
 This is a relatively new strategy that was first published by Robbert van Renesse and Fred Schneider in a 2004 paper called ["Chain Replication for Supporting High Throughput And Availability"](./papers/chain_replication.pdf)
 
-***Q:***&nbsp;&nbsp; But how can this be faster? The response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the write and propagate the request through to the next link in the chain.  How can this then be described as *High Throughput*?
+***Q:***&nbsp;&nbsp; But how can this be faster?
+The response time experienced by the client will now be the ***sum*** of the times taken for each process to complete the message delivery and propagate the request through to the next link in the chain.
+How can this then be described as *High Throughput*?
 
 ***A:***&nbsp;&nbsp; Well, to answer this question, we must first define what we mean by "Throughput".
 
 > **Throughput**: The number of operations a system can perform per unit of time
 
-The answer to this question also depends on the ratio of reads and writes we expect our system to handle.  For systems the perform mostly writes, then Primary Backup Replication will probably achieve higher throughput, but for systems that perform mostly reads, Chain Replication will probably achieve higher throughput.
+The answer to this question also depends on the ratio of reads and writes we expect our system to handle.
+For systems the perform mostly writes, then Primary Backup Replication will probably achieve higher throughput, but for systems that perform mostly reads, Chain Replication will probably achieve higher throughput.
 
 ### Chain Replication: Drawbacks
 
-In Primary Backup replication, when the primary performs a write, the replication messages are broadcast (I.E. sent out in parallel) to all the backup processes.  Therefore, the longest wait time will be no longer than the time taken for the slowest backup to complete the write and send out its `ack`.  So, no matter how many backups you have, the worst-case scenario will never be worse than the slowest individual backup process.
+In Primary Backup replication, when the primary performs a write, the replication messages are broadcast (I.E. sent out in parallel) to all the backup processes.
+Therefore, the longest wait time will be no longer than the time taken for the slowest backup to complete the message delivery and send out its `ack`.
+So, no matter how many backups you have, the worst-case scenario will never be worse than the slowest individual backup process.
 
-However, in Chain Replication, the length of the backup chain defines the overall response time for a write to complete.  As the chain length increases, so the overall response time increases because write replication propagates sequentially down the length of the chain.
+However, in Chain Replication, the length of the backup chain defines the overall response time for a write to complete.
+As the chain length increases, so the overall response time increases because write replication propagates sequentially down the chain.
 
 This then increases the system's ***write latency***.
 
-What about read latency though?  Read latency for a Chain Replication system does not vary with chain length because all reads are directed to the tail.
+What about read latency though?
+Read latency for a Chain Replication system does not vary with chain length because all reads are directed to the tail.
 
 Both of these strategies are commonly used; however, the decision as to which one will work best for you is governed primarily by the balance of reads and writes you expect your system to receive.
 
