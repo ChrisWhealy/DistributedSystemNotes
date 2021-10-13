@@ -9,9 +9,11 @@
 
 ## Primary Backup (P/B) Replication
 
-In P/B Replication, the clients only ever talk to the primary node `P`.  Any time `P` receives a write request, that request is broadcast to all the backup nodes, which independently send their `ack`s back to the primary.
+In P/B Replication, the clients only ever talk to the primary node `P`.
+Any time `P` receives a write request, that request is broadcast to all the backup nodes, which independently send their `ack`s back to the primary.
 
-When the primary has received `ack`s from all its backups, it then delivers the write to itself and sends an `ack` back to the client.  This point in time is known as the ***commit point***.
+When the primary has received `ack`s from all its backups, it then delivers the write to itself and sends an `ack` back to the client.
+This point in time is known as the ***commit point***.
 
 The write latency time experienced by the client is the sum of the times taken to complete each of the following four steps (imagine we have some function `rt(From, To)` that can measure the response time between two nodes):
 
@@ -24,7 +26,6 @@ Irrespective of the number of backups in this system, all write requests are com
 Read requests are handled directly by the primary.
 
 ![Primary Backup Replication - Reads](./img/L12%20Primary%20Backup%20Replication%202.png)
-
 
 The read latency time is the sum of the time taken to complete the two steps:
 
@@ -72,22 +73,26 @@ These graphs compare the request throughput times of three different backup stra
     All client requests are served the primary.  
     Indicated by the dotted line with `*` signs
 
-As you can see, Weak Replication offers the highest throughput because any client can talk to any replica.  So, this is good illustration of how throughput can be improved simply by throwing more resources at the problem. However, it must also be understood that Weak Replication cannot offer the same strong consistency guarantees as either Primary Backup or Chain Replication.
+As you can see, Weak Replication offers the highest throughput because any client can talk to any replica.
+So, this is good illustration of how throughput can be improved simply by throwing more resources at the problem.
+However, it must also be understood that Weak Replication cannot offer the same strong consistency guarantees as either Primary Backup or Chain Replication.
 
 Weak Replication therefore is only valuable in situations where access to the data is *"read mostly"*, and you're not overly concerned if different replicas occasionally give different answers to the same read request.
 
-Comparing the Chain and P/B Replication curves, notice that if none of the requests are updates, then their performance is identical. The same is true when the update percentage starts to exceed about 40%.
+Comparing the Chain and P/B Replication curves, notice that if none of the requests are updates, then their performance is identical.
+The same is true when the update percentage starts to exceed about 40%.
 
 However, look at the Chain Replication curve.
 
-Instead of descending in a gradually flattening curve, there is a hump at around the 10-15% mark.  This is where the benefits of Chain Replication can be seen.
+Instead of descending in a gradually flattening curve, there is a hump at around the 10-15% mark.
+This is where the benefits of Chain Replication can be seen.
 
 By why should this improvement be seen at this particular ratio of writes to reads?
 
-The answer here lies in understanding how the workload is distributed between the head and tail processes in Chain Replication.  According to the research done by Renesse and Schneider, their experiments showed that when 10-15% of the requests are writes, then this produces the best throughput &mdash; presumably because the workload has now been distributed evenly between the head and tail processes.
+The answer here lies in understanding how the workload is distributed between the head and tail processes in Chain Replication.
+According to the research done by Renesse and Schneider, their experiments showed that when 10-15% of the requests are writes, then this produces the best throughput &mdash; presumably because the workload has now been distributed evenly between the head and tail processes.
 
 It turns out that in practice, this ratio of writes to reads is quite representative of many distributed systems that are *"out there in the wild"*.
-
 
 ## Dealing with Failure
 
@@ -116,7 +121,7 @@ So, in both situations, it is necessary to have some sort of internal coordinati
 >    For a system containing `n` processes, we are relying on the fact that no more than `n-1` processes will ever crash (Ha ha!!)
 > * The coordinator process is able to detect when a process crashes.
 >
-> However, we have not discussed how such assumptions could possibly be true because the term *"crash"* could mean a variety of things: perhaps software execution has terminated, or execution continues but the process simply stops responding to messages, or responds very slowly...
+> However, we have not discussed how such assumptions could possibly be true because the term *"crash"* can mean a wide variety of things: perhaps software execution has terminated, or execution continues but the process simply stops responding to messages, or responds very slowly...
 > 
 > Failure detection is a deep topic in itself that we cannot venture into at the moment; suffice it to say, that in an asynchronous distributed system, perfect failure detection is impossible.
 
@@ -141,7 +146,8 @@ In the event of failure in a P/B Replication system, the coordinator must keep t
 
 #### Coordinator Role in Chain Replication
 
-The coordinator must perform a similar set of tasks if failure occurs in a Chain Replication system.  If we assume that the head process fails, then the coordinator must keep the system running by:
+The coordinator must perform a similar set of tasks if failure occurs in a Chain Replication system.
+If we assume that the head process fails, then the coordinator must keep the system running by:
 
 * Nominating the head's successor to act as the new head
 * Informing all clients to direct their write requests to the new head
@@ -156,19 +162,24 @@ If we go to all the trouble of implementing a system that replicates data across
 
 So, what steps can we take to be more tolerant of coordinator failure&hellip;
 
-* Simply spin up some replicas of the coordinator?  And should we do this in just one data centre, or across multiple data centres?
+* Simply spin up some replicas of the coordinator?
+   And should we do this in just one data centre, or across multiple data centres?
 * But then how do you keep the coordinators coordinated?
-* Do you have a coordinator coordinator process?  If so, who coordinates the coordinator coordinator process?
+* Do you have a coordinator coordinator process?
+   If so, who coordinates the coordinator coordinator process?
 
 This quickly leads either to an infinite regression of coordinators, or another [Monty Python sketch](./img/very_silly.png)... (Spam! spam! spam! spam!)
 
 This question then leads us very nicely into the next topic of ***Consensus*** &mdash; but we won't start that now.
 
-It is amusing to notice that in Renesse and Schneider's paper, one of the first things they state is *"We assume the coordinator doesn't fail!"* which they then admit is an unrealistic assumption.  They then go on to describe how in their tests, they had a set of coordinator processes that were able to behave as a single process by running a consensus protocol between them.
+It is amusing to notice that in Renesse and Schneider's paper, one of the first things they state is *"We assume the coordinator doesn't fail!"* which they then admit is an unrealistic assumption.
+They then go on to describe how in their tests, they had a set of coordinator processes that were able to behave as a single process by running a consensus protocol between them.
 
 It is sobering to realise that if we wish to implement both strong consistency between replicas ***and*** fault tolerance (which was the problem we wanted to avoid in the first place), then ultimately, we are forced to rely upon some form of consensus protocol.
 
-But consensus is both ***hard*** and ***expensive*** to implement.  This difficulty might then become a factor in deciding ***not*** to implement strong consistency.  Now it looks very appealing to say *"If we can get away with a weaker form of consistency such as Causal Consistency, then shouldn't we look at this option?"*
+But consensus is both ***hard*** and ***expensive*** to implement.
+This difficulty might then become a factor in deciding ***not*** to implement strong consistency.
+Now it looks very appealing to say *"If we can get away with a weaker form of consistency such as Causal Consistency, then shouldn't we look at this option?"*
 
 That said, there are times when consensus really is vitally important.
 
