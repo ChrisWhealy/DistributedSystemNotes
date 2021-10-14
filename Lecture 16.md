@@ -13,7 +13,7 @@
 
 ### Review of Question in the Midterm Exam
 
-Lots of people struggled with this question in the midterm exam, and since it is a fundamental concept, if you don't understand this, you'll struggle later with other concepts based on it.
+Lots of people struggled with this question in the midterm exam and since it is a fundamental concept, if you don't understand this, you'll struggle later with other concepts based on it.
 
 The question was this: *"In a distributed system, what should a physical clock be used for and what should it not be used for?"*
 
@@ -34,18 +34,20 @@ These two types of physical clock stand in contrast to a logical clock.
 ***Q:***&nbsp;&nbsp; So, what are physical clocks good for in distributed systems?  
 ***A:***&nbsp;&nbsp; Timeouts!
 
-Timeouts (measured using a monotonic clock) are used in a wide variety of places for failure detection.  E.G. A Paxos proposer uses a timeout when waiting for responses to a new proposal number.
+Timeouts (measured using a monotonic clock) are used in a wide variety of places for failure detection.
+E.G. A Paxos proposer uses a timeout when waiting for responses to a new proposal number.
 
 ***Q:***&nbsp;&nbsp; So, what are physical clocks ***not*** good for in distributed systems?  
 ***A:***&nbsp;&nbsp; Measuring the order of events
 
-Why?  Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare time values recorded on different machines.
+Why?
+Because if you try to determine the order in which a sequence of events have occurred by marking each event's point in time, we will run into problems when we try to compare time values recorded on different machines.
 
 If we use time-of-day clocks, then these will only be comparable in a very course sense because they are prone to jumping around due to factors such as daylight-saving time and leap seconds.
 
 If we try to use monotonic clock values, then things get even worse because they are simply counters from some *"unspecified point in the past"*; thus, it is meaningless to compare values coming from different machines.
 
-So physical clocks are simply not suitable for measuring the order of events that occurred on different machines.
+So physical clocks are simply not suitable for measuring the order in which events occurred across different machines.
 
 ## Paxos: Nontermination
 
@@ -55,9 +57,10 @@ All consensus algorithms try to satisfy the following three properties:
 * Validity / Integrity
 * Agreement
 
-We have already stated that for a consensus algorithm running in a distributed system where failures are possible, it is impossible to implement all three properties.  This is known as the [FLP Result](./papers/FLP.pdf).
+We have already stated that for a consensus algorithm running in a distributed system where failures are possible, it is impossible to implement all three properties.
+This is known as the [FLP Result](./papers/FLP.pdf).
 
-Therefore, all consensus algorithms must compromise on one these properties, and Paxos compromises on the termination property &mdash; which risks cases where non-termination could occur.
+Therefore, all consensus algorithms must compromise on one these properties and Paxos compromises on the termination property &mdash; which risks cases where non-termination could occur.
 
 So, what kind of situation would lead to non-termination?
 
@@ -79,7 +82,8 @@ Unaware of what the other acceptors have just agreed to, proposer <code>P<sub>1<
 
 * Acceptor <code>A<sub>1</sub></code> is still on proposal number `5`, so it sends back an `accepted(5,"foo")` message as expected
 * But due to proposer <code>P<sub>2</sub></code>'s earlier `prepare(6)` message (that proposer <code>P<sub>1</sub></code> knows nothing about), acceptor <code>A<sub>2</sub></code> has now promised to ignore messages with a proposal number lower than `6`.
-* So, proposer <code>P<sub>1</sub></code> sits there waiting for a response.  It fails to receive responses from the majority of acceptors, and eventually times out.
+* So, proposer <code>P<sub>1</sub></code> sits there waiting for a response.
+   It fails to receive responses from the majority of acceptors, and eventually times out.
 * Not being one to give up, <code>P<sub>1</sub></code> sends out another `prepare` message, this time for the higher proposal number `7`.
 * Just as before, acceptors <code>A<sub>1</sub></code> and <code>A<sub>2</sub></code> are happy to oblige and respond with `promise(7)` messages.
 
@@ -92,8 +96,8 @@ Now, unaware of all the collusion going on between <code>P<sub>1</sub></code> an
 * <code>P<sub>2</sub></code> hangs around waiting for a majority of acceptors to respond, but this never happens, so it times out
 * Not being one to give up, <code>P<sub>2</sub></code> sends out another `prepare` message, this time for the higher proposal number `8`.
 
-
-And on and on we can go here - with each proposer continually trying to outbid the others.  Consensus will never be reached.
+And on and on we can go here - with each proposer continually trying to outbid the others.
+Consensus will never be reached.
 
 This is known as the ***"Duelling Proposers Problem"***.
 
@@ -101,7 +105,8 @@ In this case, we have used three acceptors, but actually only two would have bee
 
 ### So, Why Not Just Have One Proposer?
 
-All of this confusion seems to be created by the fact that we have multiple proposers all trying to outbid each other.  Couldn't we solve this problem simply by restricting the number of proposers to one?
+All of this confusion seems to be created by the fact that we have multiple proposers all trying to outbid each other.
+Couldn't we solve this problem simply by restricting the number of proposers to one?
 
 Well, let's see what would happen if we tried to enforce that there is exactly one proposer:
 
@@ -113,9 +118,11 @@ Well, let's see what would happen if we tried to enforce that there is exactly o
 
 And we're back to where we started...
 
-So, we cannot insist on there being only one proposer because our consensus algorithm depends on a consensus algorithm.  For instance, if we relied on Paxos to determine a new leader, then we're depending on an algorithm that might never terminate.
+So, we cannot insist on there being only one proposer because our consensus algorithm depends on a consensus algorithm.
+For instance, if we relied on Paxos to determine a new leader, then we're depending on an algorithm that might never terminate.
 
-Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer.  This does not eliminate the possibility of the *Duelling Proposers Problem* (because it could still occur during leader election phase); however, it confines non-termination to the leader election phase and removes it from the value proposal phase.
+Some consensus algorithms go through a phase in which they elect a leader (which requires consensus) and then that leader becomes the sole proposer.
+This does not eliminate the possibility of the *Duelling Proposers Problem* (because it could still occur during leader election phase); however, it confines non-termination to the leader election phase and removes it from the value proposal phase.
 
 This is strategy for reducing risk, not removing it.
 
@@ -129,30 +136,35 @@ But is there another way we could work here?
 
 Leader election is one situation in which it is more important for the algorithm to terminate than it is for everyone to agree.
 
-So now we could elect the proposer in the Paxos algorithm using a different leader election algorithm that risks producing multiple values, but we know will terminate.  If this algorithm elects a single proposer most of the time, then that's great; however, if it elects multiple proposers, then this is also OK because we know that Paxos can work with multiple proposers.
+So now we could elect the proposer in the Paxos algorithm using a different leader election algorithm that risks producing multiple values, but we know will terminate.
+If this algorithm elects a single proposer most of the time, then that's great; however, if it elects multiple proposers, then this is also OK because we know that Paxos can work with multiple proposers.
 
 So, this leads us nicely into the next topic - Multi-Paxos.
 
 ## Multi-Paxos
 
-All the runs of the Paxos algorithm that we've looked at so far are concerned with deciding on a single value.  If we want to decide on a sequence of values, then the Paxos algorithm must be rerun.
+All the runs of the Paxos algorithm that we've looked at so far are concerned with deciding on a single value.
+If we want to decide on a sequence of values, then the Paxos algorithm must be rerun.
 
 As it turns out, agreeing on a sequence of values is a widespread problem; for example, in [lecture 14](./Lecture%2014.md#when-do-you-need-consensus), we looked at a list of problems that all require consensus, and one of these was the problem of Totally-Ordered Broadcast
 
-> Remember that in Totally-Ordered Broadcast, we need to ensure that a set of processes all deliver a set of messages in the ***same order***.  Therefore, consensus must be reached on which message should be delivered first, which second and which third etc.
+> Remember that in Totally-Ordered Broadcast, we need to ensure that a set of processes all deliver a set of messages in the ***same order***.
+> Therefore, consensus must be reached on which message should be delivered first, which second and which third etc.
 > 
 > This turns out to require us to make the same decision over and over for each message in the queue.
 
-The problem here is that in the best case, in order for Paxos to decide on a single value, a minimum of two round trips are needed between the proposer and the majority of acceptors.  In the case that we have three acceptors, this will require a total of 8 messages to be exchanged between the proposer and at least two of the acceptors.
+The problem here is that in the best case, in order for Paxos to decide on a single value, a minimum of two round trips are needed between the proposer and the majority of acceptors.
+In the case that we have three acceptors, this will require a total of 8 messages to be exchanged between the proposer and at least two of the acceptors.
 
 ![Minimum Number of Message Exchanges Needed by Paxos](./img/L16%20Paxos%20Minimum%20Msg%20Exchange.png)
 
 In order for this minimum to be achieved, it is assumed that:
 
-* All processes are correct (I.E. they don't crash or exhibit some weird Byzantine behaviour)
+* All processes are correct (I.E. they don't crash or exhibit weird Byzantine behaviour)
 * Only one proposer is involved
 
-However, what's the downside here?  Having to repeat this message exchange sequence over and over again is not very efficient!
+However, what's the downside here?
+Having to repeat this message exchange sequence over and over again is not very efficient!
 
 ### Paxos Algorithm Phases
 
@@ -174,10 +186,11 @@ For Multi-Paxos to work successfully however, we need to make two assumptions:
 
 Since we want consensus on a sequence of values, we can arbitrarily add our own additional sequence number into the `accept` messages to keep track of this value.
 
-
 ### Multi-Paxos in Action
 
-So, let's say we want consensus on the sequence of values `"foo"` and `"bar"`.  We still need to go through the prepare/promise phase, but we only need to do that once.  After that, we can simply repeat the accept/accepted phases:
+So, let's say we want consensus on the sequence of values `"foo"` and `"bar"`.
+We still need to go through the prepare/promise phase, but we only need to do that once.
+After that, we can simply repeat the accept/accepted phases:
 
 ![Multi-Paxos](./img/L16%20MultiPaxos.png)
 
@@ -189,10 +202,11 @@ Notice that the `accept` and `accepted` messages now contain an additional seque
     * `val` is the value upon which consensus is being sought, and
     * `seq` is some arbitrary sequence number
 
-
 Ok, but what happens if we do have a second proposer who starts injecting their own proposal numbers?
 
-In this case, we will not be able to repeat the second phase because some of the acceptors will be ignoring <code>P<sub>1</sub></code>'s `accept` messages.  Now, <code>P<sub>1</sub></code> will simply time out and start the prepare/promise phase again.  In other words, nothing breaks and Multi-Paxos gracefully degenerates back to regular Paxos &mdash; however, we do not expect this situation to happen very often.
+In this case, we will not be able to repeat the second phase because some of the acceptors will be ignoring <code>P<sub>1</sub></code>'s `accept` messages.
+Now, <code>P<sub>1</sub></code> will simply time out and start the prepare/promise phase again.
+In other words, nothing breaks and Multi-Paxos gracefully degenerates back to regular Paxos &mdash; however, we do not expect this situation to happen very often.
 
 Using this approach, Totally-Ordered Delivery can be achieved by a set of processes using the (Multi-)Paxos consensus algorithm between them to agree on message delivery order.
 
@@ -233,7 +247,8 @@ In general then, if `f` is the maximum number of failed acceptors we can tolerat
 
 Again, if we start with the idea that `f` is now the number proposer failures we are able to tolerate, then we must decide how many proposers our system must have when it starts.
 
-We know from the above discussion, that Paxos actually works very well if there is only one proposer, so 1 is the minimum we can work with.  If we can tolerate `f` failures, then it is clear that our system should start with at least `f + 1` proposers.
+We know from the above discussion, that Paxos actually works very well if there is only one proposer, so 1 is the minimum we can work with.
+If we can tolerate `f` failures, then it is clear that our system should start with at least `f + 1` proposers.
 
 This is the degree to which Paxos can tolerate crash faults.
 
@@ -243,21 +258,24 @@ How well does Paxos tolerate omission faults?
 
 What happens if a proposer sends a `prepare` message to all the acceptors, but for some reason that message never arrives at some of those acceptors?
 
-Well, the proposer only needs to hear back from a majority of acceptors; so, if a `prepare` message does not arrive at one out of three acceptors, then this will not create a problem.  The proposer will still hear back from two out of three which is a majority.
+Well, the proposer only needs to hear back from a majority of acceptors; so, if a `prepare` message does not arrive at one out of three acceptors, then this will not create a problem.
+The proposer will still hear back from two out of three which is a majority.
 
 Ok, let's ramp up the severity &mdash; what if the proposer sends a `prepare` message to all three acceptors, and all three messages got lost?
 
-Again, other than slowing things down, nothing bad would happen because after waiting for its time out period, the proposer would simply try again with a new proposal number.  At this point, we might run into a non-termination problem, but that is not an omission fault.
+Again, other than slowing things down, nothing bad happens because after waiting for its time out period, the proposer would simply try again with a new proposal number.
+At this point, we might run into a non-termination problem, but that is not an omission fault.
 
 So Paxos does OK in the case of omission faults - it might not terminate, but as we've seen with the *"Duelling Proposers Problem"* shown above, we don't need to experience message loss in order for non-termination to occur.
 
 ## Other Consensus Protocols
 
-Here we will mention a few other consensus protocols.  We will not look into them in any detail, but since we have had a detailed look at Paxos, you now have a good foundation from which to study these algorithms on their own.
+Here we will mention a few other consensus protocols.
+We will not look into them in any detail, but since we have had a detailed look at Paxos, you now have a good foundation from which to study these algorithms on their own.
 
 These consensus algorithms all have a couple of common features:
 
-1. They are designed to achieve consensus on a sequence of values, not just one - which makes them more like Multi-Paxos than basic Paxos
+1. They are designed to achieve consensus on a sequence of values, not just one - which makes them more like Multi-Paxos than Basic Paxos
 1. They all include leader-election as a fundamental part of the protocol
 
 These consensus protocols are:
@@ -276,7 +294,6 @@ These consensus protocols are:
 
 Also, [this paper](./papers/Paxos%20vs%20VSR%20vs%20ZAB.pdf) provides a useful comparison of the Paxos, VSR and ZAB algorithms.
 
-
 ## Active and Passive Replication
 
 The following statement is confused:
@@ -285,66 +302,87 @@ The following statement is confused:
 
 To remove this confusion, we should first define exactly what these terms mean.
 
-Let's say we're doing Primary Backup on a replicated back account.  This is the situation we looked at in [lecture 12](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2012.md#primary-backup-replication).
+Let's say we're doing Primary Backup on a replicated back account.
+This is the situation we looked at in [lecture 12](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2012.md#primary-backup-replication).
 
-We receive an instruction to deposit \$50 into an account that already has a balance of \$20.  But there are two ways we could implement this deposit operation.
+We receive an instruction to deposit \$50 into an account that already has a balance of \$20.
+But there are two ways we could implement this deposit operation.
 
 ### Active Replication
 
-We could apply the deposit instruction to the primary `P` and then broadcast that instruction to both backups.  These backups then apply that instruction to their own replicas of the account.  
+> Active replication is also known as *"State Machine Replication"*
+
+We could apply the deposit instruction to the primary `P` and then broadcast that instruction to both backups.
+These backups then apply that instruction to their own replicas of the account.  
 
 When the `ack`s from all the backups have been received by the primary, the primary delivers the message to itself and finally sends an `ack` to the client.
-    
+
 ![Primary Backup Replication 1](./img/L16%20Primary%20Backup%201.png)
 
-Now processes `P`, <code>B<sub>1</sub></code> and <code>B<sub>2</sub></code> hold identical state because they all applied the same instruction to the same initial account balance
+Now processes `P`, <code>B<sub>1</sub></code> and <code>B<sub>2</sub></code> hold identical state because they all ***performed the same calculation*** to the account balance.
 
-This is active replication because the operation has been executed on every replica where we want it to take effect.
+This is active replication because the entire operation has been repeated on every replica where its effect is needed.
 
 ### Passive Replication
 
-Alternatively, the primary `P` could execute the deposit instruction, but not commit it yet.  
+Alternatively, the primary `P` could execute the deposit instruction and calculate the new balance &mdash; but not commit it yet.  
 
-Now that `P` knows what the new balance is, instead of sending the deposit instruction, it simply sends the new account balance to the backups.
+Now that `P` knows the new balance, instead of sending the deposit instruction, it simply sends the new account balance to the backups.
 
 ![Primary Backup Replication 2](./img/L16%20Primary%20Backup%202.png)
 
-The backups simply apply store the new state of the account and send back their `ack` messages.  Then, as before, the primary sends an `ack` to the client.
+Then, without knowing how it was calculated, the backups simply apply the new account balance and send back their `ack` messages.
 
-This is passive replication because the operation is executed only on the primary node, and then state update messages are sent to the backups.
+Finally, as before, the primary sends its `ack` to the client.
+
+Now processes `P`, <code>B<sub>1</sub></code> and <code>B<sub>2</sub></code> hold identical state because `P` first calculated what that new state should be, and all the backups then ***applied the same state*** to the account balance.
+
+This is passive replication because the operation is executed once on the primary node, and then the resulting state is sent to the backups.
 
 ### These Are Both Examples of Primary Backup Replication
 
 Irrespective of whether an active or passive strategy is used, both approaches shown here are examples of primary backup replication:
 
 * The clients still communicate only with the primary
-* The primary executes the required operation and communicates (in some way) with the backups
+* The primary executes the required operation
+* The primary then communicates (in some way) with the backups
 * The backups all acknowledge that they have successfully processed whatever message was sent to them
 * Lastly, the primary commits the work itself and sends an acknowledgement back to the client
 
-Exactly what type of message the primary sends to the backups is an internal implementation detail &mdash; as far as the external observer is concerned, it’s all primary backup replication
+Exactly what type of message the primary sends to the backups is an internal implementation detail.
+However, as far as the external observer is concerned, it’s all primary backup replication.
 
 ### Should We Choose Active or Passive?
+
+The internal differences between active and passive backup can be summarised like this.
+
+Lets say we have \$70 in our bank account and we deposit a further \$50.
+
+| Backup Type | Message | Behaviour of Primary | Message Sent<br>to Backups | Behaviour of Backups
+|---|---|---|---|---
+| Active  | Deposit \$50 | `Balance = $50 + $70 = $120` | Deposit \$50 | `Balance = $50 + $70 = $120`
+| Passive | Deposit \$50 | `Balance = $50 + $70 = $120` | New balance = \$120 | `Balance = $120`
 
 So, what would cause us to choose one approach over the other?
 
 Well, we need to consider factors such as the size of the resulting updated state, and the cost of the computation needed to derive that updated state.
 
-For instance, what should we do if the primary receives the operation *"Increment everyone's account balance by one cent"* &mdash; and we have a million bank accounts?  In this case, the size of the state change would be huge, so passive backup would not be a good approach.
+For instance, what should we do if the primary receives the operation *"Increment everyone's account balance by one cent"* &mdash; and we have a million bank accounts?
+In this case, the size of the state change would be huge, so passive backup would not be a good approach.
 
-The following factors should be evaluated when deciding between active and passive replication:
+If we ignore certain details such as the amount of data required to transmit the operation over the network, then the following basic factors should be evaluated when deciding between active and passive replication:
 
-* The update requires me to run a computation that costs `t` units of time
-* I have `n` nodes on which this update must be applied
-* The new state created by the computation is `s` bytes in size
-* The network connecting the nodes transmits data at a rate of `r` bytes per unit of time
+* The required computation requires `t` seconds
+* There are `n` nodes in the network
+* The computation creates a new state that is `s` bytes in size
+* The network has a data transmission rate of `r` bytes per second
 
-The question then boils down to crunching these numbers in order to work out which option gives me the quickest result.  In general, then:
+So to achieve a consistent state, active backup will require at least `n * t` seconds, and passive backup will require at least `t + (n * s/r)` seconds.
 
-* If an operation results in a large state change, then active replication is probably going to be better because sending the operation over the network uses up much less bandwidth than sending the changed stated
-* If the cost of an operation is high, then passive replication is probably going to be better because the cost of computation is incurred only once (on the primary)
+You need to decide which approach will give the quickest result.
 
-Active replication is also known as *"State Machine Replication"*
+* If `n * t >>  t + (n * s/r)` then active backup looks favourable; alternatively,
+* If `n * t <<  t + (n * s/r)` then passive backup looks better.
 
 ---
 
