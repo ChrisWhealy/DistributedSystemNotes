@@ -20,7 +20,9 @@ In a quorum consistency environment, there are three specific, configurable valu
 
 Depending on what balance our system needs to have between availability and consistency, we need to tune the `NWR` values accordingly.
 
-For instance, if we want strong consistency, then we could use `N=3, W=3, R=1`.  This means that a write operation is only considered successful if it has been acknowledged by all three nodes.  A direct consequence of setting `W=N` is that we now know for certain that all the nodes will agree with each other; therefore, if we set `R=1`, we can be 100% confident that it won’t matter which node answers a read request, because they all ***already*** agree.
+For instance, if we want strong consistency, then we could use `N=3, W=3, R=1`.
+This means that a write operation is only considered successful if it has been acknowledged by all three nodes.
+A direct consequence of setting `W=N` is that we now know for certain that all the nodes will agree with each other; therefore, if we set `R=1`, we can be 100% confident that it won’t matter which node answers a read request, because they all ***already*** agree.
 
 Whilst this is a popular configuration setting, the trouble is that if any of the write nodes crash, or a network partition suddenly appears, you're unable to perform any further writes.
 
@@ -38,30 +40,39 @@ If the client then immediately reads the value of `x`, it is possible that befor
 
 This will result in the client receiving different values of `x`.
 
-At this point, it is important to understand that there is a discrepancy between different system implementations about what exactly the read quorum value `R` means in practice.  Does it refer to:
+At this point, it is important to understand that there is a discrepancy between different system implementations about what exactly the read quorum value `R` means in practice.
+Does it refer to:
 
 * The number of nodes that must respond to a read request, or
 * The number of nodes that must respond to a read request *with the same value*?
 
-In the context of the Dynamo paper where Amazon prioritise availability over consistency, it seems clear that the read quorum value `R` is used to refer simply to the number of nodes that must respond to a read request.  If they return conflicting values, then so be it.
+In the context of the Dynamo paper where Amazon prioritise availability over consistency, it seems clear that the read quorum value `R` is used to refer simply to the number of nodes that must respond to a read request.
+If they return conflicting values, then so be it.
 
-In general, though, if we ensure that `R + W > N`, then we can be certain that every write quorum intersects with every read quorum, thus ensuring that we avoid what's known as a *"stale read"*.  A stale read is where ***all*** of the responses are out of date.  The `R + W > N` approach ensures that a read will always return at least one correct response.
+In general, though, if we ensure that `R + W > N`, then we can be certain that every write quorum intersects with every read quorum, thus ensuring that we avoid what's known as a *"stale read"*.
+A stale read is where ***all*** of the responses are out of date.
+The `R + W > N` approach ensures that a read will always return at least one correct response.
 
-For instance, if we set the write quorum to `2` and the read quorum to `1`, then it’s possible that we could be writing to replicas `R1` and `R2` and reading from replica `R3`.  Thus, until the nodes synchronise their state, read operations could return stale values.
+For instance, if we set the write quorum to `2` and the read quorum to `1`, then it’s possible that we could be writing to replicas `R1` and `R2` and reading from replica `R3`.
+Thus, until the nodes synchronise their state, read operations could return stale values.
 
 A further caveat is to understand that simply satisfying the inequality `R + W > N` only helps prevent stale reads, it does not ensure fault tolerance because as we saw in the first example, setting `N=3, W=3, R=1` guarantees strong consistency, but does so at the expense of fault tolerance.
 
-The Dynamo paper quotes the configuration settings as `N=3, W=2, R=2` because this ensures that ***someone*** will respond to a read operation with the correct value.  In Amazon's situation, if a read request returns a set of conflicting values, then typically, the client application must resolve the conflict.
+The Dynamo paper quotes the configuration settings as `N=3, W=2, R=2` because this ensures that ***someone*** will respond to a read operation with the correct value.
+In Amazon's situation, if a read request returns a set of conflicting values, then typically, the client application must resolve the conflict.
 
 ***Q:***&nbsp;&nbsp; What's wrong with the "Read One, Write All" approach?  
 ***A:***&nbsp;&nbsp; Several reasons:
 
-* Firstly, ensuring strong consistency is slow.  Since we have to wait for all the nodes to acknowledge a write operation, the write response time cannot be any faster than the slowest node,
-* Secondly, this configuration is not fault tolerant.  If a node crashes or a network partition suddenly appears, then immediately, we have lost the ability to performs writes.
+* Firstly, ensuring strong consistency is slow.
+   Since we have to wait for all the nodes to acknowledge a write operation, the write response time cannot be any faster than the slowest node,
+* Secondly, this configuration is not fault tolerant.
+   If a node crashes or a network partition suddenly appears, then immediately, we have lost the ability to performs writes.
 
 ## Sharding or Data Partitioning
 
-Here's one of those annoying situations in distributed systems where the same term is used to mean two, totally different things.  The word *"partitioning"* here is used to mean the way you split up your data between different nodes (which is a good thing), as opposed a sudden loss of communication caused by a network partition (which is a bad thing).
+Here's one of those annoying situations in distributed systems where the same term is used to mean two, totally different things.
+The word *"partitioning"* here is used to mean the way you split up your data between different nodes (which is a good thing), as opposed a sudden loss of communication caused by a network partition (which is a bad thing).
 
 In the systems we've spoken of so far, all the machines store all the data.  So, each machine has a full copy of your entire keystore.
 
@@ -80,7 +91,8 @@ But how about an approach like this?
 
 ![Sharding 1](./img/L19%20Sharding%201.png)
 
-So now, we don't have the problem of stale reads because each machine only handles a known subset of the data.  The trade-off here is that in this example, we have now lost fault tolerance because there is no replication; but it could be reinstated quite easily.
+So now, we don't have the problem of stale reads because each machine only handles a known subset of the data.
+The trade-off here is that in this example, we have now lost fault tolerance because there is no replication; but it could be reinstated quite easily.
 
 ![Sharding 2](./img/L19%20Sharding%202.png)
 
@@ -95,17 +107,24 @@ There are multiple reasons for why you might want to adopt this approach.  These
 * If the range of client requests is more or less evenly distributed across the full range of keys in your keystore, then this will improve throughput
 * Or, you might simply have too much data to fit on one machine, in which case, sharding is the only viable option
 
-The design shown above is somewhat simplistic in that we have a single key/value pair stored per shard.  In reality however, shards will typically store broad ranges of key/value pairs.  But even taking this into account, the arrangement shown above still does not represent the way Dynamo implements sharding.
+The design shown above is somewhat simplistic in that we have a single key/value pair stored per shard.
+In reality however, shards will typically store broad ranges of key/value pairs.
+But even taking this into account, the arrangement shown above still does not represent the way Dynamo implements sharding.
 
 Here's another arrangement that combines these various approaches into one:
 
 ![Sharding 4](./img/L19%20Sharding%204.png)
 
-Each node now holds an overlapping range of key/value pairs.  `x` can be found on `M1` and `M2`, `y` can be found on `M1` and `M3`, and `z` can be found on `M2` and `M3`.  So, it looks like we have the best of both worlds here: we have replication across nodes ***and*** sharding.
+Each node now holds an overlapping range of key/value pairs.
+`x` can be found on `M1` and `M2`, `y` can be found on `M1` and `M3`, and `z` can be found on `M2` and `M3`.
+So, it looks like we have the best of both worlds here: we have replication across nodes ***and*** sharding.
 
-In fact, what we have done is implement a distributed version of Primary Backup Replication.  In the previous examples of PB Replication, we had a single node acting as the primary for all the data, and then all of that data was replicated across all the backup nodes.  Consequently, the primary had to handle all the reads and writes and could become the bottleneck under high load situations.
+In fact, what we have done is implement a distributed version of Primary Backup Replication.
+In the previous examples of PB Replication, we had a single node acting as the primary for all the data, and then all of that data was replicated across all the backup nodes.
+Consequently, the primary had to handle all the reads and writes and could become the bottleneck under high load situations.
 
-By sharding the data, we have said that one node can act as the primary - not for all the data, but just a subset of that data.  So now the roles of primary and backup have been distributed across multiple nodes.
+By sharding the data, we have said that one node can act as the primary - not for all the data, but just a subset of that data.
+So now the roles of primary and backup have been distributed across multiple nodes.
 
 ![Sharding 5](./img/L19%20Sharding%205.png)
 
@@ -117,7 +136,8 @@ So, each node plays the role of primary for some values and backup for others.
 | `y` | `M3` | `M1`
 | `z` | `M2` | `M3`
 
-Given this division of labour, when the client wants the value of `x`, it will talk to the node acting as the primary for `x` - which in the case, happens to be `M1`.  Similarly, a client wanting the value of `z` will know that it can talk directly to `M2`.
+Given this division of labour, when the client wants the value of `x`, it will talk to the node acting as the primary for `x` - which in the case, happens to be `M1`.
+Similarly, a client wanting the value of `z` will know that it can talk directly to `M2`.
 
 Not only have we split up the workload of serving read/write requests, but each machine now only needs to store two thirds of the entire dataset.
 
@@ -132,11 +152,14 @@ No matter how the sharding is implemented, we have two forms of replication at w
 ![Dataset Replication](./img/L19%20Dataset%20Replication.png)
 
 
-The choice for how you replicate data and how it is sharded are somewhat orthogonal.  In the rest of this discussion, we will focus only on sharding techniques and assume that replication will be implemented somehow.
+The choice for how you replicate data and how it is sharded are somewhat orthogonal.
+In the rest of this discussion, we will focus only on sharding techniques and assume that replication will be implemented somehow.
 
 ## Partition Strategies
 
-How do you decide which key/value pairs go where?  To answer this question, we must first establish what goals our partitioning strategy needs to meet.  We really need to achieve two goals here:
+How do you decide which key/value pairs go where?
+To answer this question, we must first establish what goals our partitioning strategy needs to meet.
+We really need to achieve two goals here:
 
 * ***Goal 1***&nbsp;&nbsp; Avoid any read or write hotspots
 * ***Goal 2***&nbsp;&nbsp; Make the data easy for clients to find quickly
@@ -174,7 +197,8 @@ The MD5 algorithm returns a number in the range `0` to <code>2<sup>128</sup> - 1
 
 ![MD5 Output Space](./img/L19%20MD5%20Output%20Space.png)
 
-What we need to do now is make sure that each node looks after an evenly sized chunk of the hash function's output space.  However, an easier way to calculate this is to say that since we wish to distribute the hash values across 3 machines, then we can simply calculate `modulus 3` of the hash value to give a server number of `0`, `1` or `2`.
+What we need to do now is make sure that each node looks after an evenly sized chunk of the hash function's output space.
+However, an easier way to calculate this is to say that since we wish to distribute the hash values across 3 machines, then we can simply calculate `modulus 3` of the hash value to give a server number of `0`, `1` or `2`.
 
 So, we can extend this diagram to help us identify the target node:
 
@@ -186,21 +210,30 @@ The problem is that if `N` changes, then this completely alters which machine sh
 
 For instance, if we added a new machine `M4`, then this could result in having to move our `"aardvark"` from `M1` to `M0` &mdash; and this would upset him because he's just settled into his new home and now you want to move him again (you know how touchy Aardvarks can be&hellip;)
 
-It is certainly true that when a new machine is added, some of the existing data will need to be redistributed, but it does not makes sense to move existing data from one old node to another old node.  In an ideal situation, the addition of a new node should cause only the smallest amount of data to be redistributed, and certainly not cause data to be moved between existing nodes.
+It is certainly true that when a new machine is added, some of the existing data will need to be redistributed, but it does not makes sense to move existing data from one old node to another old node.
+In an ideal situation, the addition of a new node should cause only the smallest amount of data to be redistributed, and certainly not require old data to be shunted around between old nodes.
 
 So, what is the minimum amount of data that should be redistributed after the addition of a new node?
 
-Let's say we have 6 keys distributed over 3 nodes.  This then averages out to 2 keys per node.
+Let's say we have 6 keys distributed over 3 nodes.
+This then averages out to 2 keys per node.
 
 ![Node Addition 1](./img/L19%20Node%20Addition%201.png)
 
-Now, due say to a spike in request volume, we need to add a new node `M4`.  If we still wish to maintain an even distribution of keys per node, then we need to rearrange the existing data to include this new node.  But how many keys should we move and which ones?
+Now, due say to a spike in request volume, we need to add a new node `M4`.
+If we still wish to maintain an even distribution of keys per node, then we need to rearrange the existing data to include this new node.
+But how many keys should we move and which ones?
 
-In general, if we have `K` keys distributed across `N` nodes, then on average, each node will store `K/N` keys.  Previously `K=3` and `N=6`, so no prizes for figuring out that each node should hold 2 keys.  However, if `K` now increases to 4, then `K/N` becomes `1.5`.  Since we can't move half a key, we'll round this value down.  So, in general we can say that each node will hold `floor(K/N)` keys.
+In general, if we have `K` keys distributed across `N` nodes, then on average, each node will store `K/N` keys.
+Previously `K=3` and `N=6`, so no prizes for figuring out that each node should hold 2 keys.
+However, if `K` now increases to 4, then `K/N` becomes `1.5`.
+Since we can't move half a key, we'll round this value down.
+So, in general we can say that each node will hold `floor(K/N)` keys.
 
 ![Node Addition 2](./img/L19%20Node%20Addition%202.png)
 
-The addition of the new node has caused a single key to be transferred to  `M4`.  In this case, we chose to move `"zzzzz"` because the Aardvark likes living in `M3`, and we didn't want to upset him.
+The addition of the new node has caused a single key to be transferred to  `M4`.
+In this case, we chose to move `"zzzzz"` because the Aardvark likes living in `M3`, and we didn't want to upset him.
 
 Notice that data is only transferred from an old node to the new node; no data is ever transferred between the old nodes.
 
@@ -208,9 +241,11 @@ Notice that data is only transferred from an old node to the new node; no data i
 
 This is yet another case in which a word we've previously used to mean one thing ("*consistent*") is now being used to mean something different - but the use of the word "consistent" in this context has its origins in network design, not distributed systems.
 
-The first change we need to make is to arrange our nodes in a ring.  The position of a node around the ring is calculated by hashing some value unique to each node - say a combination of the node name and its IP address.
+The first change we need to make is to arrange our nodes in a ring.
+The position of a node around the ring is calculated by hashing some value unique to each node - say a combination of the node name and its IP address.
 
-The MD5 hash function has a vast output space ranging from `0` all the way up to <code>2<sup>128</sup> - 1</code>.  This is such a huge range of values that we cannot represent it graphically in any meaningful way, so for the purposes of the following diagrams, let's pretend the hash function's output space occupies only the range `0` to `63`.
+The MD5 hash function has a vast output space ranging from `0` all the way up to <code>2<sup>128</sup> - 1</code>.
+This is such a huge range of values that we cannot represent it graphically in any meaningful way; so for the purposes of the following diagrams, let's pretend the hash function's output space occupies only the range `0` to `63`.
 
 So, in this scenario, our reduced-output-space hash function has positioned our four nodes roughly evenly around the ring at the following locations:
 
@@ -219,7 +254,8 @@ So, in this scenario, our reduced-output-space hash function has positioned our 
 * `M3` is at location `32`
 * `M4` is at location `47`
 
-Let's now say we want to add the new key `"apple"`.  When put through the hash function, this key yields the value `14`.
+Let's now say we want to add the new key `"apple"`.
+When put through the hash function, this key yields the value `14`.
 
 ![Dynamo Node Ring 1](./img/L19%20Ring%201.png)
 
@@ -227,19 +263,23 @@ There is no node sitting exactly at location `14` on the ring, so we scan clockw
 
 The rule here is that keys belong to their clockwise successor on the ring.
 
-Now let's say our old friend the Aardvark wants to move in.  In our particular scheme, `"aardvark"` hashes to `62`, so we repeat the same process as before:
+Now let's say our old friend the Aardvark wants to move in.
+In our particular scheme, `"aardvark"` hashes to `62`, so we repeat the same process as before:
 
 ![Dynamo Node Ring 2](./img/L19%20Ring%202.png)
 
-There is no node at location `62`, so we continue clockwise around the ring, passing go, collecting $200 and encountering `M1`.  So, `"aardvark"` will be stored in node `M1`.
+There is no node at location `62`, so we continue clockwise around the ring, passing go, collecting $200 and encountering `M1`.
+So, `"aardvark"` will be stored in node `M1`.
 
 ### Key Replication
 
 Dynamo also uses this scheme to decide where a key should be replicated.
 
-If we assume that the ring's replication factor is 3, then this means every key must be stored on a total of 3 nodes &mdash; but how do we decide which three nodes?  The approach here is the following:
+If we assume that the ring's replication factor is 3, then this means every key must be stored on a total of 3 nodes &mdash; but how do we decide which three nodes?
+The approach here is the following:
 
-* Every key has a *"home"* node.  This is the node the key is stored on using the *scan clockwise* approach described above.
+* Every key has a *"home"* node.
+   This is the node on which the key is stored using the *scan clockwise* approach described above.
 * Once the key is stored on the home node, it is then forwarded to the next clockwise node around the ring and stored there too.
 * The key continues to be forwarded clockwise around the ring until it has been stored in the correct number of replicas.
 
@@ -247,7 +287,8 @@ If we assume that the ring's replication factor is 3, then this means every key 
 
 So, in the example where we stored `"apple"` on `M2`, the replication factor of 3 requires that this key is also replicated on nodes `M3` and `M4`
 
-The Dynamo Paper refers to this list of nodes as the *"preference list"*, and it usually includes more nodes than the replication factor requires because some nodes could be down or unavailable.  So, in Dynamo, you keep working your way down the preference list using the next available node until the ring's replication factor has been satisfied.
+The Dynamo Paper refers to this list of nodes as the *"preference list"*, and it usually includes more nodes than the replication factor requires because some nodes could be down or unavailable.
+So, in Dynamo, you keep working your way down the preference list using the next available node until the ring's replication factor has been satisfied.
 
 ### Adding a New Node
 
@@ -277,13 +318,17 @@ Ok, but now let's add a new node `M5` at position `60`.
 
 ![Dynamo Node Ring 4](./img/L19%20Ring%204.png)
 
-So, effectively, we have taken `M1`'s hash function range and split it in half. The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.  Therefore, the only keys that need to move are the keys currently stored in `M1` whose hash function values now belong to the new node `M5` (I.E. they fall in the range `48` to `60`).
+So, effectively, we have taken `M1`'s hash function range and split it in half.
+The range of keys with hash values between `48` and `08` would previously all have landed on `M1`, but now `M5` has arrived at location `60` and taken over the lower part of the range from `48` to `60`.
+Therefore, the only keys that need to move are the keys currently stored in `M1` whose hash function values now belong to the new node `M5` (I.E. they fall in the range `48` to `60`).
 
-Since none of the other nodes are affected, nothing else needs to change.  In fact, these other nodes do not even need to know that a new node at some other, distant part of the ring has been added.
+Since none of the other nodes are affected, nothing else needs to change.
+In fact, these other nodes do not even need to know that a new node at some other, distant part of the ring has been added.
 
 ### What Happens if a Node Crashes?
 
-In our diagram, let's look at the consequences of node `M2` crashing.  First, let's assess what we already know:
+In our diagram, let's look at the consequences of node `M2` crashing.
+First, let's assess what we already know:
 
 * `M2` is responsible for keys having hash values in the range `09` to `20`
 * `M3` is responsible for keys having hash values in the range `21` to `32`
@@ -291,7 +336,8 @@ In our diagram, let's look at the consequences of node `M2` crashing.  First, le
 
 ![Node Crash 1](./img/L19%20Node%20Crash%201.png)
 
-When `M2` crashes, all that happens is that `M3` simply extends its hash value range downwards to include `M2`'s range.  So here, `M3`'s hash value range now starts down at `09` and extends up to `32`.
+When `M2` crashes, all that happens is that `M3` simply extends its hash value range downwards to include `M2`'s range.
+So here, `M3`'s hash value range now starts down at `09` and extends up to `32`.
 
 All of `M2`'s keys backed up in `M3` are now promoted from backup to primary copies, and any new key values in the range `09` to `32` are written directly to `M3`.
 
@@ -299,28 +345,33 @@ At this point in time, the administrator will probably want to bring up a new no
 
 ### Can Consistent Hashing Go Wrong?
 
-Yes.  If your input values fall into a narrow range, then there will not be a particularly good distribution of nodes around the ring, which in turn, could cause a node to become overloaded and potentially crash.
+Yes.
+If your input values fall into a narrow range, then there will not be a particularly good distribution of nodes around the ring, which in turn, could cause a node to become overloaded and potentially crash.
 
-One trick that Amazon use in Dynamo is the idea of virtual nodes.  This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.  This means that one physical node could be mapped to 10, or 20 or even 50 different hash value locations around the ring.  Using this trick, you are much more likely to achieve an even node distribution around the ring.
+One trick that Amazon use in Dynamo is the idea of virtual nodes.
+This is where, instead of mapping a node to a single hash value on the ring, it is mapped to a set of values.
+This means that one physical node could be mapped to 10, or 20 or even 50 different hash value locations around the ring.
+Using this trick, you are much more likely to achieve an even node distribution around the ring.
 
 In addition to improving the distribution of nodes around the ring, you could have a different number of virtual nodes per physical node to account for differing storage capacities of the physical hardware running each node.
 
-For instance, if the hardware on which one node is running has a 1Tb hard drive, then for instance, you might allocate 20 virtual nodes to this one physical node.  However, if another node in the same ring is running on a machine with a 2Tb hard drive, you might choose to allocate 40 virtual nodes knowing that due to its increased storage capacity, this machine can handle a bigger hash value range.
+For instance, if the hardware on which one node is running has a 1Tb hard drive, then for instance, you might allocate 20 virtual nodes to this one physical node.
+However, if another node in the same ring is running on a machine with a 2Tb hard drive, you might choose to allocate 40 virtual nodes knowing that due to its increased storage capacity, this machine can handle a bigger hash value range.
 
 Unfortunately, the use of virtual nodes has a couple of downsides.
 
-Firstly, if lots of virtual nodes are assigned to a physical node and that physical node goes down, then this has a large impact on the rest of the ring because it appears that suddenly, lots of "nodes" have disappeared.  Now lots of other nodes will need to take over the gaps that have appeared in the hash value ranges.  The Dynamo paper, however, declares this to be a feature because if a physical node running multiple virtual nodes goes down, then the workload becomes spread out around the ring, rather than being taken on a single successor.  Although this point does tend to make sense, it is somewhat harder to reason about objectively given the increased complexity of the implementation.
+Firstly, if lots of virtual nodes are assigned to a physical node and that physical node goes down, then this has a large impact on the rest of the ring because it appears that suddenly, lots of "nodes" have disappeared.
+Now lots of other nodes will need to take over the gaps that have appeared in the hash value ranges.
+The Dynamo paper, however, declares this to be a feature because if a physical node running multiple virtual nodes goes down, then the workload becomes spread out around the ring, rather than being taken on a single successor.
+Although this point does tend to make sense, it is somewhat harder to reason about objectively given the increased complexity of the implementation.
 
 Secondly, replication of virtual nodes is more complicated because if two virtual nodes reside on the same physical machine, then it is redundant to replicate data between these virtual nodes because you'd just be copying data to a different location on the same hard disk &mdash; which does not achieve the required level of fault tolerance.
-
-
 
 ## Finally, A Word from Our Sponsor
 
 In preparation for the next lecture, please read Google's [MapReduce](./papers/MapReduce.pdf) paper, and remember &mdash; be nice to Aardvarks...
 
 ![Baby Aardvark](./img/aardvark.jpeg)
-
 
 ---
 
