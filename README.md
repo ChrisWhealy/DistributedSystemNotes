@@ -4,11 +4,13 @@ Lecture notes for course [CSE138, Spring 2020](http://composition.al/CSE138-2020
 
 Due to the Covid-19 lockdown being enforced at the time, these lectures had to be delivered online and are available on [YouTube](https://www.youtube.com/user/lindseykuper/videos) and [Twitch](https://www.twitch.tv/lindseykuper/videos)
 
-This series of lectures also includes a discussion panel with recent grad students and two guest lecturers.  Notes have not been created for these events; however, you can watch the videos here:
+This series of lectures also includes a discussion panel with recent grad students and two guest lecturers.
+Notes have not been created for these events; however, you can watch the videos here:
 
-* ["Grad Student Discussion Panel"](https://www.youtube.com/watch?v=ArKapXZkJvM) Lindsey Kuper talks with Emma Gomish, Pete Wilcox and Lawrence Lawson. May 15<sup>th</sup>, 2020
+* ["Grad Student Discussion Panel"](https://www.youtube.com/watch?v=ArKapXZkJvM) Lindsey Kuper talks with Emma Gomish, Pete Wilcox and Lawrence Lawson.
+   May 15<sup>th</sup>, 2020
 * ["Blockchain Consensus"](https://www.youtube.com/watch?v=m6qZY7_ingY) by Chris Colohan, May 27<sup>th</sup>, 2020
-* ["Building Peer-to-Peer Applications"](https://www.twitch.tv/videos/640120840) by Karissa McKelvey, June 3<sup>rd</sup>
+* ["Building Peer-to-Peer Applications"](https://www.twitch.tv/videos/640120840) by Karissa McKelvey, June 3<sup>rd</sup>, 2020
 
 |  Date | Description | Subjects Recapped |
 |---|---|---|
