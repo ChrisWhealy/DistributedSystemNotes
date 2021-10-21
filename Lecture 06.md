@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 5](./Lecture%205.md) | [Lecture 7](./Lecture%207.md)
+| [Lecture 5](./Lecture%2005.md) | [Lecture 7](./Lecture%2007.md)
 
 ## Recap
 
@@ -257,5 +257,5 @@ Once this out-of-sequence message has been delivered, the message waiting in the
 
 | Previous | Next
 |---|---
-| [Lecture 5](./Lecture%205.md) | [Lecture 7](./Lecture%207.md)
+| [Lecture 5](./Lecture%2005.md) | [Lecture 7](./Lecture%2007.md)
 

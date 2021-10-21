@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 7](./Lecture%207.md) | [Lecture 9](./Lecture%209.md)
+| [Lecture 7](./Lecture%2007.md) | [Lecture 9](./Lecture%2009.md)
 
 
 ## Rules of the Chandy-Lamport Algorithm
@@ -222,10 +222,7 @@ Management of an entire system snapshot needs to be handled by some external coo
 
 | Previous | Next
 |---|---
-| [Lecture 7](./Lecture%207.md) | [Lecture 9](./Lecture%209.md)
-
-
-
+| [Lecture 7](./Lecture%2007.md) | [Lecture 9](./Lecture%2009.md)
 
 ---
 

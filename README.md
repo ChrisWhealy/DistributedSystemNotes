@@ -15,14 +15,14 @@ Notes have not been created for these events; however, you can watch the videos 
 |  Date | Description | Subjects Recapped |
 |---|---|---|
 | Lecture 1 | There are no notes for this lecture as it was concerned with course administration and logistics  |
-| [Lecture 2](./Lecture%202.md)<br>April&nbsp;1<sup>st</sup>,&nbsp;2020 | Distributed Systems: What and why?<br>Time and clocks |
-| [Lecture 3](./Lecture%203.md)<br>April&nbsp;3<sup>rd</sup>,&nbsp;2020| Lamport diagrams<br>Causality and the "happens before" relation<br>Network models<br>State and events<br>Partial orders
-| [Lecture 4](./Lecture%204.md)<br>April&nbsp;6<sup>th</sup>,&nbsp;2020 | Total orders and Lamport clocks | Partial orders<br>Happens before relation
-| [Lecture 5](./Lecture%205.md)<br>April&nbsp;8<sup>th</sup>,&nbsp;2020 | Vector clocks<br>Protocol runs and anomalies<br>Message Delivery vs. Message Receipt<br>FIFO delivery | Lamport Clocks
-| [Lecture 6](./Lecture%206.md)<br>April&nbsp;10<sup>th</sup>,&nbsp;2020 | Causal delivery<br>Totally-ordered delivery<br>Implementing FIFO delivery<br>Preview of implementing causal broadcast | Delivery vs. Receipt<br>FIFO delivery
-| [Lecture 7](./Lecture%207.md)<br>April&nbsp;13<sup>th</sup>,&nbsp;2020 | Implementing causal broadcast<br>Uses of causality in distributed systems<br>Consistent snapshots<br>Preview of the Chandy-Lamport snapshot algorithm | Causal anomalies and vector clocks
-| [Lecture 8](./Lecture%208.md)<br>April&nbsp;15<sup>th</sup>,&nbsp;2020 | Chandy-Lamport Snapshot Algorithm |
-| [Lecture 9](./Lecture%209.md)<br>April&nbsp;17<sup>th</sup>,&nbsp;2020 | Chandy-Lamport wrap-up: limitations, assumptions and properties<br>Uses of snapshots<br>Centralized vs. decentralized algorithms<br>Safety and liveness | Delivery guarantees and protocols
+| [Lecture 2](./Lecture%2002.md)<br>April&nbsp;1<sup>st</sup>,&nbsp;2020 | Distributed Systems: What and why?<br>Time and clocks |
+| [Lecture 3](./Lecture%2003.md)<br>April&nbsp;3<sup>rd</sup>,&nbsp;2020| Lamport diagrams<br>Causality and the "happens before" relation<br>Network models<br>State and events<br>Partial orders
+| [Lecture 4](./Lecture%2004.md)<br>April&nbsp;6<sup>th</sup>,&nbsp;2020 | Total orders and Lamport clocks | Partial orders<br>Happens before relation
+| [Lecture 5](./Lecture%2005.md)<br>April&nbsp;8<sup>th</sup>,&nbsp;2020 | Vector clocks<br>Protocol runs and anomalies<br>Message Delivery vs. Message Receipt<br>FIFO delivery | Lamport Clocks
+| [Lecture 6](./Lecture%2006.md)<br>April&nbsp;10<sup>th</sup>,&nbsp;2020 | Causal delivery<br>Totally-ordered delivery<br>Implementing FIFO delivery<br>Preview of implementing causal broadcast | Delivery vs. Receipt<br>FIFO delivery
+| [Lecture 7](./Lecture%2007.md)<br>April&nbsp;13<sup>th</sup>,&nbsp;2020 | Implementing causal broadcast<br>Uses of causality in distributed systems<br>Consistent snapshots<br>Preview of the Chandy-Lamport snapshot algorithm | Causal anomalies and vector clocks
+| [Lecture 8](./Lecture%2008.md)<br>April&nbsp;15<sup>th</sup>,&nbsp;2020 | Chandy-Lamport Snapshot Algorithm |
+| [Lecture 9](./Lecture%2009.md)<br>April&nbsp;17<sup>th</sup>,&nbsp;2020 | Chandy-Lamport wrap-up: limitations, assumptions and properties<br>Uses of snapshots<br>Centralized vs. decentralized algorithms<br>Safety and liveness | Delivery guarantees and protocols
 | [Lecture 10](./Lecture%2010.md)<br>April&nbsp;20<sup>th</sup>,&nbsp;2020 | Reliable delivery<br>Fault classification and fault models<br>The Two Generals problem | Safety and liveness
 | [Lecture 11](./Lecture%2011.md)<br>April&nbsp;22<sup>nd</sup>,&nbsp;2020 | Implementing reliable delivery<br> Idempotence<br>At-least-once/at-most-once/exactly-once delivery<br>Unicast/Broadcast/Multicast<br>Reliable broadcast<br>Implementing reliable broadcast<br>Preview of replication
 | [Lecture 12](./Lecture%2012.md)<br>April&nbsp;24<sup>th</sup>,&nbsp;2020 | Replication<br>Total order vs. determinism<br>Consistency models: FIFO, causal and strong<br>Primary-backup replication<br> Chain replication<br>Latency and throughput

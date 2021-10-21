@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
+| [Lecture 3](./Lecture%2003.md) | [Lecture 5](./Lecture%2005.md)
 
 ## Recap
 
@@ -235,4 +235,4 @@ In order to remove this indeterminacy, we need a different type of clock, called
 
 | Previous | Next
 |---|---
-| [Lecture 3](./Lecture%203.md) | [Lecture 5](./Lecture%205.md)
+| [Lecture 3](./Lecture%2003.md) | [Lecture 5](./Lecture%2005.md)

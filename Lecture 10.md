@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 9](./Lecture%209.md) | [Lecture 11](./Lecture%2011.md)
+| [Lecture 9](./Lecture%2009.md) | [Lecture 11](./Lecture%2011.md)
 
 ## Recap: Safety & Liveness Properties
 
@@ -274,7 +274,7 @@ The objective here is not to remove all uncertainty, but to lower it to a level 
 
 | Previous | Next
 |---|---
-| [Lecture 9](./Lecture%209.md) | [Lecture 11](./Lecture%2011.md)
+| [Lecture 9](./Lecture%2009.md) | [Lecture 11](./Lecture%2011.md)
 
 
 ---

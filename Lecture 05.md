@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 4](./Lecture%204.md) | [Lecture 6](./Lecture%206.md)
+| [Lecture 4](./Lecture%2004.md) | [Lecture 6](./Lecture%2006.md)
 
 
 
@@ -303,6 +303,6 @@ This is an example of where a diagram provides a very useful way to represent th
 
 | Previous | Next
 |---|---
-| [Lecture 4](./Lecture%204.md) | [Lecture 6](./Lecture%206.md)
+| [Lecture 4](./Lecture%2004.md) | [Lecture 6](./Lecture%2006.md)
 
 

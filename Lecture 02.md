@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| | [Lecture 3](./Lecture%203.md)
+| | [Lecture 3](./Lecture%2003.md)
 
 ## What is a Distributed System?
 
@@ -198,4 +198,4 @@ You know that if event `A` happened before event `B`, then you can ensure that y
 
 | Previous | Next
 |---|---
-| | [Lecture 3](./Lecture%203.md)
+| | [Lecture 3](./Lecture%2003.md)

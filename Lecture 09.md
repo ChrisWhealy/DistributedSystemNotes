@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 8](./Lecture%208.md) | [Lecture 10](./Lecture%2010.md)
+| [Lecture 8](./Lecture%2008.md) | [Lecture 10](./Lecture%2010.md)
 
 
 ## Big Picture View of the Chandy-Lamport Algorithm
@@ -262,5 +262,5 @@ Let's now briefly introduce the next topic, that of ***safety*** and ***liveness
 
 | Previous | Next
 |---|---
-| [Lecture 8](./Lecture%208.md) | [Lecture 10](./Lecture%2010.md)
+| [Lecture 8](./Lecture%2008.md) | [Lecture 10](./Lecture%2010.md)
 

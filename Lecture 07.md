@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 6](./Lecture%206.md) | [Lecture 8](./Lecture%208.md)
+| [Lecture 6](./Lecture%2006.md) | [Lecture 8](./Lecture%2008.md)
 
 
 ## Causal Broadcast Using Vector Clocks
@@ -294,6 +294,6 @@ It has been designed to ensure that the entire event history of each process in 
 
 | Previous | Next
 |---|---
-| [Lecture 6](./Lecture%206.md) | [Lecture 8](./Lecture%208.md)
+| [Lecture 6](./Lecture%2006.md) | [Lecture 8](./Lecture%2008.md)
 
 
