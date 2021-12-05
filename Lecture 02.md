@@ -14,7 +14,7 @@ Leslie Lamport gives the rather comical definition that:
 
 Although he was joking, this definition captures a very important aspect of a distributed system in that it is one defined by some type of failure.
 
-Martin Kleppmann's definition of a distributed system is somewhat more serious (he's the author of a book called [Designing Data Intensive Systems](https://www.amazon.co.uk/Designing-Data-Intensive-Applications-Reliable-Maintainable-ebook/dp/B06XPJML5D/ref=sr_1_1)).
+Martin Kleppmann's definition of a distributed system is somewhat more serious (he's the author of a book called [Designing Data-Intensive Applications](https://www.amazon.co.uk/Designing-Data-Intensive-Applications-Reliable-Maintainable-ebook/dp/B06XPJML5D/ref=sr_1_1)).
 
 > A distributed system runs on several nodes (computers) and is characterised by partial failure
 
