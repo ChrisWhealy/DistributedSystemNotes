@@ -294,7 +294,7 @@ So, the key point here is that the moment at which consensus is reached is diffe
 
 ### What About the Details We've Skipped Over?
 
-There are various subtleties that take place in these algorithms that, at the moment, we have simply glossed over; however, these will be dealt with in the next lecture when we look at the cases wherte firstly, there is more than one proposer, and secondly, what to do in the event of process failure.
+There are various subtleties that take place in these algorithms that, at the moment, we have simply glossed over; however, these will be dealt with in the next lecture when we look at the cases where firstly, there is more than one proposer, and secondly, what to do in the event of process failure.
 We will also look at why the Paxos algorithm is not guaranteed to terminate.
 
 ## Summary: Simplified Steps in the Paxos Algorithm
