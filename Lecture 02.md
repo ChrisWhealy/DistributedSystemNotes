@@ -59,7 +59,7 @@ In a minimal cluster of two computers `M1` and `M2`, `M1` wants to ask `M2` for 
 
 ![Message 1](./img/L2%20Message%201.png)
 
-But in in this very simple scenario, the number of possibilities for failure is still very high:
+But in this very simple scenario, the number of possibilities for failure is still very high:
 
 - `M1`'s message might get lost due to network failure
 - `M1`'s message is delivered very slowly due to unexpectedly high network latency
