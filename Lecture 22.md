@@ -77,7 +77,8 @@ Let's go back to the shopping cart scenario described in [lecture 17](./Lecture%
 If replicas `R1` and `R2` simply represent shopping carts, then we certainly don't want to go to all the trouble of running a consensus algorithm.
 But we have arrived at this conclusion based on our knowledge of the business process we are implementing.
 In this case, we really don't care whether a book is added to the shopping cart before or after the pair of jeans.
-From the perspective of the business logic, the order is neither here nor there.
+From the perspective of the business logic, the order in which items are added is simply not important.
+(More technically, the order in which items are added to a shopping cart is commutative, not associative).
 
 Of course, there will be some situations in which message delivery order is critical to the logic of your business process, but what we propose here is that strong consistency is needed only in a minority of cases; the greater majority of business scenarios will function quite happily with ***strong convergence***.
 
@@ -148,7 +149,7 @@ These two sets are known as the ***upper bounds*** of `{👖}` and `{🔦}`.
 
 In more formal language, the upper bound is:
 
-> Given a partially ordered set<sup id="a1">[1](#f1)</sup> (`S`, `≤`) an upper bound of `a,b ∈ S` is an element `u ∈ S` such that `a ≤ u` and `b ≤ u`.
+> Given a partially ordered set[^1] (`S`, `≤`) an upper bound of `a,b ∈ S` is an element `u ∈ S` such that `a ≤ u` and `b ≤ u`.
 
 Notice that we talk of ***an*** upper bound.
 This means it is possible that for the members `a` and `b` there could well be multiple examples of some set `u` that all satisfy the upper bound requirements.
@@ -160,7 +161,7 @@ The upper bound set that contains all the members of the original set is not ver
 Generally speaking, the upper bounds that are the most interesting are the smallest ones.
 But how do we define the smallest upper bound?  The formal definition is:
 
->  If `a`, `b`, `u` and `v` are all members of the inclusion set `S`, then `u` is the least upper bound<sup id="a2">[2](#f2)</sup> of `a,b ∈ S` if `u ≤ v` for each `v`
+>  If `a`, `b`, `u` and `v` are all members of the inclusion set `S`, then `u` is the least upper bound[^2] of `a,b ∈ S` if `u ≤ v` for each `v`
 
 ### Join-semilattice
 
@@ -222,7 +223,7 @@ Here, these replicas hold the value of our Boolean register and they then receiv
 ***Q:***&nbsp;&nbsp; Why can we not combine these values?  
 ***A:***&nbsp;&nbsp; Because, as we can see from the lattice diagram above, `true` and `false` have no upper bound, let alone a least upper bound.
 
-In this case, the inclusion set formed form the members `{empty, true, false}` contains only the members:
+In this case, the inclusion set formed from the members `{empty, true, false}` contains only the members:
 
 ```
 S = { {}
@@ -237,9 +238,9 @@ S = { {}
 The inclusion set does not contain the least upper bound member `{true, false}` neither does it contain the upper bound `{empty, true, false}`.
 
 In order to resolve such a conflict, we would need to implement some sort of consensus algorithm.
-However, because consensus algorithms are expensive, we really don't want to implement one unless we really need to.
+However, because consensus algorithms are expensive, we really don't want to implement one unless we need to.
 
-So generally, if the updates your replicas are receiving can be thought of as the members of a set this ***is*** a join-semilattice, then we can resolve the requirements of strong convergence by taking the least upper bound.
+So generally, if the updates your replicas are receiving can be thought of as the members of a set that is a join-semilattice, then we can resolve the requirements of strong convergence by taking the least upper bound.
 This also means we do ***not*** need to implement a consensus algorithm.
 
 So, here's an informal claim:
@@ -254,7 +255,8 @@ An example implementation by Martin Kleppmann and Alastair Beresford has been de
 ## Back to the Shopping Cart...
 
 So far, we've been thinking about conflicts that can arise when different clients add members to a set.
-In the case of the shopping cart, the order in which items are added does not matter because the different members within the shopping cart have no dependency on each other.
+In the case of a shopping cart, the order in which items are added does not matter because even if the retailer offers schemes such as "Buy one, get one free", or "Buy these two together and get a 20% discount", these promotions are only applied at the time the user goes to the checkout (I.E. set membership is now fixed), not at the time the items are added to the cart.
+Based on our knowledge of the purchasing process, we can see that the order in which items are added to a shopping cart is immaterial.
 Therefore, this situation is not one in which consensus is required.
 
 This is a particularly useful property in the event of a network partition.
@@ -270,15 +272,19 @@ Let's say that from your laptop, you add a book to your shopping cart, and from 
 
 ![Shopping Cart Item Deletion 1](./img/L22%20Delete%20Cart%20Item%201.png)
 
-Both replicas synchronise and everything is fine...
+Both replicas synchronise, so when looking at your shopping cart from either your laptop or your phone, you see the same items.
+Everything is fine...
 
 From your laptop however, you've read some reviews of the book and decide that it doesn't look so interesting, so you remove it from your shopping cart &mdash; right at the very moment a network partition appears between the replicas.
 
 ![Shopping Cart Item Deletion 2](./img/L22%20Delete%20Cart%20Item%202.png)
 
-The remove message gets through to replica 1, but not replica 2 resulting in the shopping carts being out of sync with each other.
+The remove message gets through to replica 1, but not replica 2.
+So for the duration of the network partition, your shopping carts replicas will be out of sync with each other.
 
-Now from your laptop, you want to look at the contents of your shopping cart and... huh!?
+So after a while, the network partition heals and your shopping cart replicas synchronise with each other.
+
+Now from your laptop, you look at the contents of your shopping cart and... huh!?
 That book has popped up again!
 
 ![Shopping Cart Item Deletion 3](./img/L22%20Delete%20Cart%20Item%203.png)
@@ -289,7 +295,7 @@ Why did this happen?
 
 Because the contents of the shopping carts are treated as sets, and when a conflict occurs, the solution is to take the least upper bound.
 With Dynamo, this resolution happens on the client, but with CRDTs, it happens in the replica.
-Either way though, this approach takes the union of the sets and this can cause a deleted item to pop up again.
+Either way though, this approach takes the union of the sets and this sometimes causes a deleted item to pop up again.
 
 So how do we avoid this problem?
 
@@ -309,13 +315,13 @@ In this case, the least upper bound of two versions of a shopping cart can be ca
 Even though replica `R2` never found out about the removal of the book, this does not matter, because that fact has been recorded in replica `R1`.
 So now we can avoid having the deleted item reappear in the shopping cart by taking a two-step approach:
 
-
 1. Take the union of the addition sets
 1. From this, subtract the union of the removal sets
 
 But we still haven't solved all our problems...
 
-Let's say that even though all those bad reviews about the book caused us to delete it, we change our mind (I mean, can a book really be that bad? Let's find out).  So you add the book again.
+Let's say that even though all those bad reviews about the book caused us to delete it, we change our mind (I mean, can a book really be that bad? Let's find out).
+So you add the book again.
 
 However, look at the addition set &mdash; it already contains the book, and our addition set can only hold single instances of an item.
 And the book is still in the tombstone set because we really did delete it.
@@ -323,7 +329,7 @@ So, if we left the situation like it is, even though we added the book a second 
 
 So, under these conditions, once you remove an item, it’s never coming back!
 
-Here is where you need to do some serious design work to decide on what behaviour you want your application to have, and then think of the scenarios that could break that behaviour.
+Here is where you need to do some serious design work to decide on what behaviour you want your application to have, and then think of scenarios that could break that behaviour.
 
 If you know that the addition of previously deleted items will be a frequently used aspect of your application's functionality, then you will need to implement some sort resolution strategy.
 For instance:
@@ -333,7 +339,7 @@ For instance:
 * Or you could keep a counter against each added or removed item so that adding the same book twice sets the addition counter to `2`, and removing it sets the removal counter to `-1`.
    Now the desired total is simply the sum of additions total and the removals total.
 
-The bottom line is this: this is hard to get right and has been an active area of research over the last 10 years or so.
+The bottom line is this: this is hard to get right and has been an area of active research over the last 10 years or so.
 Quite a few interesting data structures have been proposed for resolving this problem, but it does not appear that any of them have been implemented in production systems yet.
 
 As a developer however, it is difficult to reason about the data you are working with in this abstract manner.
@@ -352,12 +358,5 @@ This is an area of research in which Lindsey Kuper is actively involved.
 
 ***Endnotes***
 
-<b id="f1">1</b>.  The name "partially ordered set" is often abbreviated to ***"poset"***
-
-[↩](#a1)
-
-<b id="f2">2</b>.  The "least upper bound" is known as "lub" or "join"
-
-[↩](#a2)
-
-
+[^1]: The name "partially ordered set" is often abbreviated to ***"poset"***
+[^2]: The "least upper bound" is known as "lub" or "join"
