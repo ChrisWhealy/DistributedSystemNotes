@@ -83,7 +83,7 @@ Barbara Liskov has made some fundamental contributions to programming language d
 PBFT is a replication technique that tolerates Byzantine faults, and in spite of having the word *"practical"* in the name, it is not used in practice that often.
 
 The distinguishing feature of this fault-tolerance behaviour is that if you have a system with `n` replicas, then `floor((n - 1) / 3)` of those replicas are allowed to "fail".
-The world "fail" is put in quotation marks because what we mean here is really *"exhibit Byzantine behaviour"*.
+The world "fail" is put in quotation marks because what we really mean here is *"exhibit Byzantine behaviour"*.
 By this, we mean that a process could:
 
 * Genuinely crash
@@ -107,7 +107,7 @@ This paper was very influential when it was released because previous strategies
 
 Of all the available fault-tolerance models, this one is the most expensive to run.
 This is mainly because you need some seriously powerful number-crunching hardware to perform blockchain mining.
-This in turn gives you very large electricity bill and increases your impact or the environment...
+This in turn creates a very large electricity bill and increases your impact on the environment...
 
 The term consensus is in quotes here because in strategies such as Paxos and RAFT, there is a very definite point in the algorithm where you know that consensus has been reached, and then there is no going back.
 With Blockchain "consensus", the algorithm never reaches a specific milestone; instead, you only have a probabilistic guarantee that consensus is likely.
@@ -119,26 +119,26 @@ If you can get away with not needing strong consistency between replicas, then t
 Overall, go for the weakest safety property you can reasonably tolerate.
 Hence the suggestion to use strong convergence instead of strong consistency, or the development of techniques such as Conflict-Free Replicated Datatypes (CRDTs).
 
-## Discovering Who Invented Vector Clocks
+# Discovering Who Invented Vector Clocks
 
-It is not clear who first invented vector clocks, and in many respects, attribution of this concept to a single person or group is not of much consequence; however, it is interesting to trace the development of this idea.
+It is not clear who first invented vector clocks, and in many respects, attempts to attribute of this concept to a single person or group are not of much consequence; however, it is interesting to trace the development of this idea.
 
 Firstly, we can place a lower bound on the date by referring to the first paper to treat distributed systems as a science.
 This paper was written by Leslie Lamport in 1978 and was called [Time, Clocks and the Ordering of Events in Distributed Systems](./papers/TCOEDS.pdf).
-In it, the concept of the *"happens before"* relation was properly defined as was the notion of a Logical or Lamport Clock.
+In it, the concept of the *"happens before"* relation was properly defined which led directly to the notion of a Logical or Lamport Clock.
 
-A couple of interesting things to notice about the space-time diagrams (now known as "Lamport Diagrams") shown in this paper are:
+There are a couple of interesting things to notice about the space-time diagrams (now known as "Lamport Diagrams") shown in this paper:
 
-1. Stylistically, they bear a passing resemblance to Feynman Diagrams (maybe there is an influence from physics because the final section of this paper on physical clocks seems only to make sense to physicists; and even then, that proposition is not entirely sound...)
-1. He has time going upwards; which does tend to make them harder to read
+1. Stylistically, they bear a passing resemblance to [Feynman Diagrams](https://en.wikipedia.org/wiki/Feynman_diagram) (maybe there is an influence from physics because the final section of this paper on physical clocks seems only to make sense to physicists; and even then, that proposition is not entirely sound...)
+1. Lamport represents time moving upwards &mdash; which does tend to make them harder to read
 
-Later, these diagrams have been drawn to show time going left, right or down.
-Lamport however, is one of the few people to draw these diagrams with time going up.
+Later, these diagrams have been adjusted to show time moving to the left, right or down.
+Lamport however, is one of the few people to represent time moving upwards.
 
-### Concepts Introduced in Lamport's First Paper
+## Concepts Introduced in Lamport's First Paper
 
-* Logical, or Lamport Clocks
 * The *"Happens Before"* relation denoted by the arrow `->` syntax
+* Logical, or Lamport Clocks
 * The idea of the *"clock condition"* that can test whether the happens before relation is satisfied for a pair of events.  
     For events `a` and `b`, if `a -> b` then `C(a) < C(b)` where `C(a)` and `C(b)` are the respective *"clock conditions"* of events `a` and `b` - in other words, the value of the Lamport Clock associated with each event.
 * Initial proposition for turning the partial order implemented by Lamport Clocks into a total order.
@@ -148,7 +148,7 @@ Lamport however, is one of the few people to draw these diagrams with time going
    However, no one actually uses this algorithm for the simple reason that it's not fault-tolerant.
 * The observation that distributed processes simulate the execution of State Machines
 
-### The "Holy Grail" Paper
+## The "Holy Grail" Paper
 
 Although the idea of vector clocks was developed by several researchers independently, and certainly before the publication of this paper, the ["Holy Grail" paper](./papers/holygrail.pdf) is worth reading because it describes how to detect causal relationships in distributed systems.
 
@@ -166,7 +166,7 @@ Footnote 3 of this paper makes an interesting comment:
 
 At the end of this footnote, two references are given to a paper by Colin Fidge [17] and a paper by Friedemann Mattern [44]
 
-### Colin Fidge's Paper: "Timestamps in Message-Passing Systems That Preserve the Partial Ordering"
+## Colin Fidge's Paper: "Timestamps in Message-Passing Systems That Preserve the Partial Ordering"
 
 [This paper](./papers/fidge88timestamps.pdf) was published by Colin Fidge in 1988 and without calling them *"vector clocks"* he invented the same concept by saying:
 
@@ -176,7 +176,7 @@ At the end of this footnote, two references are given to a paper by Colin Fidge 
 > 
 > with an integer clock value for every process in the network.
 
-### Friedemann Mattern's Paper: "Virtual Time and Global States in Distributed Systems"
+## Friedemann Mattern's Paper: "Virtual Time and Global States in Distributed Systems"
 
 [This paper](./papers/VirtTime_GlobState.pdf) was published by Friedemann Mattern also in 1988 where, on the second page, he states:
 
@@ -190,7 +190,7 @@ The interesting thing here is that although the Chandy-Lamport algorithm predate
 
 Here, Mattern now ties together (apparently for the first time), the use of consistent cuts with the use of clock values held in vectors.
 
-### Frank Schmuck's 1988 PhD Paper
+## Frank Schmuck's 1988 PhD Paper
 
 In 1988, a German PhD student at Cornell by the name of Frank Schmuck<sup id="a1">[1](#f1)</sup> published his thesis on ["The Use of Efficient Broadcast protocols in Distributed Systems"](./papers/Frank%20Schmuck%20PhD%20Paper.pdf)
 
@@ -212,7 +212,7 @@ However, footnote 2 says the following:
 
 So, let's chase after the paper referenced as LL86.
 
-### Ladin & Liskov's Paper: "Highly-Available Distributed Services and Fault-Tolerant Distributed Garbage Collection"
+## Ladin & Liskov's Paper: "Highly-Available Distributed Services and Fault-Tolerant Distributed Garbage Collection"
 
 [This 1986 paper](./papers/Ladin%20and%20Liskov.pdf) by Rivka Ladin and Barbara Liskov did not use the precise name *"vector clock"*; however, it did use the name *multipart timestamps*:
 
@@ -223,7 +223,7 @@ So, let's chase after the paper referenced as LL86.
 > where each part is a positive integer.
 > Since there will typically be a small number of replicas (e.g., 3 to 7), using such a timestamp is practical.
 
-### Skipping Forward to 1991 and Causal Broadcast
+## Skipping Forward to 1991 and Causal Broadcast
 
 Frank Schmuck's doctoral supervisor was Ken Birman, and in 1991, he published a paper called [Lightweight Causal and Atomic Group Multicast](./papers/birman91multicast.pdf).
 In section 4.3 called *"Vector Time"*, they now start to talk about vector clocks, and their description is exactly what we discussed in [lecture 5](./Lecture%205.md#vector-clocks).
@@ -234,7 +234,7 @@ The key part of the Causal Broadcast discussion then states in section 5.1 that 
 In class we spoke of the rule that when a message is delivered, the vector clock value in the sender's position should be incremented; but here in Birman's paper, he says effectively *"just merge the sender and receiver's clocks using a pointwise maximum"*.
 Although this sounds like a discrepancy, it turns out that these two approaches are functionally equivalent.
 
-### The Chandy-Lamport Paper
+## The Chandy-Lamport Paper
 
 In 1985, K. Mani Chandy and Leslie Lamport published a paper that we've already looked at in [Lecture 8](./Lecture%208.md) called ["Distributed Snapshots: Determining Global States in a Distributed System"](./papers/chandy.pdf).
 
@@ -254,9 +254,9 @@ Using the analogy of photographing a vast number of migrating birds, this paragr
 1. For practical reasons of synchronization, these multiple snapshots cannot all be taken at the precisely the same point in time
 1. The act of taking a snapshot must not disturb the running system
 
-## Who Was the First to Come Up with Primary Backup Replication?
+# Who Was the First to Come Up with Primary Backup Replication?
 
-### Alsberg and Day
+## Alsberg and Day
 
 The paper that tends to be cited the most here is called ["A Principle for Resilient Sharing of Distributed Resources"](./papers/Alsberg%20and%20Day.pdf) by Peter Alsberg and John Day, first published in October 1976.
 However, the methodology described in the paper does not look very much like what we now call primary backup; nonetheless, Alsberg and Day did produce a working system that operated in the packet switched networks of the day, where data packets sent over the network really could get lost.
@@ -264,7 +264,7 @@ However, the methodology described in the paper does not look very much like wha
 When reading these old papers that were written when the nearest thing to the "internet" was [ARPANET](https://en.wikipedia.org/wiki/ARPANET) or [CYCLADES](https://en.wikipedia.org/wiki/CYCLADES), you have to admire the ingenuity of these people and their ability to solve hard problems in what we would now describe as a very hostile environment.
 Many (though not all) of the assumptions they made 40+ years ago are still valid today.
 
-### Reliable, Autonomic Distributed Store (RADOS)
+## Reliable, Autonomic Distributed Store (RADOS)
 
 This is part of the now Open-Source system called [Ceph](https://en.wikipedia.org/wiki/Ceph_(software)).
 
