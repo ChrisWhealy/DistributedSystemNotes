@@ -143,7 +143,7 @@ We have three processes `A`, `B` and `C` and the Lamport Clock values at the top
 
 ![Lamport Clock Message Send 1](./img/L4%20LC%20Msg%20Send%203.png)
 
-As you can see, the value of each process' Lamport Clock increases monotonically (that is, the value only ever stays the same, or gets bigger &mdash; they can never get smaller!)
+As you can see, the value of each process' Lamport Clock increases monotonically (that is, the value only ever stays the same, or gets bigger &mdash; it can never get smaller!)
 
 ## Reasoning About Lamport Clock Values
 
