@@ -163,7 +163,7 @@ Let's compare the Lamport Clock values of processes `A` and `B`
 
 ```
   LC(A) = 1
-  LB(B) = 4
+  LC(B) = 4
 ```
 
 Since `LC(A) < LC(B)` does this prove that `E1 -> E2`?
@@ -205,20 +205,20 @@ The above example is derived from the ["Holy Grail"](./papers/holygrail.pdf) pap
 ***Q:***&nbsp;&nbsp; So what are they good for?  
 ***A:***&nbsp;&nbsp; A Lamport Clock is designed to help establish event ordering in terms of the *happens before* relation
 
-Even though Lamport Clocks cannot characterise causality, they are still very useful because they define the logical implication: `if A -> B then LC(A) < LB(B)`
+Even though Lamport Clocks cannot characterise causality, they are still very useful because they define the logical implication: `if A -> B then LC(A) < LC(B)`
 
-All logical implications are constructed from a premise (`A -> B`) stated in the form of a question, and a conclusion (`LC(A) < LB(B)`) that can be reached if the answer to the question is true.
+All logical implications are constructed from a premise (`A -> B`) stated in the form of a question, and a conclusion (`LC(A) < LC(B)`) that can be reached if the answer to the question is true.
 
 For any logical implication, we can also take its contra-positive.
 Thus, if `P => Q` then the contra-positive states that `¬Q => ¬P`
 
 So, in the case of the "happens before" relation
 
-`if A -> B then LC(A) < LB(B)`
+`if A -> B then LC(A) < LC(B)`
 
 The contra-positive states
 
-`if ¬(LC(A) < LB(B)) then ¬(A -> B)`
+`if ¬(LC(A) < LC(B)) then ¬(A -> B)`
 
 The contra-positive states that if the Lamport Clock of `A` is not less than the Lamport Clock of `B`, then `A` cannot have happened before `B`.
 This turns out to be really valuable in debugging because if we know that event `A` ***did not*** happen before event `B`, then we can say with complete certainty that whatever consequences were created by event `A`, they could never have contributed to the earlier problem experienced during event `B`.
