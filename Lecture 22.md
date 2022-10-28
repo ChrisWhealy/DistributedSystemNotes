@@ -4,7 +4,7 @@
 
 | Previous | Next
 |---|---
-| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md) 
+| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md)
 
 
 ## Keeping Replicas Consistent
@@ -19,81 +19,75 @@ The challenge then concerns how to keep these replicas consistent with each othe
 
 What approach should we adopt?
 
-Well, we could use a consensus protocol to decide which updates should processed in which order.
+Well, we could use a consensus protocol to decide which updates should be processed and in which order.
+
+If replica `R1` receives update `A` and replica `R2` receives update `B`, then these replicas must agree on the order in which these updates should be delivered.
 
 ![Replica Consensus 1](./img/L22%20Replica%20Consensus%201.png)
 
-If replica `R1` receives update `A` and replica `R2` receives update `B`, then an agreement must be reached concerning the order in which these updates should be delivered.
+So, even though the messages arrive in an unpredictable order, a consensus protocol can be used to decide upon the delivery order.
+In this case, the consensus protocol implements the concept of "delivery slots".
+It then determines that both replicas should place event `B` in delivery slot `1` and event `A` in delivery slot `2`.
 
-So, even though the messages will arrive in some unpredictable order, a consensus protocol will be used to decide upon the delivery order.
-In this case, both replicas operate a system of delivery slots and the consensus protocol determines that event `B` should occupy delivery slot `1` and event `A` should occupy delivery slot `2`.
-
-***Q:***&nbsp;&nbsp; But how many messages need to be sent in order to arrive at this agreement?  
+***Q:***&nbsp;&nbsp; But how many messages need to be sent in order to arrive at this agreement?
 ***A:***&nbsp;&nbsp; Lots!
 
-Here's an example showing the messages that need to be exchanged for replicas <code>R<sub>1</sub></code> and <code>R<sub>2</sub></code> simply to agree on a total order for delivering events `A` and `B` shown above.
+Here's an example that shows the number of messages that need to be exchanged simply for replicas <code>R<sub>1</sub></code> and <code>R<sub>2</sub></code> to agree on a total delivery order for events `A` and `B` shown above.
 
 ![Replica Consensus 2](./img/L22%20Replica%20Consensus%202.png)
 
-1. Replica <code>R<sub>2</sub></code> sends out a `prepare(6)` message to a majority of acceptors, who each respond with the corresponding `promise` messages.  
-    4 messages
-1. Just a little time after <code>R<sub>2</sub></code>'s message exchange has taken place, replica <code>R<sub>1</sub></code> sends out its `prepare(5)` messages to a majority of acceptors.
-   Acceptor <code>A<sub>1</sub></code> happily accepts this proposal number, but acceptor <code>A<sub>2</sub></code> has already promised to ignore messages with a proposal numbers less than `6`, so this `prepare` message is ignored and replica <code>R<sub>1</sub></code> left hanging.  
-    3 messages (all of which turn out to be redundant)
-1. Replica <code>R<sub>2</sub></code> sends out its `accept(6,(slot_1,B))` messages to the acceptors who each respond with `accepted(6,(slot_1,B))`.
-   So, event `B` now occupies delivery slot 1.  
-    4 messages
-1. Replica <code>R<sub>1</sub></code> still needs to get agreement on a total order for event `A`, so it tries the prepare/promise phase again, but now with proposal number `7`.
-   This time, the proposal number is accepted.  
-    4 messages
-1. Replica <code>R<sub>1</sub></code> then enters the accept/accepted phase and achieves consensus on event `A` occupying delivery slot 2.  
-    4 messages
+| Step | Description | Message Count
+|--:|---|--:
+| 1. | Replica <code>R<sub>2</sub></code> sends out a `prepare(6)` message to a majority of acceptors, who each respond with the corresponding `promise` messages | 4
+| 2. | Just a little time after <code>R<sub>2</sub></code>'s message exchange has taken place, replica <code>R<sub>1</sub></code> sends out its `prepare(5)` messages to a majority of acceptors.<br>Acceptor <code>A<sub>1</sub></code> happily accepts this proposal number, but acceptor <code>A<sub>2</sub></code> has already promised to ignore messages with a proposal numbers less than `6`, so this `prepare` message is ignored and replica <code>R<sub>1</sub></code> left hanging. | 3<br>(which all turn out to be redundant)
+| 3. | Replica <code>R<sub>2</sub></code> sends out its `accept(6,(slot_1,B))` messages to the acceptors who each respond with `accepted(6,(slot_1,B))`.<br>So, event `B` now occupies delivery slot 1. | 4
+| 4. | Replica <code>R<sub>1</sub></code> still needs to get agreement on a total order for event `A`, so it tries the prepare/promise phase again, but now with proposal number `7`.<br>This time, the proposal number is accepted. | 4
+| 5. | Replica <code>R<sub>1</sub></code> then enters the accept/accepted phase and achieves consensus on event `A` occupying delivery slot 2. | 4
+| | | 19
 
 So, even in this reasonably happy example where we are not sending messages to all the acceptors (only a majority), we've had to send 19 messages, 3 of which turned out to be redundant &mdash; and we haven't even accounted for sending messages out to the learners!
 
-The point here is that consensus algorithms are really expensive; therefore, we should only implement them in situations where it's ***extremely*** important that everybody agrees on a total order.
+The point here is that in terms of the network traffic they generate, consensus algorithms are really expensive; therefore, we should only implement them in situations where it's ***extremely*** important that everybody agrees on a total order.
 
-So far however, we have not even discussed what events `A` and `B` represent.
-Consensus algorithms do not care about a message's payload; they simply see an opaque (I.E. meaningless) block of data to which some metadata has been attached.
+So far however, we have not even discussed what events `A` and `B` represent: this is because consensus algorithms do not care about a message's payload; they simply see an opaque (I.E. meaningless) byte array to which some metadata has been attached.
 Causal Broadcast for instance, looks simply at the message's recipient and the vector clock value, and from these values, determines the delivery order.
 
 > ***My Aside***
-> 
+>
 > A useful analogy here is to think of the people working in a mail sorting room.
 > These people are concerned with the fact that all the letters and packages have been addressed correctly, and that the correct postage has been paid for a letter or package of that weight and dimensions.
-> 
+>
 > It is quite irrelevant for these people to concern themselves with the contents of the letters and packages.
 
-However, from the perspective of the human developer, we can see firstly that we're having to go to a lot of trouble simply to agree on the order in which a set of events are delivered, and secondly, the algorithm that determines the delivery order is completely agnostic to the real-life functionality that needs to be performed as a result of processing those events.
+However, from the perspective of the human developer, we can see firstly that we're having to go to a lot of trouble simply to agree on the order in which a set of events are delivered, and secondly, the algorithm that determines the delivery order is completely agnostic to the real-life functionality these events trigger.
 
 Rather than having a message-agnostic consensus algorithm then, wouldn't it be smarter to make intelligent decisions about delivery order based on our knowledge of the functionality being implemented?
 
-### Safety Properties: Do We Really Need Strong Consistency?
+## Safety Properties: Do We Really Need Strong Consistency?
 
 Let's go back to the shopping cart scenario described in [lecture 17](./Lecture%2017.md).
 
 ![Amazon Shopping Cart 1](./img/L17%20Amazon%20Cart%201.png)
 
 If replicas `R1` and `R2` simply represent shopping carts, then we certainly don't want to go to all the trouble of running a consensus algorithm.
-But we have arrived at this conclusion based on our knowledge of the business process we are implementing.
+But we have arrived at this conclusion based on our knowledge of the business process being implemented.
 In this case, we really don't care whether a book is added to the shopping cart before or after the pair of jeans.
 From the perspective of the business logic, the order in which items are added is simply not important.
 (More technically, the order in which items are added to a shopping cart is commutative, not associative).
 
 Of course, there will be some situations in which message delivery order is critical to the logic of your business process, but what we propose here is that strong consistency is needed only in a minority of cases; the greater majority of business scenarios will function quite happily with ***strong convergence***.
 
-Just as a reminder:
+> ## Reminder
+>
+> ***Strong Consistency***
+>
+> State equivalence between replicas can only be acheived after the ***same*** messages have been delivered in the ***same*** order.
+>
+> ***Strong Convergence***
+>
+> State equivalence between replicas is eventually acheieved after the ***same*** messages have been delivered.
 
-***Strong Consistency***  
-If replica `R1` delivers messages in the order `M1`, `M2` and `M3`, then all replicas receiving the same set of messages must deliver them in the same order.
-Only then can it be known that the replicas have equivalent state.
-
-***Strong Convergence***  
-All replicas delivering the same set of messages eventually have the equivalent state.
-
-Strong convergence might still be tricky to implement, but it will be easier than strong consistency, because with strong convergence, we know that state equivalence can be achieved simply by delivering the same set of updates.
-Strong consistency however requires us to deliver the same set of updates in ***precisely the same order***.
-
+Strong convergence might still be tricky to implement, but it will be easier than strong consistency.
 The bottom line here is that you should only implement strong consistency when you have no other choice.
 
 ## How Do We Generalise the Requirement for Strong Convergence?
@@ -115,7 +109,7 @@ The standard example of a partially ordered set is set inclusion &mdash; that is
 
 For example, if we have a set containing:
 
-| | | 
+| | |
 |---|---|
 | ![Book](./img/emoji_book.png) | A book
 | ![jeans](./img/emoji_jeans.png) | A pair of jeans
@@ -136,7 +130,7 @@ However, other members are not comparable; for instance:
 
 ### Upper Bounds
 
-If we select some elements from our set of subsets, say the singleton set containing the jeans `{👖}` and singleton set containing the torch `{🔦}`, we could ask the following question:
+If we select some elements from our set of subsets, say the singleton set containing the jeans `{👖}` and the singleton set containing the torch `{🔦}`, we could ask the following question:
 
 > Which elements of `S` are at least as big as `{👖}` and  `{🔦}`?
 
@@ -158,14 +152,14 @@ This means it is possible that for the members `a` and `b` there could well be m
 
 The upper bound set that contains all the members of the original set is not very interesting because this will always be a common upper bound for all its subsets, so we can ignore this one.
 
-Generally speaking, the upper bounds that are the most interesting are the smallest ones.
+Generally speaking, the most interesting upper bounds are the smallest ones.
 But how do we define the smallest upper bound?  The formal definition is:
 
 >  If `a`, `b`, `u` and `v` are all members of the inclusion set `S`, then `u` is the least upper bound[^2] of `a,b ∈ S` if `u ≤ v` for each `v`
 
 ### Join-semilattice
 
-***Q:***&nbsp;&nbsp; If `S` is the eight-member inclusion set of `{📓,👖,🔦}`, then is it true that every 2 elements of `S` will have a least upper bound (lub)?  
+***Q:***&nbsp;&nbsp; If `S` is the eight-member inclusion set of `{📓,👖,🔦}`, then is it true that every 2 elements of `S` will have a least upper bound (lub)?
 ***A:***&nbsp;&nbsp; Yes!
 
 Any set for which this property is true is given the fancy name of a ***Join-semilattice***.
@@ -196,14 +190,14 @@ empty ≤ false
 So, is this a true partially-ordered set?
 To answer this question, we must check that all the axioms are satisfied.
 
-***Reflexivity***  
+***Reflexivity***
 Since `empty ≤ empty`, `true ≤ true` and `false ≤ false`, then this set satisfies the requirements of reflexivity.
 
-***Anti-symmetry***  
+***Anti-symmetry***
 Anti-symmetry requires that if `a ≤ b` and `b ≤ a`, then `a = b`.
 However, since this set contains only three members arranged in a two-layer lattice, we have already implicitly satisfied anti-symmetry by satisfying the requirements of reflexivity.
 
-***Transitivity***  
+***Transitivity***
 Transitivity requires that if `a ≤ b` and `b ≤ c` then `a ≤ c`.
 However, no members of the set can be compared this way, so this set obeys transitivity only in a vacuous sense.
 
@@ -217,10 +211,10 @@ Here, these replicas hold the value of our Boolean register and they then receiv
 
 ![Conflicting Updates](./img/L22%20Conflicting%20Updates.png)
 
-***Q:***&nbsp;&nbsp; Why do these updates create a conflict?  
+***Q:***&nbsp;&nbsp; Why do these updates create a conflict?
 ***A:***&nbsp;&nbsp; Because we have no way to combine the values `true` and `false`
 
-***Q:***&nbsp;&nbsp; Why can we not combine these values?  
+***Q:***&nbsp;&nbsp; Why can we not combine these values?
 ***A:***&nbsp;&nbsp; Because, as we can see from the lattice diagram above, `true` and `false` have no upper bound, let alone a least upper bound.
 
 In this case, the inclusion set formed from the members `{empty, true, false}` contains only the members:
@@ -266,13 +260,13 @@ As soon as the partition heals, the replicas can communicate with each other aga
 
 But what happens if we are allowed to remove items from the shopping cart?
 
-Now things get more complicated. 
+Now things get more complicated.
 
 Let's say that from your laptop, you add a book to your shopping cart, and from your phone, you add a pair of jeans.
 
 ![Shopping Cart Item Deletion 1](./img/L22%20Delete%20Cart%20Item%201.png)
 
-Both replicas synchronise, so when looking at your shopping cart from either your laptop or your phone, you see the same items.
+Both replicas synchronise, so you see the same items in your shopping cart on both devices.
 Everything is fine...
 
 From your laptop however, you've read some reviews of the book and decide that it doesn't look so interesting, so you remove it from your shopping cart &mdash; right at the very moment a network partition appears between the replicas.
@@ -351,7 +345,7 @@ This is an area of research in which Lindsey Kuper is actively involved.
 
 | Previous | Next
 |---|---
-| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md) 
+| [Lecture 21](./Lecture%2021.md) | [Lecture 23](./Lecture%2023.md)
 
 
 ---
