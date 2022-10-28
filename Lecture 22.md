@@ -29,7 +29,7 @@ So, even though the messages arrive in an unpredictable order, a consensus proto
 In this case, the consensus protocol implements the concept of "delivery slots".
 It then determines that both replicas should place event `B` in delivery slot `1` and event `A` in delivery slot `2`.
 
-***Q:***&nbsp;&nbsp; But how many messages need to be sent in order to arrive at this agreement?
+***Q:***&nbsp;&nbsp; But how many messages need to be sent in order to arrive at this agreement?<br>
 ***A:***&nbsp;&nbsp; Lots!
 
 Here's an example that shows the number of messages that need to be exchanged simply for replicas <code>R<sub>1</sub></code> and <code>R<sub>2</sub></code> to agree on a total delivery order for events `A` and `B` shown above.
@@ -38,12 +38,12 @@ Here's an example that shows the number of messages that need to be exchanged si
 
 | Step | Description | Message Count
 |--:|---|--:
-| 1. | Replica <code>R<sub>2</sub></code> sends out a `prepare(6)` message to a majority of acceptors, who each respond with the corresponding `promise` messages | 4
-| 2. | Just a little time after <code>R<sub>2</sub></code>'s message exchange has taken place, replica <code>R<sub>1</sub></code> sends out its `prepare(5)` messages to a majority of acceptors.<br>Acceptor <code>A<sub>1</sub></code> happily accepts this proposal number, but acceptor <code>A<sub>2</sub></code> has already promised to ignore messages with a proposal numbers less than `6`, so this `prepare` message is ignored and replica <code>R<sub>1</sub></code> left hanging. | 3<br>(which all turn out to be redundant)
-| 3. | Replica <code>R<sub>2</sub></code> sends out its `accept(6,(slot_1,B))` messages to the acceptors who each respond with `accepted(6,(slot_1,B))`.<br>So, event `B` now occupies delivery slot 1. | 4
-| 4. | Replica <code>R<sub>1</sub></code> still needs to get agreement on a total order for event `A`, so it tries the prepare/promise phase again, but now with proposal number `7`.<br>This time, the proposal number is accepted. | 4
-| 5. | Replica <code>R<sub>1</sub></code> then enters the accept/accepted phase and achieves consensus on event `A` occupying delivery slot 2. | 4
-| | | 19
+| 1 | Replica <code>R<sub>2</sub></code> sends out a `prepare(6)` message to a majority of acceptors, who each respond with the corresponding `promise` messages | 4
+| 2 | Just a little time after <code>R<sub>2</sub></code>'s message exchange has taken place, replica <code>R<sub>1</sub></code> sends out its `prepare(5)` messages to a majority of acceptors.<br>Acceptor <code>A<sub>1</sub></code> happily accepts this proposal number, but acceptor <code>A<sub>2</sub></code> has already promised to ignore messages with a proposal numbers less than `6`, so this `prepare` message is ignored and replica <code>R<sub>1</sub></code> left hanging. | 3<br>(which all turn out to be redundant)
+| 3 | Replica <code>R<sub>2</sub></code> sends out its `accept(6,(slot_1,B))` messages to the acceptors who each respond with `accepted(6,(slot_1,B))`.<br>So, event `B` now occupies delivery slot 1. | 4
+| 4 | Replica <code>R<sub>1</sub></code> still needs to get agreement on a total order for event `A`, so it tries the prepare/promise phase again, but now with proposal number `7`.<br>This time, the proposal number is accepted. | 4
+| 5 | Replica <code>R<sub>1</sub></code> then enters the accept/accepted phase and achieves consensus on event `A` occupying delivery slot 2. | 4
+| | | <b>19</b>
 
 So, even in this reasonably happy example where we are not sending messages to all the acceptors (only a majority), we've had to send 19 messages, 3 of which turned out to be redundant &mdash; and we haven't even accounted for sending messages out to the learners!
 
@@ -81,11 +81,11 @@ Of course, there will be some situations in which message delivery order is crit
 >
 > ***Strong Consistency***
 >
-> State equivalence between replicas can only be acheived after the ***same*** messages have been delivered in the ***same*** order.
+> State equivalence between replicas can only be acheived after all replicas deliver the ***same*** messages in the ***same*** order.
 >
 > ***Strong Convergence***
 >
-> State equivalence between replicas is eventually acheieved after the ***same*** messages have been delivered.
+> State equivalence between replicas is eventually acheived after all replicas deliver the ***same*** messages.
 
 Strong convergence might still be tricky to implement, but it will be easier than strong consistency.
 The bottom line here is that you should only implement strong consistency when you have no other choice.
@@ -190,14 +190,14 @@ empty ≤ false
 So, is this a true partially-ordered set?
 To answer this question, we must check that all the axioms are satisfied.
 
-***Reflexivity***
+***Reflexivity***<br>
 Since `empty ≤ empty`, `true ≤ true` and `false ≤ false`, then this set satisfies the requirements of reflexivity.
 
-***Anti-symmetry***
+***Anti-symmetry***<br>
 Anti-symmetry requires that if `a ≤ b` and `b ≤ a`, then `a = b`.
 However, since this set contains only three members arranged in a two-layer lattice, we have already implicitly satisfied anti-symmetry by satisfying the requirements of reflexivity.
 
-***Transitivity***
+***Transitivity***<br>
 Transitivity requires that if `a ≤ b` and `b ≤ c` then `a ≤ c`.
 However, no members of the set can be compared this way, so this set obeys transitivity only in a vacuous sense.
 
@@ -211,10 +211,10 @@ Here, these replicas hold the value of our Boolean register and they then receiv
 
 ![Conflicting Updates](./img/L22%20Conflicting%20Updates.png)
 
-***Q:***&nbsp;&nbsp; Why do these updates create a conflict?
+***Q:***&nbsp;&nbsp; Why do these updates create a conflict?<br>
 ***A:***&nbsp;&nbsp; Because we have no way to combine the values `true` and `false`
 
-***Q:***&nbsp;&nbsp; Why can we not combine these values?
+***Q:***&nbsp;&nbsp; Why can we not combine these values?<br>
 ***A:***&nbsp;&nbsp; Because, as we can see from the lattice diagram above, `true` and `false` have no upper bound, let alone a least upper bound.
 
 In this case, the inclusion set formed from the members `{empty, true, false}` contains only the members:
