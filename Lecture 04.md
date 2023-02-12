@@ -121,7 +121,7 @@ When assigning a value to a Lamport Clock, we need first to make a defining deci
 
 1. First, decide what constitutes *"an event"*.
 The outcome of this decision then defines what our particular Lamport Clock will count.  
-    In this particular case, we decide that receiving a message ***is*** counted as an event.
+    In this particular case, we decide that both sending ***and*** receiving a message ***is*** counted as an event.
     (Some systems choose not to count *"message receives"* as events).
 1. Every process has an integer counter, initially set to 0
 1. On every event, the process increments its counter by 1
