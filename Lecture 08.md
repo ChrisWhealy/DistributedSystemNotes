@@ -11,11 +11,12 @@
 
 This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system, and its design gives us two key advantages:
 
-1. Any process participating in the distributed can initiate a snapshot.  
+1. Any participating process can initiate a snapshot.  
    The process initiating the snapshot is not required to occupy some elevated role (such as "supervisor") because this task not considered "special" or "privileged".
-1. The process initiating the snapshot does not need announce that this action is about to take place.
+1. The process initiating the snapshot does not need to warn the other processes that this action is about to take place.
 
-The act of initiating a snapshot creates a cascade of marker messages throughout the entire system that cause all the other processes to take a snapshot of themselves.
+The act of initiating a snapshot creates a cascade of marker messages throughout the entire system.
+This message cascade then causes all the other processes to take a snapshot of themselves.
 
 ### The Initiator Process
 
