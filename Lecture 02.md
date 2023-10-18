@@ -83,9 +83,9 @@ It is often assumed that `M1` must wait for some predefined timeout period, afte
 But the problem is that network latency is indeterminate; therefore, waiting for an arbitrary timeout period might help to trap *some* errors, but in general, it is not a good strategy for determining failure.
 
 For example, instead of asking *"What is the value of `x`"*, `M1` could ask `M2` to *"Add 1 to `x`"*.
- 
+
 ***Q:***&nbsp;&nbsp;How will `M1` know this request was successfully processed?
-Should it simply wait for a predetermined timeout period and if it hears nothing back, assume everything's fine?  
+Should it simply wait for a predetermined timeout period and if it hears nothing back, assume everything's fine?
 ***A:***&nbsp;&nbsp;No, `M1` can only discover the success or failure of its request when it receives some sort of acknowledgement back from `M2`.
 
 If `M1` does not receive a response within its timeout period, what should it conclude?
@@ -100,7 +100,7 @@ This would rule out the uncertainty for timeouts in a slow network, but still le
 
 In distributed systems, we must deal not only with the problems of "Partial failure", but also the problem of "Unbounded Latency" (the definition given by [Peter Alvaro](https://dl.acm.org/profile/81453654530) - one of Lindsey Kuper's colleagues)
 
-***Q:***&nbsp;&nbsp;Given they're so hard to debug, why would you want to use a distributed system?  
+***Q:***&nbsp;&nbsp;Given they're so hard to debug, why would you want to use a distributed system?
 ***A:***&nbsp;&nbsp;Well, largely because we have no choice.
 All manner of external factors can force us to distribute either a computation or storage (or both) across multiple machines&hellip;
 
@@ -134,7 +134,7 @@ Computers have two types of clock, time-of-day clocks and monotonic clocks.
         * Daylight saving time just started
         * A leap second happens
         * NTP resets the machine's clock to an earlier value
-- Time-of-day clocks are OK for timestamping events at a course degree of accuracy, but not if a high degree of accuracy is needed
+- Time-of-day clocks are fine for timestamping events that only require a low degree of accuracy, but they are quite inadequate in situations where a high degree of accuracy is needed
 
 There is a general principle in timekeeping: the more accurately you need to measure time, the harder that task becomes.
 If you now try to get two or more computers to agree on what the time is, then the difficulty is only compounded.
@@ -144,17 +144,19 @@ If you now try to get two or more computers to agree on what the time is, then t
 A value is said to be *"monotonic"* if it only ever changes in one direction.
 So, a monotonic clock is one that will ***never*** jump backwards; its counter is guaranteed only to get bigger.
 
-A monotonic clock:
+The value of a monotonic clock is:
 
-- Is simply a counter value whose only ever gets bigger (E.G. microseconds since system boot)
-- Has no meaning outside the machine on which it exists; therefore, it makes no sense to compare monotonic clock values between different machines.
-Monotonic values are useless as timestamps
-- Is ideally suited for measuring the duration of a task, or the time interval between events on a single machine
+- simply a counter that only ever gets bigger (E.G. microseconds since system boot)
+- useless as a timestamp, because it has no meaning outside the machine on which it exists.
+   Therefore, it makes no sense to compare monotonic clock values between different machines.
+- ideally suited for measuring time intervals on a single machine (E.G. how long did it take to compress that image)
 
-Time of day and monotonic clocks are both physical clocks (I.E. they are concerned with quantifying a time interval between now and some fixed reference point in the past such as Jan 1st, 1970 or when the machine was started)
+Time of day and monotonic clocks are both physical clocks.
+This means they are concerned with quantifying time intervals between now and some fixed reference point in the past.
+Common reference points are Jan 1st, 1970 (for most date calculations) and when the machine was started.
 
-***Q:***&nbsp;&nbsp;So how do we mark points in time that are valid across multiple machines?  
-***A:***&nbsp;&nbsp;If we use any sort of physical clock, then it is very tricky.
+***Q:***&nbsp;&nbsp;So how do we mark points in time that are valid across multiple machines?<br>
+***A:***&nbsp;&nbsp;If we attempt to use any sort of physical clock, then it's very tricky.
 
 ### What's the Time, Mr Lamport?
 
@@ -169,9 +171,9 @@ At first, this concept is not easy to grasp because it goes against our firmly e
 But in order to answer the all-important question ***"Which event happened first?"*** we don't need to reference the time of day, we just need some sort of counter that clicks up every time an event occurs.
 This type of *"clock"* is very important for several reasons:
 
-* Communication is unreliable  
+* **Communication is unreliable**<br>
     This means that the length of time taken for message transmission is unpredictable (a phenomenon known as *"unbounded latency"*)
-* Unpredictable changes of state  
+* **Unpredictable changes of state**<br>
     E.G. the last time you asked machine `M2` what the value of `x` was, it said `x=5`; but in the meantime, some other machine has changed `x` to `6` and hasn't told you&hellip;
 
 In these situations, it is vital to know the order in which events occurred.
