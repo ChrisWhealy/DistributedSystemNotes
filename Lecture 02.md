@@ -79,31 +79,34 @@ In fact, it is impossible to determine the cause of such a failure without first
 
 ### Timeouts
 
-It is often assumed that `M1` must wait for some predefined timeout period, after which it should assume failure if it does not receive an answer.
+It is often assumed that `M1` must wait for some predefined timeout period, after which, it should assume failure if it does not receive an answer.
 But the problem is that network latency is indeterminate; therefore, waiting for an arbitrary timeout period might help to trap *some* errors, but in general, it is not a good strategy for determining failure.
 
 For example, instead of asking *"What is the value of `x`"*, `M1` could ask `M2` to *"Add 1 to `x`"*.
 
 ***Q:***&nbsp;&nbsp;How will `M1` know this request was successfully processed?
-Should it simply wait for a predetermined timeout period and if it hears nothing back, assume everything's fine?
-***A:***&nbsp;&nbsp;No, `M1` can only discover the success or failure of its request when it receives some sort of acknowledgement back from `M2`.
+Should it simply wait for a predetermined timeout period and if it hears nothing back, assume everything's fine?<br>
+***A:***&nbsp;&nbsp;No, in order for `M1` to discover the success or failure of its request, it must receive some sort of response from `M2`.
 
-If `M1` does not receive a response within its timeout period, what should it conclude?
+But what conclusion can `M1` draw if it does not receive a response within the timeout period?<<br>
+Should we conclude success or failure?
 
-We can see that without any additional information, it is not correct for `M1` to assume either success or failure.
-All `M1` can say with any certainty is that from its point of view, the state of variable `x` in `M2` is indeterminate.
+It is clear that without any additional information, `M1` cannot assume either success or failure.
+All `M1` can say with any certainty is that, from its point of view, the state of variable `x` in `M2` is indeterminate.
 
 ### Realistic Timeout Values?
 
 If the maximum network delay for message transmission is `D` seconds and the maximum time a machine spends processing a request is `R`, then the upper bound of the message handling timeout should be `2D + R` (two network journeys (send and receive) plus the remote machine's processing time).
 This would rule out the uncertainty for timeouts in a slow network, but still leave us completely unable to reason about any other types of failure.
 
-In distributed systems, we must deal not only with the problems of "Partial failure", but also the problem of "Unbounded Latency" (the definition given by [Peter Alvaro](https://dl.acm.org/profile/81453654530) - one of Lindsey Kuper's colleagues)
+In distributed systems, we must deal not only with the problems of "Partial failure", but also the problem of "Unbounded Latency" (the definition given by <a href="https://dl.acm.org/profile/81453654530" target="_blank">Peter Alvaro</a> - one of Lindsey Kuper's colleagues)
 
-***Q:***&nbsp;&nbsp;Given they're so hard to debug, why would you want to use a distributed system?
+***Q:***&nbsp;&nbsp;Given they're so hard to debug, why would you want to use a distributed system?<br>
 ***A:***&nbsp;&nbsp;Well, largely because we have no choice.
+
 All manner of external factors can force us to distribute either a computation or storage (or both) across multiple machines&hellip;
 
+For example:
 - Too much data to fit on a single machine
 - Need a faster response time, so we have to throw more processing power at the problem
 - Scalability (need to handle more data, more users, or simply need more CPUs)
@@ -129,11 +132,12 @@ Computers have two types of clock, time-of-day clocks and monotonic clocks.
 
 - Time-of-day clocks are typically synchronised across different machines using [NTP](http://www.ntp.org/)
 - Time-of-day clocks are ***bad*** for measuring intervals between events taking place on different machines:
-    -  The clocks on the different machines may not be synchronised correctly and may disagree on the exact size of a time interval
+    -  The clocks on the different machines may not be synchronised correctly and therefore will disagree about when a shared point in time occurred.
+       (E.G. How long ago was midday?)
     -  There are several cases where the time-of-day clock can jump:
         * Daylight saving time just started
         * A leap second happens
-        * NTP resets the machine's clock to an earlier value
+        * The machine's clock has drifted so NTP resets it to an earlier time
 - Time-of-day clocks are fine for timestamping events that only require a low degree of accuracy, but they are quite inadequate in situations where a high degree of accuracy is needed
 
 There is a general principle in timekeeping: the more accurately you need to measure time, the harder that task becomes.
@@ -158,21 +162,21 @@ Common reference points are Jan 1st, 1970 (for most date calculations) and when 
 ***Q:***&nbsp;&nbsp;So how do we mark points in time that are valid across multiple machines?<br>
 ***A:***&nbsp;&nbsp;If we attempt to use any sort of physical clock, then it's very tricky.
 
-### What's the Time, Mr Lamport?
+## What's the Time, Mr Lamport?
 
 If we think we can solve this problem by repeatedly asking a physical clock *"What's the time?"*, then in fact, we are asking the wrong question because we have misunderstood the problem.
 
 Machines in a distributed system don't need to know what the time is in any absolute sense, all they need to be able to do is answer the question ***"Which event happened first?"***.
-This is why distributed systems use a very different notion of what a clock is; they use something called a ***Logical Clock*** (a.k.a. a Lamport Clock).
+This is why distributed systems use a very different notion of what a clock is; they use something called a ***Logical Clock*** (a.k.a. A Lamport Clock).
 
-Counter-intuitively, a logical clock measures neither the time of day nor the elapsed interval between two events; instead, it measures nothing more than the ordering of events.
+Counter-intuitively, a logical clock measures neither the time of day nor the elapsed interval between two events; instead, it does little more than allow us to determine the order in which a sequence of events occurred.
 
 At first, this concept is not easy to grasp because it goes against our firmly established notion of what a clock is (or ought to be).
 But in order to answer the all-important question ***"Which event happened first?"*** we don't need to reference the time of day, we just need some sort of counter that clicks up every time an event occurs.
 This type of *"clock"* is very important for several reasons:
 
 * **Communication is unreliable**<br>
-    This means that the length of time taken for message transmission is unpredictable (a phenomenon known as *"unbounded latency"*)
+    This means that the length of time taken for message to be transmitted over a network is unpredictable (a phenomenon known as *"unbounded latency"*)
 * **Unpredictable changes of state**<br>
     E.G. the last time you asked machine `M2` what the value of `x` was, it said `x=5`; but in the meantime, some other machine has changed `x` to `6` and hasn't told you&hellip;
 
