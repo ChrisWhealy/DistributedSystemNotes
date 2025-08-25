@@ -88,7 +88,7 @@ For example, instead of asking *"What is the value of `x`"*, `M1` could ask `M2`
 Should it simply wait for a predetermined timeout period and if it hears nothing back, assume everything's fine?<br>
 ***A:***&nbsp;&nbsp;No, in order for `M1` to discover the success or failure of its request, it must receive some sort of response from `M2`.
 
-But what conclusion can `M1` draw if it does not receive a response within the timeout period?<<br>
+But what conclusion can `M1` draw if it does not receive a response within the timeout period?<br>
 Should we conclude success or failure?
 
 It is clear that without any additional information, `M1` cannot assume either success or failure.
@@ -99,7 +99,7 @@ All `M1` can say with any certainty is that, from its point of view, the state o
 If the maximum network delay for message transmission is `D` seconds and the maximum time a machine spends processing a request is `R`, then the upper bound of the message handling timeout should be `2D + R` (two network journeys (send and receive) plus the remote machine's processing time).
 This would rule out the uncertainty for timeouts in a slow network, but still leave us completely unable to reason about any other types of failure.
 
-In distributed systems, we must deal not only with the problems of "Partial failure", but also the problem of "Unbounded Latency" (the definition given by <a href="https://dl.acm.org/profile/81453654530" target="_blank">Peter Alvaro</a> - one of Lindsey Kuper's colleagues)
+In distributed systems, we must deal not only with the problems of "Partial failure", but also the problem of "Unbounded Latency" (the definition given by [Peter Alvaro](https://dl.acm.org/profile/81453654530) - one of Lindsey Kuper's colleagues)
 
 ***Q:***&nbsp;&nbsp;Given they're so hard to debug, why would you want to use a distributed system?<br>
 ***A:***&nbsp;&nbsp;Well, largely because we have no choice.
