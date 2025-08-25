@@ -24,7 +24,7 @@ If `LC(A) < LC(B)` then it does ***not*** imply `A -> B`
 Invented independently by Friedemann Mattern and Colin Fidge.  Both men wrote papers about this subject in 1988.
 
 > Addendum
-> 
+>
 > Subsequent investigation by Lindsey Kuper has uncovered that without using the specific name *"vector clock"*, the concept was already being used by Rivka Ladin and Barbara Liskov in 1986.
 > See [lecture 23](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%2023.md#ladin--liskovs-paper-highly-available-distributed-services-and-fault-tolerant-distributed-garbage-collection) for details.
 
@@ -40,43 +40,43 @@ A Lamport Clock is just a single integer, but a Vector Clock is a sequence of in
 There are two pre-conditions that must be fulfilled before you can implement a Vector Clock:
 
 1. You must know upfront how many processes make up your system
-1. All the processes must agree the order in which the clock values will occur within the vector 
+1. All the processes must agree the order in which the clock values will occur within the vector
 
 In this case, we know that we have three processes `Alice`, `Bob` and `Carol`, and that the order of values in the vector will be sorted alphabetically by process name.
 
 So, each process will create its own copy of the vector clock with an initial value of `[0,0,0]` for `Alice`, `Bob` and `Carol` respectively.
 
-> ***IMPLEMENTATION DETAIL***  
+> ***IMPLEMENTATION DETAIL***
 > When implementing a vector clock, the above two constraints can be relaxed.
-> 
+>
 > Rather than implementing a vector clock as a simple list of integers, it is useful first to create data type for a Lamport Clock which could be as simple as just the process name and a clock value.
-> 
+>
 > A minimal Rust implementation might look something like this:
->     
+>
 > ```rust
 > pub struct LamportClock {
 >   pub process_name: String,
 >   pub clock_value: u64
 > }
 > ```
->     
+>
 > A minimal Vector Clock is then simply an array of Lamport Clocks.
->     
+>
 > ```rust
 > pub struct VectorClock {
 >   pub entries: Vec<LamportClock>
 > }
 > ```
-> 
+>
 > Now with suitable coding to manage vector clocks, process names can occur in any order, or even be missing.
 
 The Vector Clock is then managed by applying the following rules:
 
 1. Every process maintains a vector of integers initialised to `0` - one for each process with which we wish to communicate
-    
+
 1. On every event, a process increments its own position in the vector clock: this also includes internal events that do not cause messages to be sent or received
 
-1. When sending a message, each process includes the current state of its clock as metadata with the message payload
+1. When sending a message, each process includes the current state of its vector clock as metadata with the message payload
 
 1. When receiving a message, each process updates its own position in the vector clock using the rule `max(VC(self),VC(msg))`
 
@@ -99,16 +99,16 @@ It means that when a pointwise comparison is made of the values in `VC(A)` and `
 * At least one value in `VC(A)` is less than the corresponding value in `VC(B)`, and
 * No value in `VC(A)` is greater than the corresponding value in `VC(B)`
 
-> ***IMPORTANT***   
-> For two vector clocks to be comparable, they must refer to exactly the same set of clock values, and depending on your implemention, those values may also have to be listed in the same order.
+> ***IMPORTANT***
+> For two vector clocks to be comparable, they must refer to exactly the same set of clock values, and depending on your implementation, those values may also have to be listed in the same order.
 
 This comparison can be performed using the `≤` operator as long as we first reject the case where `VC(A) == VC(B)`.
 To put that more algorithmically, the following must be true (and here we assume that a vector clock is a simple list of integers):
 
 <pre>
-   VC(A) !== VC(B)
-&& VC(A).length == VC(B).length
-&& for each process at position i, VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub>
+  VC(A) !== VC(B) &&
+  VC(A).length == VC(B).length &&
+  VC(A)[i] ≤ VC(B)[i]
 </pre>
 
 ### But Is This Comparison Enough to Characterise Causality?
@@ -119,11 +119,11 @@ Is `VC(A) < VC(B)`?
 
 So, taking a pointwise comparison of each element gives:
 
-| Index | <code>VC(A)<sub>i</sub> ≤ VC(B)<sub>i</sub></code> | Outcome
+| `i` | `VC(A)[i] ≤ VC(B)[i]` | Outcome
 |---|---|---
 | `0` | `2 ≤ 1` | `false`
-| `1` | `2 ≤ 2` | `true`  
-| `2` | `0 ≤ 3` | `true`  
+| `1` | `2 ≤ 2` | `true`
+| `2` | `0 ≤ 3` | `true`
 
 The overall result is then calculated by `AND`ing all the outcomes together:
 
@@ -137,15 +137,15 @@ Is `VC(B) < VC(A)`?
 
 Again, we perform a pointwise comparison of each element gives:
 
-| Index | <code>VC(B)<sub>i</sub> ≤ VC(A)<sub>i</sub></code> | Outcome
+| `i` | `VC(B)[i] ≤ VC(A)[i]` | Outcome
 |---|---|---
 | `0` | `1 ≤ 2` | `true`
-| `1` | `2 ≤ 2` | `true`  
-| `2` | `3 ≤ 0` | `false`  
+| `1` | `2 ≤ 2` | `true`
+| `2` | `3 ≤ 0` | `false`
 
 The overall result is still `false` because `true && true && false = false`
 
-Since `VC(B)` is ***not*** less than `VC(A)` and `VC(A)` is ***not*** less than `VC(B)`, we are left in an indeterminate state.
+Since `VC(B)` is ***not*** less than `VC(A)` and `VC(A)` is ***not*** less than `VC(B)`, we are left with an undecidable question.
 All we can say about the events represented by these two vector clocks is that they are concurrent, independent or causally unrelated (these three terms are synonyms).
 
 I.E. `A || B`
@@ -180,9 +180,9 @@ Also, by following the messages that led up to event `A`, we can see another seq
 
 ![Causal History 3](./img/L5%20Causal%20History%203.png)
 
-What is common here is that: 
+What is common here is that:
 
-1. Event `A` has ***graph reachability moving forwards in spacetime*** from all the events in its causal history.  
+1. Event `A` has ***graph reachability moving forwards in spacetime*** from all the events in its causal history.
     That is, without lifting the pen from the paper or going backwards in time, we can connect any event in `A`'s past with `A`.
 1. Working backwards from `A`, we can see that all the vector clock values in its causal history satisfy the ***happens before*** relation: that is, all preceding vector clock values are less than `A`'s vector clock value.
 
@@ -255,7 +255,7 @@ But considering that a Logical Clock is only concerned with the ordering of even
 
 ### Complete Protocol Representation?
 
-***Q:***&nbsp;&nbsp; Is it possible to use a Lamport Diagram to give us a complete representation of all the possible message exchanges in a given protocol?  
+***Q:***&nbsp;&nbsp; Is it possible to use a Lamport Diagram to give us a complete representation of all the possible message exchanges in a given protocol?
 ***A:***&nbsp;&nbsp; No!
 
 It turns out that there are infinitely many different Lamport Diagrams that all represent valid runs of a protocol.
@@ -278,21 +278,21 @@ Hmmmm, it sounds like there is some highly specific meaning attached to the word
 
 ***Sending*** and ***receiving*** can be understood quite intuitively, but in the context of distributed systems, the concept of ***message delivery*** has a highly specific meaning:
 
-* ***Sending a Message***  
-    The explicit act of causing a message to be transmitted (typically over a network).  
+* ***Sending a Message***
+    The explicit act of causing a message to be transmitted (typically over a network).
     The sending process has complete control over when or even if a message is sent; therefore, sending a message is entirely ***active***.
-* ***Receiving a Message***   
-    The act of capturing a message upon arrival.  
+* ***Receiving a Message***
+    The act of capturing a message upon arrival.
     The receiving process has no control over when or even if a message arrives &mdash; they just show up randomly... or not.  Therefore, from the perspective of the receiving process, receiving a message is entirely ***passive***.
-* ***Delivering a Message***  
-    The term ***Delivery*** exists to distinguish the passive act of receiving a message from the active choice to start processing the contents of that message. You can't decide when you're going to receive a message, but you can decide when and if to process its contents; therefore, although receiving a message is passive, the choice to deliver a message is entirely ***active***.   
+* ***Delivering a Message***
+    The term ***Delivery*** exists to distinguish the passive act of receiving a message from the active choice to start processing the contents of that message. You can't decide when you're going to receive a message, but you can decide when and if to process its contents; therefore, although receiving a message is passive, the choice to deliver a message is entirely ***active***.
     For example, by placing a received message into a queue, we can delay acting upon the contents of that message until some later point in time.
 
 ### FIFO (or Ordered) Delivery
 
 If a process sends message `M2` after message `M1`, the receiving process must deliver `M1` first, followed by `M2`.
 
-We can represent a protocol violation such as ***FIFO anomaly*** using the following diagram. 
+We can represent a protocol violation such as ***FIFO anomaly*** using the following diagram.
 
 ![FIFO Anomaly](./img/L5%20FIFO%20Anomaly.png)
 
@@ -304,5 +304,3 @@ This is an example of where a diagram provides a very useful way to represent th
 | Previous | Next
 |---|---
 | [Lecture 4](./Lecture%2004.md) | [Lecture 6](./Lecture%2006.md)
-
-
