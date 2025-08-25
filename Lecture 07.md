@@ -52,9 +52,9 @@ Now `Carol` examines her message queue and discovers that the message with vecto
 The updated vector clock is then sent with the message as metadata.
 3. At such time as `P2` delivers `P1`'s message, `P2` increments the `P1` clock value in its own local vector clock (I.E. it records the delivery of `P1`'s message)
 4. Process `P2` should only deliver `P1`'s message if the clock value received with that message conforms to the following two rules:
-    
+
     * The clock value for process `P1` in the message must be exactly one bigger than the clock value for process `P1` in the receiving process `P2`.
-Or written more algebraically:  
+Or written more algebraically:
 
         <code>VC<sub>msg</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
 
@@ -69,9 +69,9 @@ Or, for all positions `k` in the vector clock where `(k ≠ P1)`:
 
 There are two important things to remember here:
 
-1. We are only incrementing vector clock values on message-***send*** events, not message-receive events.  
+1. We are only incrementing vector clock values on message-***send*** events, not message-receive events.
     The value in each vector clock position is simply a count of the number of messages that process has sent so far.
-1. These rules only apply to ***broadcast*** messages, not point-to-point messages!  
+1. These rules only apply to ***broadcast*** messages, not point-to-point messages!
     This means that every process in the system will (eventually) receive every message sent by every other process.
 
 ***Rule 1:***&nbsp;&nbsp;<code>VC<sub>msg</sub>[P1] = VC<sub>P2</sub>[P1] + 1</code>
@@ -157,7 +157,7 @@ However, this is far from trivial to implement because not only does every proce
 
 One thing we can say is that:
 
-> If `A->B` and `B` is in the snapshot, then we should also expect to find `A` in the snapshot
+> If `A -> B` and `B` is in the snapshot, then we should also expect to find `A` in the snapshot
 
 So, the ***Consistent Global Snapshot*** is another important use of the *happens before* relation (or potential causality)
 
@@ -180,7 +180,7 @@ However, as we have already seen in [lecture 2](https://github.com/ChrisWhealy/D
 
 Uh oh! Now we have a problem.  Remember what we said above:
 
-> If `A->B` and `B` is in the snapshot, then we should also expect to find `A` in the snapshot
+> If `A -> B` and `B` is in the snapshot, then we should also expect to find `A` in the snapshot
 
 From the diagram, we can see that the message-send event `E` in `P1` causes event `W` in `P2`.
 
@@ -247,7 +247,7 @@ There are two cases:
 
 1. If this process has already seen a marker message before:
     * It stops recording all incoming messages on that channel
-    * It sets that channel's state to be the sum of the events that arrived whilst recording was active 
+    * It sets that channel's state to be the sum of the events that arrived whilst recording was active
 
 So when `P2` receives the marker message from `P1`, it immediately records its state (`S2`), marks channel <code>C<sub>12</sub></code> as empty, and sends a marker out on all its channels (in this case, `P2` only has one channel)
 
@@ -295,5 +295,3 @@ It has been designed to ensure that the entire event history of each process in 
 | Previous | Next
 |---|---
 | [Lecture 6](./Lecture%2006.md) | [Lecture 8](./Lecture%2008.md)
-
-
