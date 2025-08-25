@@ -17,7 +17,7 @@ The "happens before" relation allows us to conclude two things:
 
 In other words, the arrow in the happens before relation indicates the direction of possible causality.
 
-## Lamport Diagrams (a.k.a. Spacetime Diagrams)
+## Lamport Diagrams (a.k.a. SpaceTime Diagrams)
 
 With time moving downwards, draw a vertical line to represent the events that happen within a process.<sup id="a1">[1](#f1)</sup>
 Events are then represented as dots on that line.
@@ -46,9 +46,9 @@ The send and receive events are represented as dots on each machine's timeline.
 Generally speaking, given two events, `A` and `B`, we can say that `A` happens before `B` (`A -> B`) if any of the following are true:
 
 - Events `A` and `B` are events in the same process and `B` happens after `A`
-- If `A` is a message send event and `B` is the corresponding receive event, then `B` must have happened after `A`.  
-    Sorry kids, time travel is not possible, so it makes no sense to talk of a message being received ***before*** it was sent
-- If `A -> C` and `C -> B`, the we can be certain that `A -> B` (This is known as transitive closure)
+- If `A` is a message send event and `B` is the corresponding receive event, then `B` must have happened after `A`.
+    (Sorry kids, time travel is not possible, so it makes no sense to talk of a message being received ***before*** it was sent)
+- If `A -> B` and `B -> C`, then we can say with complete certainty that `A -> C` (This is known as transitive closure)
 
 This is the definition of the ***"happens before"*** relation.
 
@@ -73,7 +73,7 @@ If we could say with certainty that sending a network message required no more t
 If such an upper limit could be placed on communication performance, then using timeouts to reason about communication failure would be a reasonable approach.
 
 Networks that make such timing guarantees are known as "synchronous networks" (E.G a network in which we know that message transmission will take no more than `N` units of time).
-In general however, synchronous networks require the existence of a stable circuit between sender and receiver &mdash; which is exactly what does not exist in either public switched telephone neworks ([PSTNs](https://en.wikipedia.org/wiki/Public_switched_telephone_network)) or the internet.
+In general however, synchronous networks require the existence of a stable circuit between sender and receiver &mdash; which is exactly what does not exist in either public switched telephone networks ([PSTNs](https://en.wikipedia.org/wiki/Public_switched_telephone_network)) or the internet.
 
 The internet is an asynchronous network (I.E. a network having no central point of control and in which there is no upper bound on message transmission time)
 
@@ -95,7 +95,7 @@ One of the key consequences here is that we have no ability to describe all poss
 
 If, on the other hand, you want to prove than a certain type of event is impossible, then you should choose the most forgiving network model (the synchronous one); for if you can prove that a certain event is impossible in the most forgiving network (for instance, where message delivery is known never to exceed `N` units of time), then you can also be certain that the same event will be impossible in the least forgiving network where `N` is unbounded.
 
-Here, a *"forgiving network protocol"* is one that makes the most assumptions and allow us the greatest scope for reasoning about its behaviour
+Here, a *"forgiving network protocol"* is one that makes the most assumptions and allow us the greatest scope for reasoning about its behaviour.
 
 ## State
 
@@ -123,7 +123,7 @@ There are three different ways in which events can be ordered using the `->` *"h
 
 1. Events `A` and `B` occur in the same process, with `B` happening after `A`
 1. If `A` is a message send event and `B` is the corresponding receive event, then `B` ***must*** happen after `A` because it makes no sense to talk of a receive event happening ***before*** its corresponding send event
-1. If `A -> C` and `C -> B`, then we can be certain that `A -> B` (Transitive closure)
+1. If `A -> B` and `B -> C`, then we can say with complete certainty that `A -> C` (Transitive closure)
 
 So, if `A -> B`, then events `A` and `B` form a pair of events ordered by the **"happens before"** relation.
 
@@ -135,16 +135,16 @@ What can we say about the ordering of these events?
 * From rule 2: `A -> B` and `D -> C`
 * From rule 3: `A -> C`
 
-***Q:***&nbsp;&nbsp; What can we say about the order of events `A` and `B` in relation to event `D`?  
+***Q:***&nbsp;&nbsp; What can we say about the order of events `A` and `B` in relation to event `D`?
 ***A:***&nbsp;&nbsp; Absolutely nothing!
 
 So, the state of the machine is represented by the smallest set of ordered pairs, that is:
 
 ```
- { (A,B)
-  ,(B,C)
-  ,(A,C)
-  ,(D,C)
+ { (A,B),
+   (B,C),
+   (A,C),
+   (D,C),
   }
 ```
 
@@ -154,23 +154,23 @@ What then can we say about the events shown in the following diagram?
 
 ![Message passing between processes](./img/L3%20Message%20Passing.png)
 
-***Q:***&nbsp;&nbsp; Does `P` happen before `S`?  
+***Q:***&nbsp;&nbsp; Does `P` happen before `S`?
 ***A:***&nbsp;&nbsp; Yes, `P` is a send event and `S` is the corresponding receive event, therefore `P -> S`
 
-***Q:***&nbsp;&nbsp; What about `X` and `Z`?  
+***Q:***&nbsp;&nbsp; What about `X` and `Z`?
 ***A:***&nbsp;&nbsp; Yes, events `X` and `Z` occur within the same process and `Z` happens after `X`, therefore `X -> Z`
 
-***Q:***&nbsp;&nbsp; What about `P` and `Z`?  
+***Q:***&nbsp;&nbsp; What about `P` and `Z`?
 ***A:***&nbsp;&nbsp; Yes, `P -> S`, and `S` and `Z` are in the same process with `Z` happening after `S`, therefore `P -> Z`
 
-***Q:***&nbsp;&nbsp; What about `Q` and `R`?  
+***Q:***&nbsp;&nbsp; What about `Q` and `R`?
 ***A:***&nbsp;&nbsp; We do know that `Q` was caused by `T` and that `T -> Z` and `Z -> U` and `U -> R`; however, we are not allowed to determine causality by travelling backwards in time, so we must conclude that `Q` and `R` are ***not*** related by the "happens before" relation.
 In spite of the visual position of the dots in the diagram, we are unable to say which event happened first.
 
 Another way of saying this is that the ***"happens before"*** relation cannot be used to form an ordered pair from `Q` and `R`.
 All we can say about `Q` and `R` is that these events are **"concurrent"** or **"independent"**.  This is written as `Q || R`.
 
-In the above diagram, events `X` and `P`, and `Z`, `U`, `V` and `Q` are also concurrent.
+In the above diagram, events `X` and `P` concurrent, and with respect to `Q`, events `Z`, `U`, `V` are also concurrent.
 
 
 ## Partial Orders
@@ -189,16 +189,17 @@ However, when the members of the set are events whose ordering is determined by 
 Also, we will never encounter the situation in a distributed system where event `A` happens before event `B` ***and*** event `B` happens before event `A` (making `A` and `B` the same event).
 Thus, the anti-symmetry property can never be adhered to in real life.
 Strictly speaking however, whilst this rule is never followed, it is also never violated; therefore, this rule is said to be ***"vacuously true"***.
-That is, when dealing with a set of real-life events, we will never find an example that exhibits this property; however, we will also never find an example that violates this property...
+That is, when dealing with a set of real-life events, we will never find an example that exhibits this property and neither will we find an example that violates this property; so in this case, it can be ignored since it is a distinction without a difference.
 
-So, the "happens before" relation is a weird kind of partial order because only two of the three rules governing partial orders apply, and even then, one of those two is true only in a vacuous sense.
+So, the "happens before" relation is a weird kind of partial order because only two of the three rules governing partial orders apply, and even then, one of those two can be ignored.
 
 Therefore, the ***happens before*** relation is said to be *"an irreflexive partial order"*.
 
 In distributed systems, we will be dealing with many different kinds of partial order.
 So the first fundamental principle we find governing the behaviour of distributed systems is this weird partial order called "happens before".
 
-Whenever we talk about a relation being a partial order, we must first look at the set of things we're dealing with.  If we're dealing with the "happens before" relation, then we're dealing with a set of events.
+Whenever we talk about a relation being a partial order, we must first look at the set of things we're dealing with.
+If we're dealing with the "happens before" relation, then we're dealing with a set of events.
 
 ---
 
@@ -214,4 +215,3 @@ Whenever we talk about a relation being a partial order, we must first look at t
 This is simply a stylistic choice; however, time is most often drawn moving either downwards, or from left to right.
 
 [↩](#a1)
-
