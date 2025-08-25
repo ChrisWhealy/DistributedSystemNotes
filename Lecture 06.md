@@ -232,7 +232,7 @@ So, we can conclude that only one event has taken place since our last message s
 
 `Bob`'s message also arrives at Carol with vector clock `[1,1,0]`, but earlier than `Alice`'s original message.
 
-***Q:***&nbsp;&nbsp; Should she deliver it?
+***Q:***&nbsp;&nbsp; Should she deliver it?<br>
 ***A:***&nbsp;&nbsp; No &mdash; look at the vector clock values!
 
 The reason is that compared to `Carol`'s vector clock (which is still set to `[0,0,0]`), the vector clock on the incoming message is too big.
