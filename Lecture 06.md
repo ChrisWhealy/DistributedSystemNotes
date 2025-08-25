@@ -38,7 +38,7 @@ In real-life, it is unusual to have to implement FIFO delivery yourself because 
 
 There are different ways of phrasing this, but one way is to say:
 
-> If `m1`'s send happens before `m2`'s send, then `m1`'s delivery must happen before `m2`'s delivery
+> If message `m1`'s send happens before message `m2`'s send, then `m1` must be delivered before `m2`
 
 Here's an example of such a violation
 
@@ -50,7 +50,7 @@ But now, let's go back to the "Bob smells" example used in [lecture 3](./Lecture
 
 ![Causal Anomaly](./img/L3%20Causal%20Anomaly.png)
 
-***Q:***&nbsp;&nbsp; Is this a FIFO violation?  
+***Q:***&nbsp;&nbsp; Is this a FIFO violation?<br>
 ***A:***&nbsp;&nbsp; No (but only in a vacuous sense...)
 
 The reason is that a FIFO violation only occurs when two messages ***from the same originating process*** are delivered out of order by the receiving process.
@@ -145,13 +145,13 @@ Consider the following sequence of events:
 * `Alice` sends three messages to Bob: `m1`, `m2` and `m3`
 * Bob receives and correctly delivers messages `m1` and `m2`
 * For some reason, Bob never received message `m3`
-* Unaware the message `m3` never arrived, `Alice` sends messages `m4` and `m5` which `Bob` receives
+* Unaware that message `m3` never arrived, `Alice` sends messages `m4` and `m5` which `Bob` receives
 * However, because `Bob` is still waiting for the message with sequence number `3` to arrive, he will delay the delivery of any subsequent messages (by adding them to a queue)
-* In this situation, `Bob` maye well end up waiting forever for the lost message to be delivered
- 
+* In this situation, `Bob` may well end up waiting forever for the lost message to be delivered
+
 ![Naïve Sequence numbering](./img/L6%20Naive%20Seq%20Nos.png)
 
-Consequently, in a network where message delivery is unreliable, a naïve sequence number strategy like this will break as soon as message delivery fails for some reason.
+Consequently, in a network where message delivery is unreliable, a naïve sequence number strategy like this will break as soon as a message is lost in transmission.
 
 Strategies to mitigate these problems could include:
 
@@ -159,7 +159,7 @@ Strategies to mitigate these problems could include:
 * Processing out of sequence messages on the assumption that the intervening message is lost.
 If this assumption turns out to be false and the message delivery was simply delayed, then the late message would have to be dropped
 
-Neither of the above strategies are very good in that they tend to create more problems than they solve...
+Neither of the above strategies are very good because in practice, they tend to create more problems than they solve&hellip;
 
 ### Vacuous FIFO Delivery
 
@@ -178,7 +178,7 @@ In this approach, upon receipt of a message, every receiver must send a *"messag
 So, when `Alice` sends a message to `Bob`, neither `Alice` nor `Bob` need concern themselves with sequence numbers.
 However, this approach has several distinct drawbacks:
 
-* Communication now becomes sequential.  `Alice` cannot send `m2` to `Bob` until she has received an `ack` from `Bob` that he has received `m1`
+* Communication now becomes sequential.  `Alice` cannot send `m2` to `Bob` until she has received an `ack(Bob, m1)` confirmation message.
 * Increases the volume of network traffic
 * We are still dependent upon a network that can guarantee reliable message delivery
 
@@ -204,11 +204,11 @@ Before sending the message, `Alice` updates her vector clock to `[1,0,0]`
 
 `Bob` receives the message from `Alice`.
 
-***Q:***&nbsp;&nbsp; Should he deliver it?  
+***Q:***&nbsp;&nbsp; Should he deliver it?<br>
 ***A:***&nbsp;&nbsp; Yes, he has no reason not to.
 
 `Bob` delivers the message and discovers that it is not to his liking.
-But, since `Bob` has the emotional maturity of an eight-year-old, he fails to realise that soap and water will work far better than trading insults; so, he resorts to telling the world what he thinks of `Alice`.
+But, since `Bob` has the emotional maturity of an six-year-old, he fails to realise that soap and water will work far better than trading insults; so, he resorts to telling the world what he thinks of `Alice`.
 
 In delivering this message, `Bob` examines the vector clock of the incoming message and discovers that its less than his, but only by the counter in `Alice`'s position.
 This is to be expected, since the message came from `Alice`.
@@ -222,7 +222,7 @@ Since a broadcast message is treated as a single send event to multiple recipien
 
 The message now arrives at `Alice`.
 
-***Q:***&nbsp;&nbsp; Should she deliver it?  
+***Q:***&nbsp;&nbsp; Should she deliver it?<br>
 ***A:***&nbsp;&nbsp; Yes, she has no reason not to.
 
 `Alice`'s vector clock is `[1,0,0]` and the incoming vector clock on the message differs only by `1` in `Bob`'s position.
@@ -232,7 +232,7 @@ So, we can conclude that only one event has taken place since our last message s
 
 `Bob`'s message also arrives at Carol with vector clock `[1,1,0]`, but earlier than `Alice`'s original message.
 
-***Q:***&nbsp;&nbsp; Should she deliver it?  
+***Q:***&nbsp;&nbsp; Should she deliver it?
 ***A:***&nbsp;&nbsp; No &mdash; look at the vector clock values!
 
 The reason is that compared to `Carol`'s vector clock (which is still set to `[0,0,0]`), the vector clock on the incoming message is too big.
@@ -241,10 +241,10 @@ It’s fine for `Bob`'s position to be set to `1` because this is one bigger tha
 
 But there's a `1` in `Alice`'s vector clock position.
 
-***Q:***&nbsp;&nbsp; Hmmmm, that's odd.  Where did that come from?  
+***Q:***&nbsp;&nbsp; Hmmm, that's odd.  Where did that come from?<br>
 ***A:***&nbsp;&nbsp; The value comes from the fact that this message is the response to some event that has taken place in `Alice`, but that ***Carol doesn't yet know about***.
 
-In other words, as far as `Carol` is concerned, this is a ***message from the future*** that has arrived too early and must therefore be buffered.
+In other words, as far as `Carol` is concerned, this is a ***message from the future*** that has arrived too early and must therefore be buffered in order to avoid creating a causal anomaly.
 
 Finally, `Alice`'s original `"Bob smells"` message arrives at `Carol`.
 `Carol` now examines this message's vector clock and discovers that it has the expected value of `[1,0,0]`; therefore, it is fine to deliver this message first.
@@ -258,4 +258,3 @@ Once this out-of-sequence message has been delivered, the message waiting in the
 | Previous | Next
 |---|---
 | [Lecture 5](./Lecture%2005.md) | [Lecture 7](./Lecture%2007.md)
-
