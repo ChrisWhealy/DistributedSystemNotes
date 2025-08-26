@@ -11,8 +11,8 @@
 
 This is an example of a decentralised<sup id="a1">[1](#f1)</sup> algorithm that allows you to take a global snapshot of a running distributed system, and its design gives us two key advantages:
 
-1. Any participating process can initiate a snapshot.  
-   The process initiating the snapshot is not required to occupy some elevated role (such as "supervisor") because this task not considered "special" or "privileged".
+1. Any participating process can initiate a snapshot.<br>
+   The process initiating the snapshot is not required to occupy some elevated role (such as "supervisor") because this task is not considered "special" or "privileged".
 1. The process initiating the snapshot does not need to warn the other processes that this action is about to take place.
 
 The act of initiating a snapshot creates a cascade of marker messages throughout the entire system.
@@ -57,7 +57,7 @@ If this is the first time this process has seen a marker message, the receiver:
 * Sends out a marker message on each of its outgoing channels
 * Starts recording incoming messages on all channels ***except*** the one on which it received the original marker message (now flagged as empty)
 
-***Q:***&nbsp;&nbsp; During a snapshot, once a channel is marked as empty, what happens if you then receive a message on that channel?  
+***Q:***&nbsp;&nbsp; During a snapshot, once a channel is marked as empty, what happens if you then receive a message on that channel?<br>
 ***A:***&nbsp;&nbsp; Whilst the snapshot is running, messages received on channels marked as empty are ignored!
 
 In the diagram below, since this is the first marker message `P2` has seen, it does the following:
@@ -232,4 +232,3 @@ Management of an entire system snapshot needs to be handled by some external coo
 <b id="f1">1</b>&nbsp;&nbsp; In this context, a "decentralised algorithm" is one that does not need to be invoked from a special coordinating process; any process in the system can act as the initiator.  A beneficial side-effect of this is that if two processes simultaneously decide to initiate a snapshot, then nothing bad happens.
 
 [↩](#a1)
-
