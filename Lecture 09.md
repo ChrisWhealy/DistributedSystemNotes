@@ -128,7 +128,7 @@ This then leads into the very challenging problem domain known as ***Agreement P
 Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing either on who will act as the initiator, or when a snapshot should be taken &mdash; ***any*** process can take a snapshot ***any*** time it likes!
 
 Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.
-Hence, markers can be very lightweight messages that do not need to carry any sort of payload such as the identity of the process sending the marker, or the identify of the snapshot initiator.
+Hence, markers can be very lightweight messages that do not need to carry any sort of payload such as the identity of the process sending the marker, or the identity of the snapshot initiator.
 
 The Chandy-Lamport algorithm is an example of a decentralised algorithm.
 There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (we'll talk more about this type of algorithm later in the course).
@@ -168,7 +168,7 @@ So, if event `E` is in the cut and `D -> E` then for the cut to be ***consistent
 
 This is a restatement of the principle of [consistent global snapshots](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%207.md#consistent-global-snapshot) that we saw in [lecture 7](./Lecture%207.md).
 
-In both the of following diagrams `B -> D`.
+In both of the following diagrams `B -> D`.
 Therefore, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
 
 So, this cut is valid and is therefore called a consistent cut:
