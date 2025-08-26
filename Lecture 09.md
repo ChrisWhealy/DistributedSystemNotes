@@ -23,8 +23,8 @@ If channels did not behave as FIFO queues, then the Chandy-Lamport Snapshot Algo
 
 So, this requirement then leads to the question:
 
-***Q:***&nbsp;&nbsp; If the delivery mechanism in a distributed system ***cannot*** guarantee ordered delivery (I.E. FIFO anomalies are possible), then are other algorithms available for taking a global snapshot?  
-***A:***&nbsp;&nbsp; Yes, there are, but such algorithms have other drawbacks such as needing to pause application processing while the snapshot is taking place.
+***Q:***&nbsp;&nbsp; If the delivery mechanism in a distributed system ***cannot*** guarantee ordered delivery (I.E. FIFO anomalies are possible), then are other algorithms available for taking a global snapshot?<br>
+***A:***&nbsp;&nbsp; Yes, other algorithms do exist: but at the cost of needing to pause application processing while the snapshot is taking place.
 
 One particularly nice thing about the Chandy-Lamport algorithm is that you can take a snapshot while the application is running (I.E. it’s not a *stop-the-world* style algorithm).
 The fact that a process sends out marker messages during its snapshot does not interfere with the application messages already travelling through the system.
@@ -68,7 +68,7 @@ However, Chandy & Lamport require only that the graph is strongly connected; for
 
 ![Connected Graph](./img/L9%20Connected%20Graph.png)
 
-`P3` can still send messages to `P2` but it must send them via `P1`.
+`P3` can still send messages to `P2` but those message must be routed via `P1`.
 
 ## Simultaneous Snapshot Initiators
 
@@ -94,7 +94,7 @@ Now the marker messages arrive at each process.
 As soon as the marker messages arrive:
 
 * `P1` and `P2` stop recording messages on their incoming channels
-* `P1` and `P2` save the state of each recorded channel.  
+* `P1` and `P2` save the state of each recorded channel.<br>
     In this case, no messages arrived on <code>C<sub>21</sup></code>, but message `m` arrived on <code>C<sub>12</sup></code>
 
 Again, we now have a coherent snapshot of the whole system in spite of the fact that two processes simultaneously decided to act as initiators.
@@ -125,31 +125,30 @@ This all gets very chaotic and could well lead to some sort of deadlock.
 So, if multiple initiators are not permitted, then there has to be some way for processes to decide who is going to act as the sole initiator.
 This then leads into the very challenging problem domain known as ***Agreement Problems*** (Warning: here be dragons!)
 
-Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing on either who will act as the initiator, or when a snapshot should be taken &mdash; ***any*** process can take a snapshot ***any*** time it likes!
+Since the Chandy-Lamport algorithm permits multiple initiators, it is very much easier to implement because we do not have to care about solving the hard problem of agreeing either on who will act as the initiator, or when a snapshot should be taken &mdash; ***any*** process can take a snapshot ***any*** time it likes!
 
 Further to this, any process that receives a marker message does not need to care about either who sent that marker, or which process originally acted as the initiator.
-Hence, markers can be very lightweight messages that do not need to carry any data such as the identity of the initiator.
+Hence, markers can be very lightweight messages that do not need to carry any sort of payload such as the identity of the process sending the marker, or the identify of the snapshot initiator.
 
 The Chandy-Lamport algorithm is an example of a decentralised algorithm.
 There are, however, algorithms that are centralised, and these ***do*** require a single process to act as the initiator (we'll talk more about this type of algorithm later in the course).
 
-## Why Do We Want Snapshots in the First Place?
+## But Why Do We Want Snapshots in the First Place?
 
 What are snapshots good for?  Here are some ideas:
 
-* ***Checkpointing***  
-    If we are performing a process that is either expensive or based on non-deterministic input (such as user requests arriving over a network), then in the event of failure, a checkpoint allows us to reconstruct the system's state and provides us with a reasonable restart point.  
-    For expensive calculations, all our calculation effort up until the last checkpoint is preserved, and for transactional systems, the system state preserved at the checkpoint reduces data loss down to only those transactions that occurred between the checkpoint being taken and the system failing.
-* ***Deadlock detection***  
-    Once a dead lock occurs at time `T` in a system, unless it is resolved, that deadlock will continue to exist for all points in time greater than `T`.
-    A snapshot can be used to perform deadlock detection and thus serves as a useful debugging tool
-* ***Stable Property Detection***  
-    A deadlock is an example of a ***Stable Property***.
-    A property of the system is said to be ***stable***, if, once it becomes true, it remains true.  
-    Another example of a stable property is when the system has finished doing useful work - I.E. Task termination (however, human intervention might be required in order to detect that this state has been reached) 
+* ***Checkpointing***<br>
+    If we are performing a process that is either expensive or based on non-deterministic input (such as user requests arriving over a network), then in the event of failure, a checkpoint allows us to reconstruct the system's state and provides us with a reasonable restart point.
+    For expensive calculations, all our calculation effort up until the last checkpoint is preserved, and for transactional systems, the system state preserved at the time of the checkpoint, thus reducing data loss down to only those transactions occurring in the (hopefully short) interval between the end of the checkpoint and the system failure.
+* ***Stable Property Detection***<br>
+    A deadlock is an example of a ***stable*** system property: that is, the system has entered a permanent state in which (without external intervention) no further useful work is possible.
+    This is why a deadlock cannot resolve itself!<br>
+    Another example of a stable property is when the system has finished doing useful work - I.E. Task termination (however, human intervention might be required in order to detect that this state has been reached)
+* ***Deadlock detection***<br>
+    A snapshot can be used to perform deadlock detection and thus serves as a useful debugging tool.
 
 Be careful not to conflate a ***deadlock*** with a process crashing.
-Typically (but not always), a deadlock occurs when two running processes enter a mutual wait state.
+Typically (but not always), a deadlock occurs when two running processes enter something like a mutual wait state.
 Thus, neither process has crashed, but at the same time, neither process is capable of doing any useful work because each is waiting for a response from the other.
 
 ## Chandy-Lamport Algorithm and Causality
@@ -163,13 +162,13 @@ A cut is a time frontier that divides a Lamport diagram into past and future eve
 ![Cut](./img/L9%20Cut.png)
 
 An event is said to be ***in the cut*** if it belongs to the past.
-In Lamport diagrams, where time goes downwards, this means events occurring above the line.
+In Lamport diagrams, where time goes downwards, this means events occurring above the dashed line.
 
-So, if event `E` is in the cut and `D->E` then for the cut to be ***consistent***, event `D` must also be in the cut.
+So, if event `E` is in the cut and `D -> E` then for the cut to be ***consistent***, event `D` must also be in the cut.
 
 This is a restatement of the principle of [consistent global snapshots](https://github.com/ChrisWhealy/DistributedSystemNotes/blob/master/Lecture%207.md#consistent-global-snapshot) that we saw in [lecture 7](./Lecture%207.md).
 
-In both the of following diagrams `B->D`.
+In both the of following diagrams `B -> D`.
 Therefore, for a cut to be consistent, it must preserve the fact that event `B` happens in the causal history of event `D`.
 
 So, this cut is valid and is therefore called a consistent cut:
@@ -263,4 +262,3 @@ Let's now briefly introduce the next topic, that of ***safety*** and ***liveness
 | Previous | Next
 |---|---
 | [Lecture 8](./Lecture%2008.md) | [Lecture 10](./Lecture%2010.md)
-
