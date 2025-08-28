@@ -58,7 +58,7 @@ In other words, we must start with a clear understanding of what exactly constit
 
 As a prelimiary definition, we could say that:
 
-| A fault is any condition that disrupts normal operation of a system.
+> A fault is any condition that disrupts normal operation of a system.
 
 But trying to prepare for such disruptive conditions is easier said than done.
 Consider this very simple scenario:
