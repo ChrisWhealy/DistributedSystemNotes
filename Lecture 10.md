@@ -60,7 +60,7 @@ As a prelimiary definition, we could say that:
 
 > A fault is any condition that disrupts normal operation of a system.
 
-But trying to prepare for such disruptive conditions is easier said than done.
+But trying to identify and then handle such disruptive conditions is easier said than done.
 Consider this very simple scenario:
 
 Machine `M1` sends a message to machine `M2` asking the question *"What's the value of `x`?"*.
