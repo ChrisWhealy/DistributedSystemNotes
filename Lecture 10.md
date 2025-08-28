@@ -14,7 +14,7 @@
 | Can be violated in a finite execution.<br>![FIFO Anomaly](./img/L5%20FIFO%20Anomaly.png) | Cannot be violated in finite execution.<br>![No violation - yet](./img/L5%20Protocol%204.png)
 | Examples of safety properties include all the delivery guarantees we've spoken about so far such as FIFO, Causal and Totally-Ordered | An example of a liveness property is the guarantee that the system will ***eventually*** respond to a client request.<br>However, the diagram above is not a counterexample because the definitions of liveness guarantees tend to be open-ended and therefore cannot exclude the possibility of *"waiting forever"*
 
-The trouble with Distributed System design is that in order to be useful, it needs both types of property to be present; however, the open-ended nature of liveness properties makes them hard to reason about.
+The trouble with Distributed System design is that in order for it to be useful, it needs both types of property to be present; however, the open-ended nature of liveness properties makes them hard to reason about.
 
 Let's say we want to implement a protocol that satisfies the safety property of FIFO delivery, but doesn't need to care about any liveness properties.
 So, we could build a system that either drops or ignores every message...
@@ -30,15 +30,15 @@ We need a system that implements a combination of both.
 
 Other than the *"eventual deliver"* property we've spoken of, the only other liveness property we've mentioned is *"reliable delivery"*, and the definition varies depending on who you ask, but here's one definition:
 
-> Let `P1` be a process that sends a message `m` to process `P2`.  
+> Let `P1` be a process that sends a message `m` to process `P2`.<br>
 > If neither `P1` nor `P2` crashes, then `P2` eventually delivers message `m`
 
 However, you might also see an extended version of the above definition:
 
-> Let `P1` be a process that sends a message `m` to process `P2`.  
+> Let `P1` be a process that sends a message `m` to process `P2`.<br>
 > If neither `P1` nor `P2` crashes ***and not all messages are lost***, then `P2` eventually delivers message `m`
 
-These definitions vary only in respect of whether or not we should be concerned about message loss.
+The only difference between these definitions is whether or not message loss is a problem.
 This question then leads us into the topic of fault models that we will come to shortly.
 However, here we assert that reliable delivery is a liveness property.
 
@@ -56,14 +56,22 @@ Only then will you understand what conditions your system needs to tolerate.
 
 In other words, we must start with a clear understanding of what exactly constitutes a fault.
 
-In a simple scenario like the one below, machine `M1` asks machine `M2` the question *"What's the value of `x`?"* and expects to hear something back such as `x=5`.
+As a prelimiary definition, we could say that:
+
+| A fault is any condition that disrupts normal operation of a system.
+
+But trying to prepare for such disruptive conditions is easier said than done.
+Consider this very simple scenario:
+
+Machine `M1` sends a message to machine `M2` asking the question *"What's the value of `x`?"*.
+In return, it expects a response that says something like `x=5`.
 
 ![Possible Faults](./img/L10%20Possible%20Faults.png)
 
 What sort of faults could occur here?
 
 * `M2` never receives the message because it was lost due to a communication fault
-* `M2` gets the message, but is unable to answer it because it became corrupted
+* `M2` gets the message, but is unable to answer it because the message became corrupted
 * `M2` gets the message, but only after a significant delay
 * `M2` does not respond because it has already crashed
 * `M2` crashes as a result of trying to answer `M1`'s question
@@ -71,10 +79,10 @@ What sort of faults could occur here?
 * `M2` ignores the message
 * `M2` deliberately responds with the wrong answer
 * `M2` sends a response back to `M1` which gets lost, corrupted or delayed
-* `M2` sends a response back to `M1`, but then `M1` crashes as it tries to proces the answer
+* `M2` sends a response back to `M1`, but then `M1` crashes as it tries to process the answer
 * etc...
 
-The problem here is that even in this minimal scenario, we cannot enumerate all the possible errors the might occur; however, we can categorise them.
+The problem here is that even in this minimal scenario, we cannot enumerate all the possible conditions that might disrupt the system's normal operation; however, we can categorise them.
 
 ### Fault Categories
 
@@ -85,7 +93,7 @@ Let's arrange these types of fault into different informal categories.
 | Crash | Software execution halts or hardware fails
 | Omission | Messages are sent, but not received (I.E. lost)
 | Timing | Messages are sent and processed successfully, but very slowly<br>Also known as a ***performance*** fault
-| Byzantine<sup id="a1">[1](#f1)</sup> | Intentionally malicious or arbitrary behaviour
+| Byzantine<sup id="a1">[1](#f1)</sup> | Any behaviour designed to corrupt, disable or terminate the operation of a system
 
 These fault categories have been used in Distributed System's design since about the early 1990's and are presented above in hierarchical order, starting with the lowest level first.
 
@@ -94,8 +102,13 @@ These fault categories have been used in Distributed System's design since about
 At the bottom of this hierarchy is the ***crash fault***.
 This simply means that a process has stopped exchanging messages with the other participants in the system.
 
-A crash fault can happen for a variety of reasons: for instance, execution could halt due to a software failure, or the process might continue to handle its own internal messages but cease responding to external messages.
-Whilst this second case is not due to software execution halting, as far as the other participants in the system are concerned, since this process takes no further part in the overall operation of the system, it may as well have crashed.
+A crash fault can happen for a variety of reasons.  These include:
+* Execution halts due to a hardware failure
+* Execution halts due to a software failure
+* A process continues to handle its own internal messages but ceases to respond to external messages
+
+Whilst this last case is not due to software execution halting, as far as the other participants are concerned, this process no longer takes any part in the overall operation of the system.
+So from their point of view, it may as well have crashed.
 
 ### Omission Fault
 
@@ -163,7 +176,7 @@ Consequently, if process `B` decides that to say:
 Any process communicating with `B` will be unable to determine the true cause of such behaviour.
 
 > ***My Aside***
-> 
+>
 > This is because computers are unable of determine the intent of, or motive behind an action, their inferences can only be made on the mechanistic basis of cause and effect
 
 The list of possible fault behaviours here is endless...
@@ -192,7 +205,7 @@ So, we can redraw the above diagram as follows:
 
 If we detect that a message has been corrupted, the simplest way of handling it is to ignore it completely.
 In this case, we have handled the message in the same way as if we had never received it in the first place.
-Thus, we have downgraded this particular type of Byzantine fault to an Omission fault. 
+Thus, we have downgraded this particular type of Byzantine fault to an Omission fault.
 
 ## Fault Models
 
@@ -229,23 +242,23 @@ Since the armies of Alice and Bob are not strong enough on their own to defeat t
 
 Let's look at a few scenarios:
 
-* Alice sends Bob the message ***"Attack at dawn!"***.  
+* Alice sends Bob the message ***"Attack at dawn!"***.
 
-    ***Q:***&nbsp;&nbsp;Having sent this message, should Alice simply go ahead and attack at dawn?  
-    ***A:***&nbsp;&nbsp;No, because she has no way of knowing that Bob has even received the message, let alone agreed to it.  
+    ***Q:***&nbsp;&nbsp;Having sent this message, should Alice simply go ahead and attack at dawn?<br>
+    ***A:***&nbsp;&nbsp;No, because she has no way of knowing that Bob has even received the message, let alone agreed to it.
 
     If Alice attacks on her own, there is a significant chance of defeat, so she should wait for Bob's confirmation that he has agreed to the plan.
 
-* Let's now say that Bob has received the message, agreed to it, and sent a confirmation back saying *"Yes, we attack at dawn!"*.  
+* Let's now say that Bob has received the message, agreed to it, and sent a confirmation back saying *"Yes, we attack at dawn!"*.
 
-    ***Q:***&nbsp;&nbsp;Should Bob now go ahead and attack at dawn?  
+    ***Q:***&nbsp;&nbsp;Should Bob now go ahead and attack at dawn?<br>
     ***A:***&nbsp;&nbsp;No!  Because he does not know that Alice has received his confirmation &mdash; again, a lone attack would be very risky.
 
-* Let's then say that Alice receives Bob's agreement to attack at dawn - is this good enough for Alice to launch an attack?  No, because Bob doesn't know that Alice knows that he's agreed to attack...  
+* Let's then say that Alice receives Bob's agreement to attack at dawn - is this good enough for Alice to launch an attack?  No, because Bob doesn't know that Alice knows that he's agreed to attack...
 
     And this is all getting very silly and sounds like good material for a Monty Python sketch!
 
-As it turns out, it has been proven impossible to eliminate 100% of the uncertainty inherent in systems where communication reliability cannot be guaranteed.
+As it turns out, in systems where communication reliability cannot be guaranteed, it has been proven impossible to completely eliminate all uncertainty.
 
 ### Indeterminacy of the Omission Model
 
@@ -259,16 +272,16 @@ Some possibilities do exist here:
 * Instead of trying to decide on the basis of unreliable communication, make a plan in advance and share that plan between the participants.
   In other words, act on the basis of shared common knowledge<sup id="a3">[3](#f3)</sup>.
 * Since unreliable communication excludes the possibility of achieving ***total*** certainty, the best we can hope for is ***reasonable*** certainty.
- 
+
 To achieve reasonable certainty, we could adopt the following strategy:
 
 1. Alice could send Bob a sequence of messages knowing that on average, at least one will get through.
 1. For every one of Alice's messages that successfully reaches Bob, Bob sends back an acknowledgement.
    Again, since not of all these acknowledgments will make it back to Alice, multiple acknowledgements are needed in the hope that at least one will get through.
-1. Alice receives Bob's first acknowledgement and stops sending her stream of messages.
+1. Alice receives Bob's first acknowledgement, then she stops sending her stream of messages.
 1. After a certain period of time, Bob's confidence will start to grow that at least one of his acknowledgements got through because Alice has stopped sending her original message.
 
-The objective here is not to remove all uncertainty, but to lower it to a level considered acceptable enough to act upon.
+The objective here is not to remove all uncertainty; rather, the objective is to reduce it to a level considered acceptable enough to act upon.
 
 ---
 
@@ -294,6 +307,8 @@ The point here is that the behaviour of a small number of malicious participants
 
 [↩](#a2)
 
-<b id="f3">3</b>&nbsp;&nbsp; Knowledge is said to be "common" when all participants in a system know with 100% certainty that all other participants share the same knowledge.  But not only is this very difficult to establish externally, it is also very fragile.  What would happen for instance, if someone needs to change the plan?  How could the changed plan then become accepted, common knowledge?
+<b id="f3">3</b>&nbsp;&nbsp; Knowledge is said to be "common" when all participants in a system know with 100% certainty that all other participants share the same knowledge.  But not only is this very difficult to establish externally, it is also very fragile.  What would happen for instance, if someone needs to change the plan?  How do you communicate those changes, and how can you then be confident that the new plan is common knowledge?
+
+And we're back to where we started...
 
 [↩](#a3)
